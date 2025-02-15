@@ -1,0 +1,1120 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <link
+    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
+    rel="stylesheet"
+  />
+  <link
+    rel="stylesheet"
+    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
+  />
+  <style>
+    body {
+      background-color: #4C4E52;
+    }
+    .btn-animated:hover { transform: scale(1.1); }
+    .btn-animated:active { transform: scale(0.9); }
+    .btn-transparent-green {
+      background-color: transparent;
+      color: #FFA500;
+      border-color: #FFA500;
+    }
+    .modal-header {
+      background-color: #333;
+      color: #FFA500;
+      text-align: center;
+    }
+    .modal-title {
+      font-size: 12px;
+      color: #FFA500;
+      margin: 0 auto;
+      display: inline-block;
+    }
+    /* Constrain the modal height */
+    .modal-content { 
+      background-color: #333; 
+      max-height: 90vh; /* Modal content will never exceed 90% of the viewport height */
+      overflow-y: auto; /* Enable vertical scrolling if needed */
+    }
+
+    /* Enforce a fixed 16:9 aspect ratio for modal body */
+    .modal-body {
+      position: relative;
+      width: 100%;
+      padding-bottom: 56.25%; /* 16:9 ratio */
+      background: #333;
+      overflow: hidden;
+    }
+    .modal-body::-webkit-scrollbar { display: none; }
+
+    /* Modal image covers the container, maintaining aspect ratio */
+    #modalImage {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+    }
+    .modal-aspect-ratio {
+      width: 100%;
+      position: relative;
+      aspect-ratio: 16/9; /* ensures 16:9 ratio */
+    }
+
+    .selected {
+      border: 2px solid orange;
+      border-radius: 6px;
+    }
+
+    /* Image Gallery Grid */
+    #imageGallery {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(30px, 1fr)); /* initial value */
+      gap: 2px;
+      margin-top: 2px;
+      margin-bottom: 200px;
+      justify-content: center;
+    }
+    .col { flex: 1; }
+    .aspect-ratio-box {
+      width: 100%;
+      position: relative;
+      padding-bottom: 56.25%; /* 16:9 ratio */
+      overflow: hidden;
+    }
+    .aspect-ratio-box img {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      object-fit: cover;
+      border-radius: 6px;
+      transition: transform 0.2s ease-in-out;
+    }
+    .aspect-ratio-box:hover img { transform: scale(1.05); }
+    .aspect-ratio-box:active img { transform: scale(1.02); }
+
+    /* Buttons, Filters, Etc. */
+    .btn-smaller,
+    .btn-medium,
+    .btn-larger,
+    .city-filter,
+    .regions-filter {
+      padding: 0.15rem 0.5rem;
+      font-size: 12px;
+      font-weight: bold;
+      margin-right: 5px;
+      background-color: #4CAF50;
+      color: #fff;
+      border: 3px solid #fff;
+      transition: border-color 0.5s ease-in-out;
+    }
+    .btn-smaller:hover,
+    .btn-medium:hover,
+    .btn-larger:hover,
+    .city-filter:hover,
+    .regions-filter:hover,
+    .btn-smaller.active,
+    .btn-medium.active,
+    .btn-larger.active,
+    .city-filter.active,
+    .regions-filter.active {
+      background-color: #0BDA51;
+      border-color: #c0c0c0;
+      transform: scale(1.1);
+    }
+    .camera-count {
+      position: relative;
+      display: inline-block;
+      background-color: #4CAF50;
+      color: #fff;
+      padding: 0.15rem 0.5rem;
+      border: 3px solid #fff;
+      font-weight: bold;
+      font-size: 12px;
+      margin-right: 5px;
+      border-radius: 6px;
+    }
+    #cameraSearch {
+      padding: 0.15rem 0.5rem;
+      font-size: 12px;
+      font-weight: bold;
+      border: 3px solid #fff;
+      background-color: #4CAF50;
+      color: #fff;
+      width: 100%;
+    }
+    .notification {
+      position: fixed;
+      top: 10px;
+      right: 10px;
+      background-color: #FFA500;
+      color: white;
+      padding: 5px;
+      border-radius: 5px;
+    }
+    input[type=range] {
+      -webkit-appearance: none;
+      -moz-appearance: none;
+      appearance: none;
+      width: 150px;
+      height: 10px;
+      background: #888;
+      border-radius: 5px;
+      outline: none;
+      margin: 0 10px 0 5px;
+      cursor: pointer;
+      transition: background 0.15s ease-in-out;
+    }
+    input[type=range]::-webkit-slider-runnable-track {
+      background: linear-gradient(90deg, #0BDA51, #4CAF50);
+      border-radius: 5px;
+      height: 10px;
+    }
+    input[type=range]::-webkit-slider-thumb {
+      -webkit-appearance: none;
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      background: #FFA500;
+      border: 2px solid #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      margin-top: -7px;
+      transition: transform 0.2s ease-in-out;
+    }
+    input[type=range]::-webkit-slider-thumb:hover { transform: scale(1.1); }
+    input[type=range]::-webkit-slider-thumb:active { transform: scale(1.2); }
+    input[type=range]::-moz-range-track {
+      background: linear-gradient(90deg, #0BDA51, #4CAF50);
+      border-radius: 5px;
+      height: 10px;
+    }
+    input[type=range]::-moz-range-thumb {
+      height: 24px;
+      width: 24px;
+      border-radius: 50%;
+      background: #FFA500;
+      border: 2px solid #fff;
+      box-shadow: 0 0 5px rgba(0,0,0,0.3);
+      transition: transform 0.2s ease-in-out;
+    }
+    input[type=range]::-moz-range-thumb:hover { transform: scale(1.1); }
+    input[type=range]::-moz-range-thumb:active { transform: scale(1.2); }
+
+    /* Carousel styling for thumbnails */
+    #thumbnailContainer {
+      display: flex;
+      gap: 10px; /* Adjust spacing between thumbnails here if desired */
+      overflow-x: auto;
+      scrollbar-width: none;
+      width: 100%;
+      justify-content: flex-start;
+      cursor: grab;
+    }
+    #thumbnailContainer:active { cursor: grabbing; }
+    #thumbnailContainer::-webkit-scrollbar { display: none; }
+
+    /* Ensure the Routes dropdown sizes to its content */
+    #routeFilter {
+      width: auto !important;
+      display: inline-block;
+    }
+  </style>
+</head>
+<body>
+  <!-- Camera Count -->
+  <div id="cameraCount" class="camera-count"></div>
+
+  <!-- Combined Filters Dropdown -->
+  <div class="dropdown" style="display:inline-block; margin-right: 10px;">
+    <button 
+      class="btn btn-secondary dropdown-toggle btn-smaller" 
+      type="button" 
+      data-bs-toggle="dropdown" 
+      aria-expanded="false"
+      title="Filter"
+    >
+      <i class="fas fa-filter"></i>
+    </button>
+    <div 
+      class="dropdown-menu p-3" 
+      style="min-width: 200px; background-color: #4C4E52;"
+    >
+      <!-- City Filter -->
+      <div class="mb-2">
+        <label for="cityFilter" style="color:#fff; font-size:12px; font-weight:bold;">City/County:</label>
+        <select class="form-select city-filter" id="cityFilter" onchange="filterImages()">
+          <option value="">All</option>
+          <!-- Dynamic city options -->
+        </select>
+      </div>
+      <!-- Region Filter -->
+      <div class="mb-2">
+        <label for="regionFilter" style="color:#fff; font-size:12px; font-weight:bold;">Region:</label>
+        <select class="form-select regions-filter" id="regionFilter" onchange="regionChanged()">
+          <option value="">Regions</option>
+          <!-- Dynamic region options -->
+        </select>
+      </div>
+      <!-- Search -->
+      <div class="mb-2">
+        <label for="cameraSearch" style="color:#fff; font-size:12px; font-weight:bold;">Search:</label>
+        <input
+          type="text"
+          id="cameraSearch"
+          oninput="filterImages()"
+          placeholder="Search by Name"
+        />
+      </div>
+      <!-- ITS Only Toggle -->
+      <div class="form-check mb-2">
+        <input
+          class="form-check-input"
+          type="checkbox"
+          id="itsOnly"
+          onclick="toggleITSOnly()"
+          autocomplete="off"
+        />
+        <label class="form-check-label" for="itsOnly" style="color:#fff; font-size:12px;">
+          Exclude RWIS
+        </label>
+      </div>
+    </div>
+  </div>
+
+  <!-- Curated Routes Dropdown (no label; default option is "All Routes", width set to auto) -->
+  <div style="display:inline-block; margin-right: 10px; vertical-align: top;">
+    <select id="routeFilter" class="camera-count" style="width:auto;" onchange="filterImages()">
+      <!-- Options will be populated via JavaScript -->
+    </select>
+  </div>
+
+  <!-- Slider to control image size -->
+  <div class="slider-container" style="display: inline-block; margin-right: 10px;">
+    <label for="imageSizeRange" style="color:#fff; font-weight:bold;">Size:</label>
+    <input
+      type="range"
+      id="imageSizeRange"
+      min="25"
+      max="370"
+      value="120"
+      step="1"
+      oninput="changeImageSize(this.value)"
+    />
+  </div>
+
+  <!-- Image Gallery -->
+  <div class="container-fluid">
+    <div id="imageGallery" class="container-fluid">
+      <!-- Images dynamically added here -->
+    </div>
+  </div>
+
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0">
+        <div class="modal-header">
+          <h5 class="modal-title" id="imageModalLabel"></h5>
+        </div>
+        <div class="modal-body p-0">
+          <div class="modal-aspect-ratio">
+            <img src="" id="modalImage" alt="imageModalLabel" />
+          </div>
+        </div>
+        <div class="modal-footer d-flex flex-column">
+          <div id="thumbnailContainer"></div>
+          <div class="btn-group mt-2">  
+            <button
+              type="button"
+              class="btn btn-success btn-animated btn-transparent-green btn-smaller dropdown-toggle"
+              data-bs-toggle="dropdown"
+              aria-haspopup="true"
+              aria-expanded="false"
+            >
+              Links
+            </button>
+            <div class="dropdown-menu">
+              <a class="dropdown-item" href="#" onclick="openGoogleMaps()">
+                <i class="fas fa-map-marker-alt"></i> Open Google Maps
+              </a>
+              <a class="dropdown-item" href="#" onclick="openUdotTraffic()">
+                <i class="fas fa-road"></i> Open UDOT Traffic
+              </a>      
+            </div>
+          <div class="d-flex mt-2">
+            <button
+              type="button"
+              class="btn btn-secondary btn-animated btn-orange me-1"
+              onclick="showPreviousImage()"
+            >
+              <i class="fas fa-arrow-left"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary btn-animated btn-orange me-1"
+              onclick="showNextImage()"
+            >
+              <i class="fas fa-arrow-right"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-secondary btn-animated btn-orange me-1"
+              onclick="openImageInNewTab()"
+              title="Open image in new tab"
+            >
+              <i class="fas fa-expand"></i>
+            </button>
+            <button
+              type="button"
+              class="btn btn-danger btn-animated"
+              data-bs-dismiss="modal"
+            >
+              <i class="fas fa-times"></i>
+            </button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- JS -->
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+  <script>
+    // Sample JSON
+    const jsonResponse = JSON.stringify({
+      "CamerasList": 
+[{"Id":8419,"Source":"ADX","Roadway":"I-215","Direction":"North","Latitude":40.64836,"Longitude":-111.80766,"Location":"I-215 E NB @ 5650 S / MP 5.59, HDY","Views":[{"Id":8419,"Url":"https://www.udottraffic.utah.gov/map/Cctv/8419","Status":"Enabled","Description":"I-215 E NB @ 5650 S / MP 5.59, HDY"}]},{"Id":8420,"Source":"ADX","Roadway":"I-215","Direction":"North","Latitude":40.63451,"Longitude":-111.81117,"Location":"I-215 E NB @ 6400 S / MP 6.56, CWH","Views":[{"Id":8420,"Url":"https://www.udottraffic.utah.gov/map/Cctv/8420","Status":"Enabled","Description":"I-215 E NB @ 6400 S / MP 6.56, CWH"}]},{"Id":8421,"Source":"ADX","Roadway":"I-215","Direction":"West","Latitude":40.63472,"Longitude":-111.82453,"Location":"I-215 S WB @ 2300 E / MP 7.25, HDY","Views":[{"Id":8421,"Url":"https://www.udottraffic.utah.gov/map/Cctv/8421","Status":"Enabled","Description":"I-215 S WB @ 2300 E / MP 7.25, HDY"}]},{"Id":8422,"Source":"ADX","Roadway":"Unknown","Direction":"East","Latitude":40.63153,"Longitude":-111.88975,"Location":"I-215 S EB @ State St / US-89 / MP 10.66, MUR","Views":[{"Id":8422,"Url":"https://www.udottraffic.utah.gov/map/Cctv/8422","Status":"Enabled","Description":"I-215 S EB @ State St / US-89 / MP 10.66, MUR"}]},{"Id":8423,"Source":"ADX","Roadway":"I-215","Direction":"East","Latitude":40.63763,"Longitude":-111.92103,"Location":"I-215 S EB @ 1200 W / Murray Pkwy Ave / MP 12.34, MUR","Views":[{"Id":8423,"Url":"https://www.udottraffic.utah.gov/map/Cctv/8423","Status":"Enabled","Description":"I-215 S EB @ 1200 W / Murray Pkwy Ave / MP 12.34, MUR"}]},{"Id":8424,"Source":"ADX","Roadway":"I-215","Direction":"West","Latitude":40.64432,"Longitude":-111.92868,"Location":"I-215 S WB @ 1300 W / MP 12.9, MUR","Views":[{"Id":8424,"Url":"https://www.udottraffic.utah.gov/map/Cctv/8424","Status":"Enabled","Description":"I-215 S WB @ 1300 W / MP 12.9, MUR"}]},{"Id":8425,"Source":"ADX","Roadway":"I-215","Direction":"West","Latitude":40.64504,"Longitude":-111.93948,"Location":"I-215 S WB @ Redwood Rd / SR-68 / MP 13.5, TAY","Views":[{"Id":8425,"Url":"https://www.udottraffic.utah.gov/map/Cctv/8425","Status":"Enabled","Description":"I-215 S WB @ Redwood Rd / SR-68 / MP 13.5, TAY"}]}]
+    });
+    
+    // Filter out cameras with both Latitude and Longitude equal to 0.0
+    const camerasList = JSON.parse(jsonResponse).CamerasList.filter(camera => !(camera.Latitude === 0.0 && camera.Longitude === 0.0));
+    const galleryContainer = document.getElementById("imageGallery");
+    const modalImage = document.getElementById("modalImage");
+    const modalTitle = document.querySelector(".modal-title");
+    let currentIndex = 0;
+    let itsOnly = false;
+    
+    // Region filter data
+    const regionCities = {
+      "Region 1": ["AMG","BRV","BTF","BRC","CVL","CLK","CFD","CTN","CRN","CNS","ELW","FRM","FRW","FLD","FRU","GRC","GAR","HRV","HYV","HPR","HWL","HTV","HYD","HYR","KAY","LKT","LTN","LEW","LGN","MTU","MSV","MDN","MLV","MGN","NTN","NIB","NLG","NOG","NSL","OGD","PDS","PRY","PLC","PLV","PLY","PTG","PVD","RAN","RMD","RHT","RDL","ROY","SMF","SNO","SOG","SWE","SUN","SYR","TRE","TNT","UIN","VAL","WTE","WVL","WBN","WHV","WPT","WIL","WDF","WXS","BE","CA","RI","WB","MN","DA"],
+      "Region 2": ["ALT","BLF","CNR","CLV","CWH","CWW","DPR","DUG","EMC","ERD","FRA","GNT","GVL","HFR","HRR","HDY","KMS","KRN","LKP","MAG","MDV","MCK","MTO","MUR","OKY","OPH","OQR","PKC","RVT","RVY","SLC","SND","SJO","SSL","STP","STO","TAY","TLE","UNI","VRN","WEN","WJD","WVC","WHC","SU","SL","TE"],
+      "Region 3": ["ALP","ALM","AFK","BAL","CDF","CDH","CHR","DAN","DCH","EAG","ELK","EUR","FRF","FTD","GEN","GOS","HBR","HLD","KTY","LHI","LVN","LDN","MAE","MNL","MPL","MWY","MNA","MYT","NPL","NEO","NPH","ORM","PSN","PLG","PVO","RDT","RKR","RSV","STQ","SSP","SOL","SPF","SPV","TAB","THI","VNL","VIN","WBG","WRK","WLH","JU","UT","WA","DU","UN","DG"],
+      "Region 4": ["ALN","ANB","ANT","APV","ARA","BVR","BRL","BKL","BGW","BLA","BMT","BLD","BHD","BCC","CNV","CDL","CVY","CDC","CNF","CEV","CRV","CLW","CVD","DLT","ECB","EMO","ELS","EMR","ENO","ENT","EPH","ESC","FRV","FAY","FRN","FIL","FOU","GDL","GWD","GRR","GUN","HKV","HAT","HLP","HNV","HIA","HDL","HKY","HDN","HTN","HRC","IVN","JSP","JCT","KNB","KRV","KSH","KNG","KOO","LVR","LMT","LED","LOA","LUN","LYM","LDL","MTI","MRV","MAY","MDW","MXH","MFD","MRV","MAB","MRO","MZC","MNC","MRN","MCR","MCJ","MTP","NCL","NHR","OAC","OGV","ODV","PNG","PGH","PWN","PRC","RED","RFD","RKV","SLA","SCL","SCP","SCO","SIG","SPC","SDL","STG","STE","SMT","SNY","TOQ","TOR","TRO","VEY","VRG","WAL","WAS","WTN","MD","SJ","CC","GR","EM","SE","BV","PT","SJ","RN","GA","WN","KN","WE","SP"]
+    };
+    
+    // Mapping of city abbreviations to full names
+    const cityFullNames = {
+      "ALP": "Alpine",
+      "ALT": "Alta",
+      "ALM": "Altamont",
+      "ALN": "Alton",
+      "AMG": "Amalga",
+      "AFK": "American Fork",
+      "ANB": "Annabella",
+      "ANT": "Antimony",
+      "APV": "Apple Valley",
+      "ARA": "Aurora",
+      "BAL": "Ballard",
+      "BRV": "Bear River",
+      "BVR": "Beaver",
+      "BRL": "Beryl",
+      "BKL": "Bicknell",
+      "BGW": "Big Water",
+      "BLA": "Blanding",
+      "BMT": "Bloomington",
+      "BLF": "Bluffdale",
+      "BLD": "Boulder",
+      "BTF": "Bountiful",
+      "BTN": "Brighton",
+      "BHD": "Brian Head",
+      "BRC": "Brigham City",
+      "BCC": "Bryce Canyon City",
+      "CNV": "Cannonville",
+      "CNR": "Canyon Rim",
+      "CDL": "Castle Dale",
+      "CVY": "Castle Valley",
+      "CDC": "GA",
+      "CDF": "Cedar Fort",
+      "CDH": "Cedar Hills",
+      "CNF": "Centerfield",
+      "CVL": "Centerville",
+      "CEV": "Central Valley",
+      "CHR": "Charleston",
+      "CRV": "Circleville",
+      "CLK": "Clarkston",
+      "CLW": "Clawson",
+      "CFD": "Clearfield",
+      "CVD": "Cleveland",
+      "CTN": "Clinton",
+      "CLV": "Coalville",
+      "CRN": "Corinne",
+      "CNS": "Cornish",
+      "CWH": "Cottonwood Heights",
+      "CWW": "Cottonwood West",
+      "DAN": "Daniel",
+      "DLT": "Delta",
+      "DEW": "Deweyville",
+      "DPR": "Draper",
+      "DCH": "Duchesne",
+      "DUG": "Dugway",
+      "EAG": "Eagle Mountain",
+      "ECB": "East Carbon",
+      "EMC": "East Millcreek",
+      "ELK": "Elk Ridge",
+      "EMO": "Elmo",
+      "ELS": "Elsinore",
+      "ELW": "Elwood",
+      "EMR": "Emery",
+      "ENO": "Enoch",
+      "ENT": "Enterprise",
+      "EPH": "Ephraim",
+      "ERD": "Erda",
+      "ESC": "Escalante",
+      "EUR": "Eureka",
+      "FRF": "Fairfield",
+      "FRV": "Fairview",
+      "FRM": "Farmington",
+      "FRW": "Farr West",
+      "FAY": "Fayette",
+      "FRN": "Ferron",
+      "FLD": "Fielding",
+      "FIL": "Fillmore",
+      "FTD": "Fort Duchesne",
+      "FOU": "Fountain Green",
+      "FRA": "Francis",
+      "FRU": "Fruit Heights",
+      "GRC": "Garden City",
+      "GAR": "Garland",
+      "GEN": "Genola",
+      "GDL": "Glendale",
+      "GWD": "Glenwood",
+      "GOS": "Goshen",
+      "GNT": "Granite",
+      "GVL": "Grantsville",
+      "GRR": "Green River",
+      "GUN": "Gunnison",
+      "HKV": "Hanksville",
+      "HRV": "Harrisville",
+      "HAT": "Hatch",
+      "HBR": "Heber City",
+      "HLP": "Helper",
+      "HFR": "Henefer",
+      "HNV": "Henrieville",
+      "HRR": "Herriman",
+      "HIA": "Hiawatha",
+      "HLD": "Highland",
+      "HDL": "Hildale",
+      "HKY": "Hinckley",
+      "HDN": "Holden",
+      "HDY": "Holladay",
+      "HYV": "Honeyville",
+      "HPR": "Hooper",
+      "HWL": "Howell",
+      "HTN": "Huntington",
+      "HTV": "Huntsville",
+      "HRC": "Hurricane",
+      "HYD": "Hyde Park",
+      "HYR": "Hyrum",
+      "IVN": "Ivins",
+      "JSP": "Joseph",
+      "JCT": "Junction",
+      "KMS": "Kamas",
+      "KNB": "Kanab",
+      "KRV": "Kanarraville",
+      "KSH": "Kanosh",
+      "KAY": "Kaysville",
+      "KRN": "Kearns",
+      "KTY": "Keetley",
+      "KNG": "Kingston",
+      "KOO": "Koosharem",
+      "LVR": "La Verkin",
+      "LKP": "Lake Point",
+      "LKT": "Laketown",
+      "LTN": "Layton",
+      "LMT": "Leamington",
+      "LED": "Leeds",
+      "LHI": "Lehi",
+      "LVN": "Levan",
+      "LEW": "Lewiston",
+      "LDN": "Lindon",
+      "LOA": "Loa",
+      "LGN": "Logan",
+      "LUN": "Lund",
+      "LYM": "Lyman",
+      "LDL": "Lynndyl",
+      "MAE": "Maeser",
+      "MAG": "Magna",
+      "MNL": "Manila",
+      "MTI": "Manti",
+      "MTU": "Mantua",
+      "MPL": "Mapleton",
+      "MSV": "Marriott-Slaterville",
+      "MRV": "Marysvale",
+      "MAY": "Mayfield",
+      "MDW": "Meadow",
+      "MDN": "Mendon",
+      "MXH": "Mexican Hat",
+      "MDV": "Midvale",
+      "MWY": "Midway",
+      "MFD": "Milford",
+      "MCK": "Millcreek",
+      "MLV": "Millville",
+      "MAB": "Moab",
+      "MNA": "Mona",
+      "MRO": "Monroe",
+      "MZC": "Montezuma Creek",
+      "MNC": "Monticello",
+      "MGN": "Morgan",
+      "MRN": "Moroni",
+      "MCR": "Mt. Carmel",
+      "MCJ": "Mt. Carmel Junction",
+      "MTO": "Mt. Olympus",
+      "MTP": "Mt. Pleasant",
+      "MUR": "Murray",
+      "MYT": "Myton",
+      "NPL": "Naples",
+      "NEO": "Neola",
+      "NPH": "Nephi",
+      "NCL": "New Castle",
+      "NHR": "New Harmony",
+      "NTN": "Newton",
+      "NIB": "Nibley",
+      "NLG": "North Logan",
+      "NOG": "North Ogden",
+      "NSL": "North Salt Lake",
+      "OAC": "Oak City",
+      "OKY": "Oakley",
+      "OGD": "Ogden",
+      "OPH": "Ophir",
+      "OQR": "Oquirrh",
+      "OGV": "Orangeville",
+      "ODV": "Orderville",
+      "ORM": "Orem",
+      "PNG": "Panguitch",
+      "PDS": "Paradise",
+      "PGH": "Paragonah",
+      "PKC": "Park City",
+      "PWN": "Parowan",
+      "PSN": "Payson",
+      "PRY": "Perry",
+      "PLC": "Plain City",
+      "PLG": "Pleasant Grove",
+      "PLV": "Pleasant View",
+      "PLY": "Plymouth",
+      "PTG": "Portage",
+      "PRC": "Price",
+      "PVD": "Providence",
+      "PVO": "Provo",
+      "RDT": "Randlett",
+      "RAN": "Randolph",
+      "RED": "Redmond",
+      "RFD": "Richfield",
+      "RMD": "Richmond",
+      "RHT": "River Heights",
+      "RDL": "Riverdale",
+      "RVT": "Riverton",
+      "RKV": "Rockville",
+      "RKR": "Rocky Ridge",
+      "RSV": "Roosevelt",
+      "ROY": "Roy",
+      "RVY": "Rush Valley",
+      "SLM": "Salem",
+      "SLA": "Salina",
+      "SLC": "Salt Lake City",
+      "SND": "Sandy",
+      "SCL": "Santa Clara",
+      "STQ": "Santaquin",
+      "SSP": "Saratoga Springs",
+      "SCP": "Scipio",
+      "SCO": "Scofield",
+      "SIG": "Sigurd",
+      "SMF": "Smithfield",
+      "SNO": "Snowville",
+      "SOL": "Soldier Summit",
+      "SJO": "South Jordan",
+      "SOG": "South Ogden",
+      "SSL": "South Salt Lake",
+      "SWE": "South Weber",
+      "SPF": "Spanish Fork",
+      "SPC": "Spring City",
+      "SDL": "Springdale",
+      "SPV": "Springville",
+      "STG": "St. George",
+      "STP": "Stansbury Park",
+      "STE": "Sterling",
+      "STO": "Stockton",
+      "SMT": "Summit",
+      "SNY": "Sunnyside",
+      "SUN": "Sunset",
+      "SYR": "Syracuse",
+      "TAB": "Tabiona",
+      "TAY": "Taylorsville",
+      "THI": "Thistle",
+      "TLE": "Tooele",
+      "TOQ": "Toquerville",
+      "TOR": "Torrey",
+      "TRE": "Tremonton",
+      "TNT": "Trenton",
+      "TRO": "Tropic",
+      "UIN": "Uintah",
+      "UNI": "Union",
+      "VAL": "Val Verda",
+      "VNL": "Vernal",
+      "VRN": "Vernon",
+      "VEY": "Veyo",
+      "VIN": "Vineyard",
+      "VRG": "Virgin",
+      "WAL": "Wales",
+      "WBG": "Wallsburg",
+      "WAS": "Washington",
+      "WTE": "Washington Terrace",
+      "WTN": "Wellington",
+      "WVL": "Wellsville",
+      "WEN": "Wendover",
+      "WBN": "West Bountiful",
+      "WHV": "West Haven",
+      "WJD": "West Jordan",
+      "WPT": "West Point",
+      "WVC": "West Valley City",
+      "WHC": "White City",
+      "WRK": "Whiterocks",
+      "WIL": "Willard",
+      "WLH": "Woodland Hills",
+      "WDF": "Woodruff",
+      "WXS": "Woods Cross",
+      "UT": "Utah",
+      "SL": "Salt Lake",
+      "DU": "Duchesne",
+      "KN": "Kane",
+      "CA": "Cache",
+      "CC": "Carbon",
+      "SE": "Sevier",
+      "UN": "Uintah",
+      "BE": "Box Elder",
+      "BV": "Beaver",
+      "RN": "Iron",
+      "WE": "Wayne",
+      "SJ": "San Juan",
+      "WN": "Washington",
+      "DA": "Davis",
+      "PT": "Piute",
+      "EM": "Emery",
+      "GR": "Grand",
+      "WA": "Wasatch",
+      "MD": "Millard",
+      "JU": "Juab",
+      "DG": "Daggett",
+      "GA": "Garfield",
+      "MN": "Morgan",
+      "RI": "Rich",
+      "SP": "Sanpete",
+      "SU": "Summitt",
+      "TE": "Tooele",
+      "WB": "Weber"
+    };
+    
+    // Curated Routes data (you can add more as needed)
+    const curatedRoutes = [
+      {
+        name: "Big Cottonwood Cyn",
+         locations: [
+          "Wasatch Blvd / SR-190/SR-210 @ Big Cottonwood Canyon Rd / Fort Union Blvd / SR-190, CWH",
+          "Big Cottonwood Canyon Rd / SR-190 @ Dogwood / MP 4.1, SL",
+          "Big Cottonwood Canyon Rd / SR-190 @ S-Curves / MP 6.38, SL",
+          "Big Cottonwood Canyon Rd / SR-190 @ Butler / MP 10, SL",
+          "Big Cottonwood Canyon Rd / SR-190 @ Cardiff Fork / MP 10.74, SL",
+          "Big Cottonwood Canyon Rd / SR-190 @ Silver Fork / MP 12.54, SL",
+          "Big Cottonwood Canyon Rd / SR-190 @ Solitude / MP 14.53, SL",
+          "Big Cottonwood Canyon Rd / SR-190 @ Brighton / MP 16.07, BTN"
+    ]
+      },
+      {
+        name: "North Side",
+        locations: [
+          "500 W / US-89 @ Center St / SR-114, PVO",
+          "Redwood Rd / SR-68 @ 3100 S, WVC",
+          "State St / US-89 @ 4500 S / SR-266, MUR",
+          "Bangerter Hwy / SR-154 @ 3100 S, WVC"
+        ]
+      }
+    ];
+    // Set default route value ("All" or change to a curated route name)
+    const defaultRoute = "All";
+    
+    // Populate the curated Routes dropdown options
+    function updateRouteOptions() {
+      const routeFilterDropdown = document.getElementById("routeFilter");
+      routeFilterDropdown.innerHTML = '<option value="All">All Routes</option>';
+      curatedRoutes.forEach((route) => {
+        const option = document.createElement("option");
+        option.value = route.name;
+        option.textContent = route.name;
+        routeFilterDropdown.appendChild(option);
+      });
+      // Set the default route
+      routeFilterDropdown.value = defaultRoute;
+    }
+    updateRouteOptions();
+    
+    const cities = camerasList.map((camera) =>
+      camera.Location.split(",").pop().trim()
+    );
+    const uniqueCities = [...new Set(cities.filter((city) => city.length <= 4))];
+    
+    // Populate Region Filter options
+    const regionFilterDropdown = document.getElementById("regionFilter");
+    Object.keys(regionCities).forEach((region) => {
+      const option = document.createElement("option");
+      option.value = region;
+      option.textContent = region;
+      regionFilterDropdown.appendChild(option);
+    });
+    regionFilterDropdown.value = "";
+    
+    function updateCityOptions() {
+      const regionValue = regionFilterDropdown.value;
+      let filteredCities = uniqueCities;
+      if (regionValue !== "" && regionCities[regionValue]) {
+        const citiesInRegion = regionCities[regionValue];
+        filteredCities = uniqueCities.filter(city => citiesInRegion.includes(city));
+      }
+      const cityFilterDropdown = document.getElementById("cityFilter");
+      cityFilterDropdown.innerHTML = '<option value="">All</option>';
+      filteredCities.sort();
+      filteredCities.forEach((city) => {
+        const option = document.createElement("option");
+        option.value = city;
+        const fullName = cityFullNames[city] || "";
+        option.textContent = fullName ? `${city} (${fullName})` : city;
+        cityFilterDropdown.appendChild(option);
+      });
+    }
+    
+    function regionChanged() {
+      updateCityOptions();
+      filterImages();
+    }
+    
+    updateCityOptions();
+    
+    function toggleITSOnly() {
+      itsOnly = !itsOnly;
+      filterImages();
+    }
+    
+    function filterImages() {
+      const selectedCity = document.getElementById("cityFilter").value;
+      const selectedRegion = document.getElementById("regionFilter").value;
+      const searchValue = document.getElementById("cameraSearch").value.toLowerCase();
+      const selectedRoute = document.getElementById("routeFilter").value || "All";
+      const images = document.querySelectorAll(".col");
+    
+      images.forEach((image, index) => {
+        const camera = camerasList[index];
+        const city = camera.Location.split(",").pop().trim();
+        const matchesCity = selectedCity === "" || city === selectedCity;
+        const matchesRegion = selectedRegion === "" || regionCities[selectedRegion].includes(city);
+        const matchesSearch = camera.Location.toLowerCase().includes(searchValue);
+        const description = camera.Views[0].Description.toLowerCase();
+        const matchesITSOnly = !itsOnly || !description.includes("rwis");
+        let routeMatches = true;
+        if (selectedRoute !== "All") {
+          const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
+          if (routeObj) {
+            routeMatches = routeObj.locations.includes(camera.Location);
+          }
+        }
+        image.style.display = (matchesCity && matchesRegion && matchesSearch && matchesITSOnly && routeMatches) ? "block" : "none";
+      });
+    
+      // Update loading priority: visible images load eagerly, others lazily
+      document.querySelectorAll("#imageGallery img").forEach(img => {
+         const col = img.closest(".col");
+         if (col && col.style.display !== "none") {
+             img.loading = "eager";
+         } else {
+             img.loading = "lazy";
+         }
+      });
+    
+      updateCameraCount();
+      currentIndex = 0;
+    }
+    
+    function createImageElements() {
+      galleryContainer.innerHTML = "";
+      camerasList.forEach((camera, index) => {
+        const col = document.createElement("div");
+        col.classList.add("col");
+    
+        const aspectBox = document.createElement("div");
+        aspectBox.classList.add("aspect-ratio-box");
+    
+        const anchor = document.createElement("a");
+        anchor.href = "#";
+        anchor.setAttribute("data-bs-toggle", "modal");
+        anchor.setAttribute("data-bs-target", "#imageModal");
+        anchor.addEventListener("click", () => showImage(index));
+    
+        const image = document.createElement("img");
+        // Initially, images load lazily
+        image.setAttribute("loading", "lazy");
+        image.src = camera.Views[0].Url;
+        image.alt = camera.Location;
+    
+        anchor.appendChild(image);
+        aspectBox.appendChild(anchor);
+        col.appendChild(aspectBox);
+        galleryContainer.appendChild(col);
+      });
+    }
+    
+    createImageElements();
+    
+    function updateCameraCount() {
+      const selectedCity = document.getElementById("cityFilter").value;
+      const selectedRegion = document.getElementById("regionFilter").value;
+      const searchValue = document.getElementById("cameraSearch").value.toLowerCase();
+      const selectedRoute = document.getElementById("routeFilter").value || "All";
+    
+      const filteredCameras = camerasList.filter((camera) => {
+        const city = camera.Location.split(",").pop().trim();
+        const matchesCity = selectedCity === "" || city === selectedCity;
+        const matchesRegion = selectedRegion === "" || regionCities[selectedRegion].includes(city);
+        const matchesSearch = camera.Location.toLowerCase().includes(searchValue);
+        const description = camera.Views[0].Description.toLowerCase();
+        const matchesITSOnly = !itsOnly || !description.includes("rwis");
+        let routeMatches = true;
+        if (selectedRoute !== "All") {
+          const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
+          if (routeObj) {
+            routeMatches = routeObj.locations.includes(camera.Location);
+          }
+        }
+        return matchesCity && matchesRegion && matchesSearch && matchesITSOnly && routeMatches;
+      });
+    
+      const cameraCountElement = document.getElementById("cameraCount");
+      cameraCountElement.textContent = `${filteredCameras.length}`;
+      cameraCountElement.style.display = "inline-block";
+    }
+    
+    filterImages();
+    
+    function getVisibleImageIndices() {
+      const cols = Array.from(document.querySelectorAll("#imageGallery .col"));
+      return cols.reduce((indices, col, idx) => {
+        if (col.style.display !== "none") {
+          indices.push(idx);
+        }
+        return indices;
+      }, []);
+    }
+    
+    function showImage(index) {
+      const prevSelected = document.querySelector(".aspect-ratio-box.selected");
+      if (prevSelected) {
+        prevSelected.classList.remove("selected");
+      }
+    
+      currentIndex = index;
+      const camera = camerasList[index];
+      modalImage.src = camera.Views[0].Url;
+      modalTitle.textContent = camera.Location;
+    
+      const newSelectedBox = galleryContainer.children[currentIndex].querySelector(".aspect-ratio-box");
+      newSelectedBox.classList.add("selected");
+    
+      buildCarousel();
+    }
+    
+    function buildCarousel() {
+      const thumbnailContainer = document.getElementById("thumbnailContainer");
+      thumbnailContainer.innerHTML = "";
+      const visibleImages = getVisibleImageIndices();
+    
+      visibleImages.forEach((camIdx) => {
+        const camera = camerasList[camIdx];
+        const thumbImg = document.createElement("img");
+        thumbImg.setAttribute("loading", "lazy");
+        thumbImg.src = camera.Views[0].Url;
+        // Force a uniform thumbnail height (70px) while keeping aspect ratio:
+        thumbImg.style.height = "70px";
+        thumbImg.style.width = "auto";
+        thumbImg.style.objectFit = "contain";
+        thumbImg.style.border = "2px solid transparent";
+        thumbImg.style.borderRadius = "4px";
+        thumbImg.style.cursor = "pointer";
+        // Disable dragging to improve desktop scrolling
+        thumbImg.setAttribute("draggable", "false");
+        thumbImg.style.userSelect = "none";
+    
+        if (camIdx === currentIndex) {
+          thumbImg.style.border = "2px solid orange";
+        }
+    
+        thumbImg.addEventListener("click", () => {
+          showImage(camIdx);
+        });
+    
+        thumbnailContainer.appendChild(thumbImg);
+      });
+    
+      scrollThumbnailIntoView();
+    }
+    
+    function scrollThumbnailIntoView() {
+      const thumbnailContainer = document.getElementById("thumbnailContainer");
+      const thumbs = Array.from(thumbnailContainer.children);
+      const targetThumb = thumbs.find((thumb) => thumb.style.border.includes("orange"));
+      if (!targetThumb) return;
+    
+      const containerRect = thumbnailContainer.getBoundingClientRect();
+      const thumbRect = targetThumb.getBoundingClientRect();
+      const offset = (thumbRect.left - containerRect.left)
+        - (containerRect.width / 2)
+        + (thumbRect.width / 2);
+    
+      thumbnailContainer.scrollBy({
+        left: offset,
+        behavior: "smooth"
+      });
+    }
+    
+    (function enableDragForThumbnails() {
+      const thumbnailContainer = document.getElementById("thumbnailContainer");
+      let isDown = false;
+      let startX, scrollLeft;
+    
+      thumbnailContainer.addEventListener('mousedown', (e) => {
+        isDown = true;
+        startX = e.pageX - thumbnailContainer.offsetLeft;
+        scrollLeft = thumbnailContainer.scrollLeft;
+      });
+      thumbnailContainer.addEventListener('mouseleave', () => {
+        isDown = false;
+      });
+      thumbnailContainer.addEventListener('mouseup', () => {
+        isDown = false;
+      });
+      thumbnailContainer.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - thumbnailContainer.offsetLeft;
+        const walk = x - startX;
+        thumbnailContainer.scrollLeft = scrollLeft - walk;
+      });
+    
+      thumbnailContainer.addEventListener('touchstart', (e) => {
+        isDown = true;
+        const touch = e.touches[0];
+        startX = touch.pageX - thumbnailContainer.offsetLeft;
+        scrollLeft = thumbnailContainer.scrollLeft;
+      });
+      thumbnailContainer.addEventListener('touchend', () => {
+        isDown = false;
+      });
+      thumbnailContainer.addEventListener('touchmove', (e) => {
+        if (!isDown) return;
+        const touch = e.touches[0];
+        const x = touch.pageX - thumbnailContainer.offsetLeft;
+        const walk = x - startX;
+        thumbnailContainer.scrollLeft = scrollLeft - walk;
+      });
+    
+      thumbnailContainer.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        thumbnailContainer.scrollLeft += e.deltaY;
+      }, { passive: false });
+    })();
+    
+    function showNextImage() {
+      const visibleImages = getVisibleImageIndices();
+      if (visibleImages.length === 0) return;
+    
+      const currentVisibleIndex = visibleImages.indexOf(currentIndex);
+      if (currentVisibleIndex === -1) return;
+    
+      const nextIndex = (currentVisibleIndex + 1) % visibleImages.length;
+      const nextCameraIndex = visibleImages[nextIndex];
+      showImage(nextCameraIndex);
+    }
+    
+    function showPreviousImage() {
+      const visibleImages = getVisibleImageIndices();
+      if (visibleImages.length === 0) return;
+    
+      const currentVisibleIndex = visibleImages.indexOf(currentIndex);
+      if (currentVisibleIndex === -1) return;
+    
+      const prevIndex =
+        (currentVisibleIndex - 1 + visibleImages.length) % visibleImages.length;
+      const prevCameraIndex = visibleImages[prevIndex];
+      showImage(prevCameraIndex);
+    }
+    
+    function openUdotTraffic() {
+      const cameraId = camerasList[currentIndex].Id;
+      const UdotTrafficUrl = `https://www.udottraffic.utah.gov/map/#camera-${cameraId}`;
+      window.open(UdotTrafficUrl, "_blank");
+    }
+    
+    function openGoogleMaps() {
+      const camera = camerasList[currentIndex];
+      const latitude = camera.Latitude;
+      const longitude = camera.Longitude;
+      const googleMapsUrl = `https://www.google.com/maps?q=${latitude},${longitude}`;
+      window.open(googleMapsUrl, "_blank");
+    }
+    
+    function openImageInNewTab() {
+      window.open(modalImage.src, "_blank");
+    }
+    
+    function showNotification(message) {
+      const notification = document.createElement("div");
+      notification.className = "notification";
+      notification.textContent = message;
+      document.body.appendChild(notification);
+      setTimeout(() => {
+        document.body.removeChild(notification);
+      }, 3000);
+    }
+    
+    // Updated changeImageSize function using auto-fit and minmax:
+    function changeImageSize(minWidth) {
+      const container = document.getElementById("imageGallery");
+      container.style.gridTemplateColumns = `repeat(auto-fit, minmax(${minWidth}px, 1fr))`;
+    }
+    
+    // On load, set the grid cell width to the slider's default value (now 120)
+    changeImageSize(document.getElementById("imageSizeRange").value);
+    
+    document.addEventListener("keydown", (event) => {
+      const modalIsOpen = document.querySelector("#imageModal.show");
+      if (!modalIsOpen) return;
+    
+      if (event.key === "ArrowLeft") {
+        showPreviousImage();
+      } else if (event.key === "ArrowRight") {
+        showNextImage();
+      } else if (event.key === "Escape") {
+        const modal = bootstrap.Modal.getInstance(document.getElementById("imageModal"));
+        if (modal) modal.hide();
+      }
+    });
+    
+    var imageModalEl = document.getElementById('imageModal');
+    imageModalEl.addEventListener('shown.bs.modal', function () {
+      scrollThumbnailIntoView();
+    });
+  </script>
+</body>
+</html>
