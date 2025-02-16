@@ -1,6 +1,6 @@
 {
-  "short_name": "MyPWA",
-  "name": "My Progressive Web App",
+  "short_name": "udotcameras.com",
+  "name": "UDOT Cameras",
   "start_url": "./",
   "display": "standalone",
   "background_color": "#4C4E52",
