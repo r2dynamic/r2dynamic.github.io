@@ -1,12 +1,12 @@
 /* Base styles */
 body {
+  background-color: #4C4E52;
   margin: 0;
   padding: 0;
   font-family: Arial, sans-serif;
-  background-color: #4C4E52;
 }
 
-/* Ensure splash covers the viewport */
+/* SPLASH SCREEN STYLES */
 #splash {
   position: fixed;
   top: 0;
@@ -18,31 +18,31 @@ body {
   background: #000;
 }
 
-/* Video styles for large screens */
 #splash video {
   position: absolute;
   top: 50%;
   left: 50%;
-  width: 100%;
-  height: 100%;
+  min-width: 100%;
+  min-height: 100%;
+  width: auto;
+  height: auto;
   transform: translate(-50%, -50%);
   object-fit: cover;
 }
 
-/* On mobile (or small screens in portrait), use 'contain' so the video is not too zoomed in */
+/* On small screens, adjust object-fit to contain */
 @media (max-width: 576px) {
   #splash video {
     object-fit: contain;
   }
 }
 
-
 #splashOverlay {
   position: absolute;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: 100vh;
   z-index: 10;
   display: flex;
   flex-direction: column;
@@ -50,7 +50,7 @@ body {
   justify-content: center;
 }
 
-/* BUTTON STYLES */
+/* BUTTON STYLE (as provided) */
 .button {
   display: inline-block;
   padding: 15px 27px;
@@ -65,8 +65,9 @@ body {
   border-radius: 15px;
   box-shadow: 0 9px hsla(0, 0%, 61%, 0.8);
   font-weight: bold;
+  flex-wrap: wrap;
   font-family: "Lucida Console", "Courier New", monospace;
-  margin-top: 20px;
+  margin-top: 100px;
 }
 .button span {
   cursor: pointer;
@@ -89,13 +90,14 @@ body {
   opacity: 1;
   right: 0;
 }
+.button:hover {background-color: #3e8e41;}
 .button:active {
   background-color: #3e8e41;
   box-shadow: 0 5px #666;
   transform: translateY(8px);
 }
 
-/* HEADER CONTROLS */
+/* HEADER CONTROLS (Original styles) */
 .header-controls {
   position: sticky;
   top: 0;
@@ -109,7 +111,7 @@ body {
   flex-wrap: nowrap;
 }
 
-/* GALLERY STYLES */
+/* GALLERY STYLES (Original) */
 #imageGallery {
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(30px, 1fr));
@@ -122,7 +124,7 @@ body {
 .aspect-ratio-box {
   width: 100%;
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 ratio */
+  padding-bottom: 56.25%;
   overflow: hidden;
   background: #ccc;
 }
@@ -140,4 +142,4 @@ body {
 .aspect-ratio-box:hover img { transform: scale(1.05); }
 .aspect-ratio-box:active img { transform: scale(1.02); }
 
-/* Additional styles for inputs, modals, etc., can remain as before */
+/* Additional styles for inputs, modals, etc. can remain as in your original CSS */
