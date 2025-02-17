@@ -980,17 +980,20 @@
     }
     
 function scrollThumbnailIntoView() {
-  const thumbnailContainer = document.getElementById("thumbnailContainer");
-  const thumbs = Array.from(thumbnailContainer.children);
-  const targetThumb = thumbs.find((thumb) => thumb.style.border.includes("orange"));
-  if (!targetThumb) return;
-  
-  const newScrollLeft = targetThumb.offsetLeft - (thumbnailContainer.clientWidth / 2) + (targetThumb.offsetWidth / 2);
-  thumbnailContainer.scrollTo({
-    left: newScrollLeft,
-    behavior: "smooth"
-  });
+  setTimeout(() => {
+    const thumbnailContainer = document.getElementById("thumbnailContainer");
+    const thumbs = Array.from(thumbnailContainer.children);
+    const targetThumb = thumbs.find((thumb) => thumb.style.border.includes("orange"));
+    if (!targetThumb) return;
+
+    const newScrollLeft = targetThumb.offsetLeft - (thumbnailContainer.clientWidth / 2) + (targetThumb.offsetWidth / 2);
+    thumbnailContainer.scrollTo({
+      left: newScrollLeft,
+      behavior: "smooth"
+    });
+  }, 150); // Delay in ms to allow mobile layout to settle
 }
+
 
     
     (function enableDragForThumbnails() {
