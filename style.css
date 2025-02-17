@@ -6,6 +6,27 @@ body {
   font-family: Arial, sans-serif;
 }
 
+/* Header Controls Container */
+.header-controls {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #4C4E52;
+  display: flex;
+  align-items: center;
+  justify-content: space-around;
+  padding: 5px 10px;
+  gap: 10px;
+  flex-wrap: nowrap;
+}
+
+/* Ensure the header remains on one row on very small screens */
+@media (max-width: 576px) {
+  .header-controls {
+    overflow-x: auto;
+  }
+}
+
 /* Button animations */
 .btn-animated:hover { transform: scale(1.1); }
 .btn-animated:active { transform: scale(0.9); }
@@ -74,7 +95,7 @@ body {
   position: relative;
   padding-bottom: 56.25%; /* 16:9 ratio */
   overflow: hidden;
- 
+
 }
 .aspect-ratio-box img {
   position: absolute;
@@ -85,10 +106,7 @@ body {
   object-fit: cover;
   border-radius: 6px;
   transition: opacity 0.5s ease-in-out, transform 0.2s ease-in-out;
-
-}
-.aspect-ratio-box img.loaded {
-  opacity: 1;
+  opacity: 1; /* Ensure images are visible immediately */
 }
 .aspect-ratio-box:hover img { transform: scale(1.05); }
 .aspect-ratio-box:active img { transform: scale(1.02); }
@@ -216,33 +234,4 @@ input[type=range]::-moz-range-thumb:active { transform: scale(1.2); }
 #routeFilter {
   width: auto !important;
   display: inline-block;
-}
-
-/* Loading spinner for images */
-.spinner {
-  border: 4px solid rgba(0,0,0,0.1);
-  border-left-color: #FFA500;
-  border-radius: 50%;
-  width: 24px;
-  height: 24px;
-  animation: spin 1s linear infinite;
-  position: absolute;
-  top: calc(50% - 12px);
-  left: calc(50% - 12px);
-}
-@keyframes spin {
-  to { transform: rotate(360deg); }
-}
-
-/* Responsive adjustments */
-@media (max-width: 576px) {
-  .slider-container, .dropdown, #routeFilter {
-    margin-bottom: 10px;
-    display: block;
-    width: 100%;
-    text-align: center;
-  }
-  input[type=range] {
-    width: 100%;
-  }
 }
