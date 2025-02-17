@@ -979,23 +979,19 @@
       scrollThumbnailIntoView();
     }
     
-    function scrollThumbnailIntoView() {
-      const thumbnailContainer = document.getElementById("thumbnailContainer");
-      const thumbs = Array.from(thumbnailContainer.children);
-      const targetThumb = thumbs.find((thumb) => thumb.style.border.includes("orange"));
-      if (!targetThumb) return;
-    
-      const containerRect = thumbnailContainer.getBoundingClientRect();
-      const thumbRect = targetThumb.getBoundingClientRect();
-      const offset = (thumbRect.left - containerRect.left)
-        - (containerRect.width / 2)
-        + (thumbRect.width / 2);
-    
-      thumbnailContainer.scrollBy({
-        left: offset,
-        behavior: "smooth"
-      });
-    }
+function scrollThumbnailIntoView() {
+  const thumbnailContainer = document.getElementById("thumbnailContainer");
+  const thumbs = Array.from(thumbnailContainer.children);
+  const targetThumb = thumbs.find((thumb) => thumb.style.border.includes("orange"));
+  if (!targetThumb) return;
+  
+  const newScrollLeft = targetThumb.offsetLeft - (thumbnailContainer.clientWidth / 2) + (targetThumb.offsetWidth / 2);
+  thumbnailContainer.scrollTo({
+    left: newScrollLeft,
+    behavior: "smooth"
+  });
+}
+
     
     (function enableDragForThumbnails() {
       const thumbnailContainer = document.getElementById("thumbnailContainer");
