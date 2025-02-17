@@ -85,7 +85,7 @@ body {
   object-fit: cover;
   border-radius: 6px;
   transition: opacity 0.5s ease-in-out, transform 0.2s ease-in-out;
-  opacity: 0;
+
 }
 .aspect-ratio-box img.loaded {
   opacity: 1;
