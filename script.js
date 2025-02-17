@@ -90,41 +90,39 @@
   let itsOnly = false;
   let debounceTimer;
 
-// --- Splash Screen Button Handlers ---
-const btnFiltered = document.getElementById("btnFiltered");
-const btnAll = document.getElementById("btnAll");
-const splash = document.getElementById("splash");
-const headerControls = document.getElementById("headerControls");
-const gallerySection = document.getElementById("gallerySection");
-
-// Handler to load a filtered view (for example, a curated route filter)
-btnFiltered.addEventListener("click", () => {
-  // Set your default filter value here if needed, for example:
-  routeFilterDropdown.value = "US-89/91 (Sardine Canyon)"; // example curated route
-  hideSplashAndLoadGallery();
-});
-
-// Handler to load all cameras
-btnAll.addEventListener("click", () => {
-  routeFilterDropdown.value = "All";
-  hideSplashAndLoadGallery();
-});
-
-// Function to hide splash and show gallery and header controls
-function hideSplashAndLoadGallery() {
-  splash.style.display = "none";
-  headerControls.style.display = "flex";
-  gallerySection.style.display = "block";
-  filterImages(); // call your filterImages function to build the gallery based on filters
-}
-
-  
   // --- Utility: Debounce Function ---
   function debounce(func, delay) {
     return function(...args) {
       clearTimeout(debounceTimer);
       debounceTimer = setTimeout(() => func.apply(this, args), delay);
     };
+  }
+
+  // --- Splash Screen Button Handlers ---
+  const btnFiltered = document.getElementById("btnFiltered");
+  const btnAll = document.getElementById("btnAll");
+  const splash = document.getElementById("splash");
+  const headerControls = document.getElementById("headerControls");
+  const gallerySection = document.getElementById("gallerySection");
+
+  // Handler to load a filtered view (for example, set route filter to a specific curated route)
+  btnFiltered.addEventListener("click", () => {
+    // Example: set to "US-89/91 (Sardine Canyon)"
+    routeFilterDropdown.value = "US-89/91 (Sardine Canyon)";
+    hideSplashAndLoadGallery();
+  });
+
+  // Handler to load all cameras
+  btnAll.addEventListener("click", () => {
+    routeFilterDropdown.value = "All";
+    hideSplashAndLoadGallery();
+  });
+
+  function hideSplashAndLoadGallery() {
+    splash.style.display = "none";
+    headerControls.style.display = "flex";
+    gallerySection.style.display = "block";
+    filterImages();
   }
 
   // --- Populate Dropdowns ---
@@ -194,7 +192,7 @@ function hideSplashAndLoadGallery() {
   });
 
   // --- Build Image Gallery ---
-  // Initially, create all image elements (they will be replaced by renderGallery when filtering)
+  // Initially, we create all image elements, then immediately filter
   function createImageElements() {
     galleryContainer.innerHTML = "";
     camerasList.forEach((camera, index) => {
@@ -214,7 +212,6 @@ function hideSplashAndLoadGallery() {
       });
 
       const image = document.createElement("img");
-      // Directly assign the URL since lazy loading is removed
       image.src = camera.Views[0].Url;
       image.alt = `Camera at ${camera.Location}`;
 
@@ -225,7 +222,6 @@ function hideSplashAndLoadGallery() {
     });
   }
   createImageElements();
-  // Call filterImages once on initial load so the camera count and gallery update correctly.
   filterImages();
 
   // --- Update Camera Count ---
@@ -251,7 +247,6 @@ function hideSplashAndLoadGallery() {
       }
       return matchesCity && matchesRegion && matchesSearch && matchesITSOnly && routeMatches;
     });
-
     updateCameraCount();
     renderGallery(visibleCameras);
     currentIndex = 0;
@@ -260,7 +255,7 @@ function hideSplashAndLoadGallery() {
 
   // --- Render Gallery for Filtered Cameras ---
   function renderGallery(cameras) {
-    galleryContainer.innerHTML = ""; // Clear previous elements
+    galleryContainer.innerHTML = "";
     cameras.forEach((camera, index) => {
       const col = document.createElement("div");
       col.classList.add("col");
@@ -278,7 +273,7 @@ function hideSplashAndLoadGallery() {
       });
 
       const image = document.createElement("img");
-      image.src = camera.Views[0].Url; // Directly load the image
+      image.src = camera.Views[0].Url;
       image.alt = `Camera at ${camera.Location}`;
 
       anchor.appendChild(image);
@@ -297,7 +292,6 @@ function hideSplashAndLoadGallery() {
   // --- Get Visible Image Indices ---
   function getVisibleImageIndices() {
     const cols = Array.from(document.querySelectorAll("#imageGallery .col"));
-    // Since we're re-rendering only visible images, assume all are visible
     return cols.map((col, idx) => idx);
   }
 
@@ -353,7 +347,6 @@ function hideSplashAndLoadGallery() {
       thumbImg.addEventListener("click", () => showImage(camIdx));
       thumbnailContainer.appendChild(thumbImg);
     });
-    // Center selected thumbnail
     const selectedThumb = thumbnailContainer.querySelector("img.selected-carousel");
     if(selectedThumb) {
       centerThumbnail(thumbnailContainer, selectedThumb);
@@ -388,7 +381,6 @@ function hideSplashAndLoadGallery() {
 
   // --- External Link Functions ---
   function openGoogleMaps() {
-    // Use visibleCameras so that the correct camera is referenced.
     const camera = visibleCameras[currentIndex];
     const googleMapsUrl = `https://www.google.com/maps?q=${camera.Latitude},${camera.Longitude}`;
     window.open(googleMapsUrl, "_blank");
@@ -420,7 +412,5 @@ function hideSplashAndLoadGallery() {
   openInNewTabBtn.addEventListener("click", openImageInNewTab);
   googleMapsLink.addEventListener("click", (e) => { e.preventDefault(); openGoogleMaps(); });
   udotTrafficLink.addEventListener("click", (e) => { e.preventDefault(); openUdotTraffic(); });
-
-
 
 })();
