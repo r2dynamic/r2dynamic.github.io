@@ -90,28 +90,33 @@
   let itsOnly = false;
   let debounceTimer;
 
-// When the user clicks one of the landing buttons, hide the landing overlay and show main content.
-document.getElementById("viewAllBtn").addEventListener("click", () => {
-  document.getElementById("landingPage").style.display = "none";
-  document.getElementById("mainContent").style.display = "block";
-  // Optionally: Set filter to "all" and then load the grid.
-  filterImages(); // or any function that triggers grid loading.
+// --- Splash Screen Button Handlers ---
+const btnFiltered = document.getElementById("btnFiltered");
+const btnAll = document.getElementById("btnAll");
+const splash = document.getElementById("splash");
+const headerControls = document.getElementById("headerControls");
+const gallerySection = document.getElementById("gallerySection");
+
+// Handler to load a filtered view (for example, a curated route filter)
+btnFiltered.addEventListener("click", () => {
+  // Set your default filter value here if needed, for example:
+  routeFilterDropdown.value = "US-89/91 (Sardine Canyon)"; // example curated route
+  hideSplashAndLoadGallery();
 });
 
-document.getElementById("viewRoutesBtn").addEventListener("click", () => {
-  document.getElementById("landingPage").style.display = "none";
-  document.getElementById("mainContent").style.display = "block";
-  // Optionally: Set route filter defaults before loading.
-  routeFilterDropdown.value = "Your Default Route";
-  filterImages();
+// Handler to load all cameras
+btnAll.addEventListener("click", () => {
+  routeFilterDropdown.value = "All";
+  hideSplashAndLoadGallery();
 });
 
-document.getElementById("viewFiltersBtn").addEventListener("click", () => {
-  document.getElementById("landingPage").style.display = "none";
-  document.getElementById("mainContent").style.display = "block";
-  // Optionally: Pre-set certain filters.
-  filterImages();
-});
+// Function to hide splash and show gallery and header controls
+function hideSplashAndLoadGallery() {
+  splash.style.display = "none";
+  headerControls.style.display = "flex";
+  gallerySection.style.display = "block";
+  filterImages(); // call your filterImages function to build the gallery based on filters
+}
 
   
   // --- Utility: Debounce Function ---
@@ -416,7 +421,6 @@ document.getElementById("viewFiltersBtn").addEventListener("click", () => {
   googleMapsLink.addEventListener("click", (e) => { e.preventDefault(); openGoogleMaps(); });
   udotTrafficLink.addEventListener("click", (e) => { e.preventDefault(); openUdotTraffic(); });
 
-  window.filterImages = filterImages;
 
 
 })();
