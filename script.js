@@ -20,7 +20,7 @@
   // Global array to store the cameras that pass the filters
   let visibleCameras = [];
 
-  // --- Mappings & Data ---
+  // --- Mappings & Data (same as original) ---
   const cityFullNames = {
     "ALP": "Alpine",
     "ALT": "Alta",
@@ -105,14 +105,12 @@
   const headerControls = document.getElementById("headerControls");
   const gallerySection = document.getElementById("gallerySection");
 
-  // Handler to load a filtered view (for example, set route filter to a specific curated route)
   btnFiltered.addEventListener("click", () => {
-    // Example: set to "US-89/91 (Sardine Canyon)"
+    // For example, set a default filter (adjust as needed)
     routeFilterDropdown.value = "US-89/91 (Sardine Canyon)";
     hideSplashAndLoadGallery();
   });
 
-  // Handler to load all cameras
   btnAll.addEventListener("click", () => {
     routeFilterDropdown.value = "All";
     hideSplashAndLoadGallery();
@@ -149,7 +147,6 @@
   }
   populateRegionOptions();
 
-  // Extract unique cities from camera data (using the last comma-separated part)
   const cities = camerasList.map(camera => camera.Location.split(",").pop().trim());
   const uniqueCities = [...new Set(cities.filter(city => city.length <= 4))];
 
@@ -184,7 +181,6 @@
   cameraSearchInput.addEventListener("input", debounce(filterImages, DEBOUNCE_DELAY));
   imageSizeRange.addEventListener("input", () => changeImageSize(imageSizeRange.value));
 
-  // --- Camera Count: Show Version History Modal on Click ---
   cameraCountElement.addEventListener("click", () => {
     const versionModalEl = document.getElementById("versionModal");
     const versionModalInstance = new bootstrap.Modal(versionModalEl);
@@ -192,16 +188,13 @@
   });
 
   // --- Build Image Gallery ---
-  // Initially, we create all image elements, then immediately filter
   function createImageElements() {
     galleryContainer.innerHTML = "";
     camerasList.forEach((camera, index) => {
       const col = document.createElement("div");
       col.classList.add("col");
-
       const aspectBox = document.createElement("div");
       aspectBox.classList.add("aspect-ratio-box");
-
       const anchor = document.createElement("a");
       anchor.href = "#";
       anchor.setAttribute("data-bs-toggle", "modal");
@@ -210,11 +203,9 @@
         e.preventDefault();
         showImage(index);
       });
-
       const image = document.createElement("img");
       image.src = camera.Views[0].Url;
       image.alt = `Camera at ${camera.Location}`;
-
       anchor.appendChild(image);
       aspectBox.appendChild(anchor);
       col.appendChild(aspectBox);
@@ -224,12 +215,10 @@
   createImageElements();
   filterImages();
 
-  // --- Update Camera Count ---
   function updateCameraCount() {
     cameraCountElement.innerHTML = `${visibleCameras.length}`;
   }
 
-  // --- Filter Images ---
   function filterImages() {
     visibleCameras = camerasList.filter(camera => {
       const city = camera.Location.split(",").pop().trim();
@@ -253,16 +242,13 @@
     buildCarousel();
   }
 
-  // --- Render Gallery for Filtered Cameras ---
   function renderGallery(cameras) {
     galleryContainer.innerHTML = "";
     cameras.forEach((camera, index) => {
       const col = document.createElement("div");
       col.classList.add("col");
-
       const aspectBox = document.createElement("div");
       aspectBox.classList.add("aspect-ratio-box");
-
       const anchor = document.createElement("a");
       anchor.href = "#";
       anchor.setAttribute("data-bs-toggle", "modal");
@@ -271,11 +257,9 @@
         e.preventDefault();
         showImage(index);
       });
-
       const image = document.createElement("img");
       image.src = camera.Views[0].Url;
       image.alt = `Camera at ${camera.Location}`;
-
       anchor.appendChild(image);
       aspectBox.appendChild(anchor);
       col.appendChild(aspectBox);
@@ -283,35 +267,28 @@
     });
   }
 
-  // --- Change Image Size ---
   function changeImageSize(minWidth) {
     galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${minWidth}px, 1fr))`;
   }
   changeImageSize(imageSizeRange.value);
 
-  // --- Get Visible Image Indices ---
   function getVisibleImageIndices() {
     const cols = Array.from(document.querySelectorAll("#imageGallery .col"));
     return cols.map((col, idx) => idx);
   }
 
-  // --- Show Image in Modal ---
   function showImage(index) {
     const prevSelected = document.querySelector(".aspect-ratio-box.selected");
     if(prevSelected) prevSelected.classList.remove("selected");
-
     currentIndex = index;
     const camera = visibleCameras[index];
     modalImage.src = camera.Views[0].Url;
     modalTitle.textContent = camera.Location;
-
     const selectedBox = galleryContainer.children[index].querySelector(".aspect-ratio-box");
     if(selectedBox) selectedBox.classList.add("selected");
-
     buildCarousel();
   }
 
-  // --- Build Carousel for Thumbnails ---
   function buildCarousel() {
     thumbnailContainer.innerHTML = "";
     const visibleImages = getVisibleImageIndices();
@@ -361,7 +338,6 @@
     container.scroll({ left: scrollPos, behavior: "smooth" });
   }
 
-  // --- Navigation Functions ---
   function showNextImage() {
     const visibleImages = getVisibleImageIndices();
     if(visibleImages.length === 0) return;
@@ -379,7 +355,6 @@
     showImage(visibleImages[prevIndex]);
   }
 
-  // --- External Link Functions ---
   function openGoogleMaps() {
     const camera = visibleCameras[currentIndex];
     const googleMapsUrl = `https://www.google.com/maps?q=${camera.Latitude},${camera.Longitude}`;
@@ -394,7 +369,6 @@
     window.open(modalImage.src, "_blank");
   }
 
-  // --- Keyboard Navigation in Modal ---
   document.addEventListener("keydown", (event) => {
     const modalIsOpen = document.querySelector("#imageModal.show");
     if(!modalIsOpen) return;
@@ -406,7 +380,6 @@
     }
   });
 
-  // --- Button Event Listeners ---
   prevImageBtn.addEventListener("click", showPreviousImage);
   nextImageBtn.addEventListener("click", showNextImage);
   openInNewTabBtn.addEventListener("click", openImageInNewTab);
