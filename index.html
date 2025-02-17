@@ -25,8 +25,8 @@
   <title>UDOT Cameras</title>
 </head>
 <body>
-  <!-- Camera Count (clickable for version updates) -->
-  <div id="cameraCount" class="camera-count" aria-live="polite" title="Click to update version info"></div>
+  <!-- Camera Count (always displayed, click to view version history) -->
+  <div id="cameraCount" class="camera-count" aria-live="polite" title="Click to view version history"></div>
 
   <!-- Combined Filters Dropdown -->
   <div class="dropdown filter-dropdown" style="display:inline-block; margin-right: 10px;">
@@ -50,7 +50,7 @@
         <label for="cityFilter" style="color:#fff; font-size:12px; font-weight:bold;">City/County:</label>
         <select class="form-select city-filter" id="cityFilter">
           <option value="">All</option>
-          <!-- Dynamic options populated by JS -->
+          <!-- Options populated by JS -->
         </select>
       </div>
       <!-- Region Filter -->
@@ -58,7 +58,7 @@
         <label for="regionFilter" style="color:#fff; font-size:12px; font-weight:bold;">Region:</label>
         <select class="form-select regions-filter" id="regionFilter">
           <option value="">Regions</option>
-          <!-- Dynamic options populated by JS -->
+          <!-- Options populated by JS -->
         </select>
       </div>
       <!-- Search -->
@@ -104,7 +104,7 @@
   <!-- Image Gallery -->
   <div class="container-fluid">
     <div id="imageGallery" class="container-fluid">
-      <!-- Images are added dynamically via JS -->
+      <!-- Images added dynamically via JS -->
     </div>
   </div>
 
@@ -182,29 +182,21 @@
     </div>
   </div>
 
-  <!-- Version Update Modal -->
+  <!-- Version History Modal (static content) -->
   <div class="modal fade" id="versionModal" tabindex="-1" aria-labelledby="versionModalLabel" aria-hidden="true" role="dialog">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
         <div class="modal-header">
-          <h5 class="modal-title" id="versionModalLabel">Update Version History</h5>
+          <h5 class="modal-title" id="versionModalLabel">Version History</h5>
           <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
         <div class="modal-body">
-          <form id="versionForm">
-            <div class="mb-3">
-              <label for="updateDate" class="form-label">Update Date</label>
-              <input type="date" class="form-control" id="updateDate" required>
-            </div>
-            <div class="mb-3">
-              <label for="versionComments" class="form-label">Version Comments</label>
-              <textarea class="form-control" id="versionComments" rows="3" placeholder="Enter version history/comments"></textarea>
-            </div>
-          </form>
+          <p>Last Update: <strong>2025-02-16</strong></p>
+          <p>Version 1.0.3 – Improved filtering and added version history popup.</p>
+          <p>Comments: This release includes performance enhancements and a new static version history modal. Edit this content in index.html as needed.</p>
         </div>
         <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-          <button type="button" id="saveVersionBtn" class="btn btn-primary">Save</button>
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
         </div>
       </div>
     </div>
