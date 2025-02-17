@@ -1,193 +1,149 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta property="og:title" content="UDOT Cameras">
-  <meta property="og:description" content="Interact with UDOT Cameras in a grid format">
-  <meta property="og:image" content="https://udotcameras.com/camIcon1.png">
-  <meta property="og:url" content="https://udotcameras.com">
-  <!-- Favicon -->
-  <link rel="icon" href="/camIcon1.png" type="image/png">
-  <!-- PWA Manifest & Theme Color -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#4C4E52">
-  <!-- External CSS -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
-  />
-  <link rel="stylesheet" href="style.css">
-  <title>UDOT Cameras</title>
+  <meta charset="UTF-8">
+  <title>Landing Page Test</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <style>
+    /* Reset margins and ensure full viewport */
+    html, body {
+      margin: 0;
+      padding: 0;
+      height: 100%;
+      overflow: hidden;
+    }
+    /* Landing overlay covers entire screen */
+    .landing-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      z-index: 10000;
+      overflow: hidden;
+    }
+    /* Background video styling */
+    #bgVideo {
+      position: absolute;
+      top: 50%;
+      left: 50%;
+      min-width: 100%;
+      min-height: 100%;
+      width: auto;
+      height: auto;
+      transform: translate(-50%, -50%);
+      object-fit: cover;
+    }
+    /* Landing content styling */
+    .landing-content {
+      position: relative;
+      z-index: 10001;
+      text-align: center;
+      color: #fff;
+      top: 50%;
+      transform: translateY(-50%);
+      font-family: "Lucida Console", "Courier New", monospace;
+    }
+    /* Custom button style from your example */
+    .button {
+      display: inline-block;
+      padding: 15px 27px;
+      font-size: 17px;
+      cursor: pointer;
+      text-align: center;
+      text-decoration: none;
+      outline: none;
+      color: hsl(0, 100%, 100%);
+      background-color: hsla(125, 82%, 29%, 0.5);
+      border: none;
+      border-radius: 15px;
+      box-shadow: 0 9px hsla(0, 0%, 61%, 0.8);
+      font-weight: bold;
+      margin: 10px;
+    }
+    .button span {
+      cursor: pointer;
+      display: inline-block;
+      position: relative;
+      transition: 0.5s;
+    }
+    .button span:after {
+      content: '\00bb';
+      position: absolute;
+      opacity: 0;
+      top: 0;
+      right: -20px;
+      transition: 0.5s;
+    }
+    .button:hover span {
+      padding-right: 25px;
+    }
+    .button:hover span:after {
+      opacity: 1;
+      right: 0;
+    }
+    .button:hover {
+      background-color: #3e8e41;
+    }
+    .button:active {
+      background-color: #3e8e41;
+      box-shadow: 0 5px #666;
+      transform: translateY(8px);
+    }
+    /* Main content (image grid, etc.) - initially hidden */
+    #mainContent {
+      display: none;
+      padding: 20px;
+      background-color: #fff;
+      height: 100%;
+      overflow: auto;
+    }
+  </style>
 </head>
 <body>
-  <!-- Landing Overlay -->
-<div id="landingPage" class="landing-overlay">
-  <video autoplay muted loop id="bgVideo">
-    <source src="https://github.com/r2dynamic/r2dynamic.github.io/blob/4fd342709c8b7ae77f6f026486b9bb9498b526f3/SLCflyby.mp4" type="video/mp4">
-    Your browser does not support the video tag.
-  </video>
-  <div class="landing-content">
-    <h1>Welcome to UDOT Cameras</h1>
-    <button id="viewAllBtn">View All Cameras</button>
-    <button id="viewRoutesBtn">Curated Routes</button>
-    <button id="viewFiltersBtn">Filtered View</button>
-  </div>
-</div>
 
-  <!-- Header Controls Container -->
-  <div class="header-controls">
-    <!-- Camera Count (always visible, click to view version history) -->
-    <div id="cameraCount" class="camera-count" aria-live="polite" title="Click to view version history"></div>
-
-    <!-- Filter Dropdown -->
-    <div class="dropdown">
-      <button id="filterButton" class="btn btn-secondary dropdown-toggle btn-smaller" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filter">
-        <i class="fas fa-filter"></i>
-      </button>
-      <div class="dropdown-menu p-3" style="min-width: 200px; background-color: #4C4E52;" aria-label="Filter options">
-        <!-- City Filter -->
-        <div class="mb-2">
-          <label for="cityFilter" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">City/County:</label>
-          <select class="form-select city-filter" id="cityFilter">
-            <option value="">All</option>
-          </select>
-        </div>
-        <!-- Region Filter -->
-        <div class="mb-2">
-          <label for="regionFilter" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">Region:</label>
-          <select class="form-select regions-filter" id="regionFilter">
-            <option value="">Regions</option>
-          </select>
-        </div>
-        <!-- Search -->
-        <div class="mb-2">
-          <label for="cameraSearch" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">Search:</label>
-          <input type="text" id="cameraSearch" placeholder="Search by Name" class="form-control" />
-        </div>
-        <!-- ITS Only Toggle -->
-        <div class="form-check mb-2">
-          <input class="form-check-input" type="checkbox" id="itsOnly" autocomplete="off" />
-          <label class="form-check-label" for="itsOnly" style="color:#fff; font-size:12px;">Exclude RWIS</label>
-        </div>
-      </div>
-    </div>
-
-    <!-- Curated Routes Dropdown -->
-    <div>
-      <select id="routeFilter" class="camera-count" style="width:auto;"></select>
-    </div>
-
-    <!-- Size Slider -->
-    <div class="slider-container">
-      <input type="range" id="imageSizeRange" min="25" max="370" value="120" step="1" />
-    </div>
-  </div>
-  <!-- End Header Controls -->
-
-  <!-- Image Gallery -->
-  <div class="container-fluid">
-    <div id="imageGallery" class="container-fluid">
-      <!-- Images added dynamically via script.js -->
+  <!-- Landing Overlay with Background Video and Buttons -->
+  <div id="landingOverlay" class="landing-overlay">
+    <video autoplay muted loop playsinline id="bgVideo">
+      <source src="https://github.com/r2dynamic/r2dynamic.github.io/blob/4fd342709c8b7ae77f6f026486b9bb9498b526f3/SLCflyby.mp4" type="video/mp4">
+      Your browser does not support the video tag.
+    </video>
+    <div class="landing-content">
+      <h1>Welcome to UDOT Cameras</h1>
+      <button class="button" id="viewAllBtn"><span>View All Cameras</span></button>
+      <button class="button" id="viewRoutesBtn"><span>Curated Routes</span></button>
+      <button class="button" id="viewFiltersBtn"><span>Filtered View</span></button>
     </div>
   </div>
 
-  <!-- Image Modal -->
-  <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true" role="dialog">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content border-0">
-        <div class="modal-header">
-          <h5 class="modal-title" id="imageModalLabel"></h5>
-        </div>
-        <div class="modal-body p-0">
-          <div class="modal-aspect-ratio">
-            <img src="" id="modalImage" alt="Camera view" />
-          </div>
-        </div>
-        <div class="modal-footer d-flex flex-column">
-          <div id="thumbnailContainer"></div>
-          <div class="btn-group mt-2">
-            <button
-              type="button"
-              class="btn btn-success btn-animated btn-transparent-green btn-smaller dropdown-toggle"
-              id="linksDropdown"
-              data-bs-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-              title="Links"
-            >
-              <i class="fas fa-map-marker-alt"></i> Links
-            </button>
-            <div class="dropdown-menu" aria-labelledby="linksDropdown">
-              <a class="dropdown-item" href="#" id="googleMapsLink">
-                <i class="fas fa-map-marker-alt"></i> Open Google Maps
-              </a>
-              <a class="dropdown-item" href="#" id="udotTrafficLink">
-                <i class="fas fa-road"></i> Open UDOT Traffic
-              </a>
-            </div>
-            <div class="d-flex mt-2">
-              <button type="button" class="btn btn-secondary btn-animated btn-orange me-1" id="prevImageBtn" title="Previous Image">
-                <i class="fas fa-arrow-left"></i>
-              </button>
-              <button type="button" class="btn btn-secondary btn-animated btn-orange me-1" id="nextImageBtn" title="Next Image">
-                <i class="fas fa-arrow-right"></i>
-              </button>
-              <button type="button" class="btn btn-secondary btn-animated btn-orange me-1" id="openInNewTabBtn" title="Open image in new tab">
-                <i class="fas fa-expand"></i>
-              </button>
-              <button type="button" class="btn btn-danger btn-animated" data-bs-dismiss="modal" title="Close Modal">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
+  <!-- Main Content (Image grid and header controls would go here) -->
+  <div id="mainContent">
+    <h2>Main Content Area</h2>
+    <p>This is where your image grid and header controls would appear.</p>
+    <!-- For testing purposes, you can insert placeholder content here. -->
   </div>
 
-  <!-- Version History Modal (static content edited directly in HTML) -->
-  <div class="modal fade" id="versionModal" tabindex="-1" aria-labelledby="versionModalLabel" aria-hidden="true" role="dialog">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="versionModalLabel">Version History</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p>Last Update: <strong>2025-02-16</strong></p>
-          <p>Version 1.0.12 – </p>
-          <p>Comments: </p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- External JavaScript Files -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
-  <script src="script.js"></script>
-
-  <!-- Service Worker Registration -->
   <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('sw.js')
-          .then(function(registration) {
-            console.log('Service Worker registered with scope:', registration.scope);
-          })
-          .catch(function(error) {
-            console.log('Service Worker registration failed:', error);
-          });
+    // Wait until the DOM is loaded
+    document.addEventListener("DOMContentLoaded", function() {
+      // When a landing button is clicked, hide the landing overlay and show main content.
+      document.getElementById("viewAllBtn").addEventListener("click", function() {
+        document.getElementById("landingOverlay").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+        // Optionally, load your grid images or trigger your filtering function.
       });
-    }
+      document.getElementById("viewRoutesBtn").addEventListener("click", function() {
+        document.getElementById("landingOverlay").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+        // Optionally, set route filter defaults here.
+      });
+      document.getElementById("viewFiltersBtn").addEventListener("click", function() {
+        document.getElementById("landingOverlay").style.display = "none";
+        document.getElementById("mainContent").style.display = "block";
+        // Optionally, set filter defaults here.
+      });
+    });
   </script>
+
 </body>
 </html>
