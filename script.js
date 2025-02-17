@@ -90,6 +90,30 @@
   let itsOnly = false;
   let debounceTimer;
 
+// When the user clicks one of the landing buttons, hide the landing overlay and show main content.
+document.getElementById("viewAllBtn").addEventListener("click", () => {
+  document.getElementById("landingPage").style.display = "none";
+  document.getElementById("mainContent").style.display = "block";
+  // Optionally: Set filter to "all" and then load the grid.
+  filterImages(); // or any function that triggers grid loading.
+});
+
+document.getElementById("viewRoutesBtn").addEventListener("click", () => {
+  document.getElementById("landingPage").style.display = "none";
+  document.getElementById("mainContent").style.display = "block";
+  // Optionally: Set route filter defaults before loading.
+  routeFilterDropdown.value = "Your Default Route";
+  filterImages();
+});
+
+document.getElementById("viewFiltersBtn").addEventListener("click", () => {
+  document.getElementById("landingPage").style.display = "none";
+  document.getElementById("mainContent").style.display = "block";
+  // Optionally: Pre-set certain filters.
+  filterImages();
+});
+
+  
   // --- Utility: Debounce Function ---
   function debounce(func, delay) {
     return function(...args) {
