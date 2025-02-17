@@ -69,12 +69,19 @@
       ]
     },
     {
-      name: "More Coming soon",
+      name: "Big Cottonwood Cyn",
       locations: [
-        "500 W / US-89 @ Center St / SR-114, PVO",
-        "Redwood Rd / SR-68 @ 3100 S, WVC",
-        "State St / US-89 @ 4500 S / SR-266, MUR",
-        "Bangerter Hwy / SR-154 @ 3100 S, WVC"
+        "North Little Cottonwood Rd / Little Cottonwood Canyon Rd / SR-210 @ Little Cottonwood Rd / SR-209, SL",
+        "Little Cottonwood Rd / SR-210 RWIS EB @ Powerhouse / MP 5.67, SL",
+        "Little Cottonwood Rd / SR-210 @ Upper Vault / MP 5.96, SL",
+        "Little Cottonwood Rd / SR-210 @ Lisa Falls / MP 6.5, SL",
+        "Little Cottonwood Rd / SR-210 EB @ Seven Turns / MP 7.4, SL",
+        "Little Cottonwood Rd / SR-210 @ Tanners Flat / MP 7.94, SL",
+        "Little Cottonwood Rd / SR-210 @ White Pine / MP 8.7, SL",
+        "Little Cottonwood Rd / SR-210 EB @ White Pine Parking / MP 9.2, SL",
+        "Little Cottonwood Rd / SR-210 WB @ Upper White Pine / MP 9.7, SL",
+        "Little Cottonwood Rd / SR-210 EB @ Alta Bypass / MP 10.95, SL",
+        "Little Cottonwood Rd / SR-210 WB @ Alta / MP 12.16, ALT"
       ]
     }
   ];
