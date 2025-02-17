@@ -1,4 +1,5 @@
-(function() {
+// Wrap everything in an async IIFE so we can await the fetch
+(async function() {
   'use strict';
 
   // --- Constants ---
@@ -6,16 +7,15 @@
   const LEFT_COUNT = 10;
   const RIGHT_COUNT = 10;
 
-  // --- Sample JSON Data (expand as needed) ---
-  const jsonResponse = JSON.stringify({
-    "CamerasList": [
-      {"Id":8419,"Source":"ADX","Roadway":"I-215","Direction":"North","Latitude":40.64836,"Longitude":-111.80766,"Location":"I-215 E NB @ 5650 S / MP 5.59, HDY","Views":[{"Id":8419,"Url":"https://www.udottraffic.utah.gov/map/Cctv/8419","Status":"Enabled","Description":"I-215 E NB @ 5650 S / MP 5.59, HDY"}]},
-      {"Id":8420,"Source":"ADX","Roadway":"I-215","Direction":"North","Latitude":40.63451,"Longitude":-111.81117,"Location":"I-215 E NB @ 6400 S / MP 6.56, CWH","Views":[{"Id":8420,"Url":"https://www.udottraffic.utah.gov/map/Cctv/8420","Status":"Enabled","Description":"I-215 E NB @ 6400 S / MP 6.56, CWH"}]},
-      {"Id":8421,"Source":"ADX","Roadway":"I-215","Direction":"West","Latitude":40.63472,"Longitude":-111.82453,"Location":"I-215 S WB @ 2300 E / MP 7.25, HDY","Views":[{"Id":8421,"Url":"https://www.udottraffic.utah.gov/map/Cctv/8419","Status":"Enabled","Description":"I-215 S WB @ 2300 E / MP 7.25, HDY"}]},
-      {"Id":8422,"Source":"ADX","Roadway":"Unknown","Direction":"East","Latitude":40.63153,"Longitude":-111.88975,"Location":"I-215 S EB @ State St / US-89 / MP 10.66, MUR","Views":[{"Id":8422,"Url":"https://www.udottraffic.utah.gov/map/Cctv/8422","Status":"Enabled","Description":"I-215 S EB @ State St / US-89 / MP 10.66, MUR"}]}
-    ]
-  });
-  const camerasList = JSON.parse(jsonResponse).CamerasList.filter(camera => !(camera.Latitude === 0.0 && camera.Longitude === 0.0));
+  // --- Fetch cameras JSON from external file ---
+  let camerasList = [];
+  try {
+    const response = await fetch('cameras.json');
+    const data = await response.json();
+    camerasList = data.CamerasList.filter(camera => !(camera.Latitude === 0.0 && camera.Longitude === 0.0));
+  } catch(e) {
+    console.error('Error fetching cameras JSON:', e);
+  }
 
   // --- Mappings & Data ---
   const cityFullNames = {
@@ -99,9 +99,16 @@
   const udotTrafficLink = document.getElementById("udotTrafficLink");
   const thumbnailContainer = document.getElementById("thumbnailContainer");
 
+  // --- Version Update DOM Elements ---
+  const saveVersionBtn = document.getElementById("saveVersionBtn");
+  const updateDateInput = document.getElementById("updateDate");
+  const versionCommentsInput = document.getElementById("versionComments");
+
   let currentIndex = 0;
   let itsOnly = false;
   let debounceTimer;
+  let versionUpdateDate = "";
+  let versionComments = "";
 
   // --- Intersection Observer for Lazy Loading ---
   const observerOptions = {
@@ -189,6 +196,27 @@
   cameraSearchInput.addEventListener("input", debounce(filterImages, DEBOUNCE_DELAY));
   imageSizeRange.addEventListener("input", () => changeImageSize(imageSizeRange.value));
 
+  // --- Camera Count: Show Version Update Modal on Click ---
+  cameraCountElement.addEventListener("click", () => {
+    const versionModalEl = document.getElementById("versionModal");
+    const versionModalInstance = new bootstrap.Modal(versionModalEl);
+    versionModalInstance.show();
+  });
+
+  // --- Save Version Update ---
+  saveVersionBtn.addEventListener("click", () => {
+    versionUpdateDate = updateDateInput.value;
+    versionComments = versionCommentsInput.value;
+    updateCameraCount();
+    // Hide the modal
+    const versionModalEl = document.getElementById("versionModal");
+    const versionModalInstance = bootstrap.Modal.getInstance(versionModalEl);
+    if (versionModalInstance) versionModalInstance.hide();
+    // Clear the form inputs
+    updateDateInput.value = "";
+    versionCommentsInput.value = "";
+  });
+
   // --- Build Image Gallery ---
   function createImageElements() {
     galleryContainer.innerHTML = "";
@@ -228,7 +256,7 @@
   }
   createImageElements();
 
-  // --- Update Camera Count ---
+  // --- Update Camera Count (and display version info if available) ---
   function updateCameraCount() {
     const filteredCameras = camerasList.filter(camera => {
       const city = camera.Location.split(",").pop().trim();
@@ -246,7 +274,16 @@
       }
       return matchesCity && matchesRegion && matchesSearch && matchesITSOnly && routeMatches;
     });
-    cameraCountElement.textContent = `${filteredCameras.length}`;
+    let countHtml = `${filteredCameras.length}`;
+    if (versionUpdateDate) {
+      countHtml += `<br><small>Last update: ${versionUpdateDate}</small>`;
+    }
+    cameraCountElement.innerHTML = countHtml;
+    if (versionComments) {
+      cameraCountElement.title = versionComments;
+    } else {
+      cameraCountElement.removeAttribute("title");
+    }
   }
 
   // --- Filter Images ---
