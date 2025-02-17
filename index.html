@@ -19,21 +19,21 @@
   <title>UDOT Cameras</title>
 </head>
 <body>
-  <!-- Splash Screen -->
+  <!-- SPLASH SCREEN -->
   <div id="splash">
-    <!-- Background Video -->
+    <!-- Fullscreen Background Video -->
     <video id="splashVideo" autoplay muted loop playsinline>
-      <source src="SLCvideo.mp4" type="video/mp4">
+      <source src="splash.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
-    <!-- Overlay for buttons -->
+    <!-- Overlay with Buttons -->
     <div id="splashOverlay">
       <button class="button" id="btnFiltered"><span>View Filtered</span></button>
       <button class="button" id="btnAll"><span>View All Cameras</span></button>
     </div>
   </div>
 
-  <!-- Header Controls Container (initially hidden) -->
+  <!-- HEADER CONTROLS (initially hidden) -->
   <div class="header-controls" id="headerControls" style="display:none;">
     <!-- Camera Count -->
     <div id="cameraCount" class="camera-count" aria-live="polite" title="Click to view version history"></div>
@@ -43,26 +43,22 @@
         <i class="fas fa-filter"></i>
       </button>
       <div class="dropdown-menu p-3" style="min-width: 200px; background-color: #4C4E52;" aria-label="Filter options">
-        <!-- City Filter -->
         <div class="mb-2">
           <label for="cityFilter" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">City/County:</label>
           <select class="form-select city-filter" id="cityFilter">
             <option value="">All</option>
           </select>
         </div>
-        <!-- Region Filter -->
         <div class="mb-2">
           <label for="regionFilter" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">Region:</label>
           <select class="form-select regions-filter" id="regionFilter">
             <option value="">Regions</option>
           </select>
         </div>
-        <!-- Search -->
         <div class="mb-2">
           <label for="cameraSearch" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">Search:</label>
           <input type="text" id="cameraSearch" placeholder="Search by Name" class="form-control" />
         </div>
-        <!-- ITS Only Toggle -->
         <div class="form-check mb-2">
           <input class="form-check-input" type="checkbox" id="itsOnly" autocomplete="off" />
           <label class="form-check-label" for="itsOnly" style="color:#fff; font-size:12px;">Exclude RWIS</label>
@@ -80,15 +76,76 @@
     </div>
   </div>
 
-  <!-- Gallery Container (initially hidden) -->
+  <!-- GALLERY SECTION (initially hidden) -->
   <div class="container-fluid" id="gallerySection" style="display:none;">
     <div id="imageGallery" class="container-fluid">
-      <!-- Images will be added dynamically -->
+      <!-- Gallery images will be inserted here -->
     </div>
   </div>
 
-  <!-- Image Modal & Version History Modal remain as before -->
-  <!-- ... [Your modals code here] ... -->
+  <!-- Modals (Version History, Image Modal, etc.) -->
+  <!-- For brevity, include your modal HTML here -->
+  <!-- Example: Version History Modal -->
+  <div class="modal fade" id="versionModal" tabindex="-1" aria-labelledby="versionModalLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="versionModalLabel">Version History</h5>
+          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+        </div>
+        <div class="modal-body">
+          <p>Last Update: <strong>2025-02-16</strong></p>
+          <p>Version 1.0.3 – Improved filtering and splash screen integration.</p>
+          <p>Comments: Edit this content in index.html as needed.</p>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Example: Image Modal -->
+  <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true" role="dialog">
+    <div class="modal-dialog modal-dialog-centered modal-lg">
+      <div class="modal-content border-0">
+        <div class="modal-header">
+          <h5 class="modal-title" id="imageModalLabel"></h5>
+        </div>
+        <div class="modal-body p-0">
+          <div class="modal-aspect-ratio">
+            <img src="" id="modalImage" alt="Camera view" />
+          </div>
+        </div>
+        <div class="modal-footer d-flex flex-column">
+          <div id="thumbnailContainer"></div>
+          <div class="btn-group mt-2">
+            <button type="button" class="btn btn-success btn-animated btn-transparent-green btn-smaller dropdown-toggle" id="linksDropdown" data-bs-toggle="dropdown" aria-haspopup="true" aria-expanded="false" title="Links">
+              <i class="fas fa-map-marker-alt"></i> Links
+            </button>
+            <div class="dropdown-menu" aria-labelledby="linksDropdown">
+              <a class="dropdown-item" href="#" id="googleMapsLink"><i class="fas fa-map-marker-alt"></i> Open Google Maps</a>
+              <a class="dropdown-item" href="#" id="udotTrafficLink"><i class="fas fa-road"></i> Open UDOT Traffic</a>
+            </div>
+            <div class="d-flex mt-2">
+              <button type="button" class="btn btn-secondary btn-animated btn-orange me-1" id="prevImageBtn" title="Previous Image">
+                <i class="fas fa-arrow-left"></i>
+              </button>
+              <button type="button" class="btn btn-secondary btn-animated btn-orange me-1" id="nextImageBtn" title="Next Image">
+                <i class="fas fa-arrow-right"></i>
+              </button>
+              <button type="button" class="btn btn-secondary btn-animated btn-orange me-1" id="openInNewTabBtn" title="Open image in new tab">
+                <i class="fas fa-expand"></i>
+              </button>
+              <button type="button" class="btn btn-danger btn-animated" data-bs-dismiss="modal" title="Close Modal">
+                <i class="fas fa-times"></i>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
 
   <!-- External JavaScript Files -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
