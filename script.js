@@ -416,4 +416,7 @@ document.getElementById("viewFiltersBtn").addEventListener("click", () => {
   googleMapsLink.addEventListener("click", (e) => { e.preventDefault(); openGoogleMaps(); });
   udotTrafficLink.addEventListener("click", (e) => { e.preventDefault(); openUdotTraffic(); });
 
+  window.filterImages = filterImages;
+
+
 })();
