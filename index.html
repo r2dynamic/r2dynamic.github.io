@@ -2,24 +2,24 @@
 <html lang="en">
 <head>
   <meta charset="UTF-8">
-  <title>Landing Page Test</title>
+  <title>Background Video Test</title>
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <style>
-    /* Reset margins and ensure full viewport */
+    /* Ensure full height with no margins */
     html, body {
       margin: 0;
       padding: 0;
       height: 100%;
       overflow: hidden;
     }
-    /* Landing overlay covers entire screen */
+    /* The landing overlay covers the entire viewport */
     .landing-overlay {
       position: fixed;
       top: 0;
       left: 0;
       width: 100%;
       height: 100%;
-      z-index: 10000;
+      z-index: 1;
       overflow: hidden;
     }
     /* Background video styling */
@@ -33,117 +33,41 @@
       height: auto;
       transform: translate(-50%, -50%);
       object-fit: cover;
+      z-index: -1;
     }
-    /* Landing content styling */
+    /* Overlay content styling */
     .landing-content {
-      position: relative;
-      z-index: 10001;
-      text-align: center;
-      color: #fff;
-      top: 50%;
-      transform: translateY(-50%);
-      font-family: "Lucida Console", "Courier New", monospace;
-    }
-    /* Custom button style from your example */
-    .button {
-      display: inline-block;
-      padding: 15px 27px;
-      font-size: 17px;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-      outline: none;
-      color: hsl(0, 100%, 100%);
-      background-color: hsla(125, 82%, 29%, 0.5);
-      border: none;
-      border-radius: 15px;
-      box-shadow: 0 9px hsla(0, 0%, 61%, 0.8);
-      font-weight: bold;
-      margin: 10px;
-    }
-    .button span {
-      cursor: pointer;
-      display: inline-block;
-      position: relative;
-      transition: 0.5s;
-    }
-    .button span:after {
-      content: '\00bb';
       position: absolute;
-      opacity: 0;
-      top: 0;
-      right: -20px;
-      transition: 0.5s;
+      top: 50%;
+      left: 50%;
+      transform: translate(-50%, -50%);
+      z-index: 2;
+      color: #fff;
+      text-align: center;
+      font-family: sans-serif;
     }
-    .button:hover span {
-      padding-right: 25px;
+    .landing-content h1 {
+      font-size: 48px;
+      margin-bottom: 20px;
     }
-    .button:hover span:after {
-      opacity: 1;
-      right: 0;
-    }
-    .button:hover {
-      background-color: #3e8e41;
-    }
-    .button:active {
-      background-color: #3e8e41;
-      box-shadow: 0 5px #666;
-      transform: translateY(8px);
-    }
-    /* Main content (image grid, etc.) - initially hidden */
-    #mainContent {
-      display: none;
-      padding: 20px;
-      background-color: #fff;
-      height: 100%;
-      overflow: auto;
+    .landing-content button {
+      font-size: 24px;
+      padding: 10px 20px;
+      cursor: pointer;
     }
   </style>
 </head>
 <body>
-
-  <!-- Landing Overlay with Background Video and Buttons -->
-  <div id="landingOverlay" class="landing-overlay">
-    <video autoplay muted loop playsinline id="bgVideo">
-      <source src="https://github.com/r2dynamic/r2dynamic.github.io/blob/f4ae3a37fdbb952a668197cedc2537950721b5ba/SLCflyby.mp4" type="video/mp4">
+  <!-- Landing Overlay -->
+  <div class="landing-overlay">
+    <video autoplay muted loop id="bgVideo">
+      <source src="background.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
     <div class="landing-content">
-      <h1>Welcome to UDOT Cameras</h1>
-      <button class="button" id="viewAllBtn"><span>View All Cameras</span></button>
-      <button class="button" id="viewRoutesBtn"><span>Curated Routes</span></button>
-      <button class="button" id="viewFiltersBtn"><span>Filtered View</span></button>
+      <h1>Welcome to the Test Page</h1>
+      <button onclick="alert('Button clicked!')">Click Me</button>
     </div>
   </div>
-
-  <!-- Main Content (Image grid and header controls would go here) -->
-  <div id="mainContent">
-    <h2>Main Content Area</h2>
-    <p>This is where your image grid and header controls would appear.</p>
-    <!-- For testing purposes, you can insert placeholder content here. -->
-  </div>
-
-  <script>
-    // Wait until the DOM is loaded
-    document.addEventListener("DOMContentLoaded", function() {
-      // When a landing button is clicked, hide the landing overlay and show main content.
-      document.getElementById("viewAllBtn").addEventListener("click", function() {
-        document.getElementById("landingOverlay").style.display = "none";
-        document.getElementById("mainContent").style.display = "block";
-        // Optionally, load your grid images or trigger your filtering function.
-      });
-      document.getElementById("viewRoutesBtn").addEventListener("click", function() {
-        document.getElementById("landingOverlay").style.display = "none";
-        document.getElementById("mainContent").style.display = "block";
-        // Optionally, set route filter defaults here.
-      });
-      document.getElementById("viewFiltersBtn").addEventListener("click", function() {
-        document.getElementById("landingOverlay").style.display = "none";
-        document.getElementById("mainContent").style.display = "block";
-        // Optionally, set filter defaults here.
-      });
-    });
-  </script>
-
 </body>
 </html>
