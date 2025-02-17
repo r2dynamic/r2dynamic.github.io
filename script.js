@@ -17,6 +17,8 @@
     console.error('Error fetching cameras JSON:', e);
   }
 
+  let visibleCameras = [];
+
   // --- Mappings & Data ---
   const cityFullNames = {
     "ALP": "Alpine",
@@ -388,33 +390,62 @@
       }
       return matchesCity && matchesRegion && matchesSearch && matchesITSOnly && routeMatches;
     });
-    cameraCountElement.innerHTML = `${filteredCameras.length}`;
+      cameraCountElement.innerHTML = `${visibleCameras.length}`;
   }
 
-  // --- Filter Images ---
-  function filterImages() {
-    const images = document.querySelectorAll("#imageGallery .col");
-    images.forEach((col, index) => {
-      const camera = camerasList[index];
-      const city = camera.Location.split(",").pop().trim();
-      const matchesCity = !cityFilterDropdown.value || city === cityFilterDropdown.value;
-      const matchesRegion = !regionFilterDropdown.value || (regionCities[regionFilterDropdown.value] && regionCities[regionFilterDropdown.value].includes(city));
-      const matchesSearch = camera.Location.toLowerCase().includes(cameraSearchInput.value.toLowerCase());
-      const description = camera.Views[0].Description.toLowerCase();
-      const matchesITSOnly = !itsOnly || !description.includes("rwis");
-      let routeMatches = true;
-      if(routeFilterDropdown.value !== "All") {
-        const routeObj = curatedRoutes.find(route => route.name === routeFilterDropdown.value);
-        if(routeObj) {
-          routeMatches = routeObj.locations.includes(camera.Location);
-        }
+function filterImages() {
+  visibleCameras = camerasList.filter(camera => {
+    const city = camera.Location.split(",").pop().trim();
+    const matchesCity = !cityFilterDropdown.value || city === cityFilterDropdown.value;
+    const matchesRegion = !regionFilterDropdown.value || (regionCities[regionFilterDropdown.value] && regionCities[regionFilterDropdown.value].includes(city));
+    const matchesSearch = camera.Location.toLowerCase().includes(cameraSearchInput.value.toLowerCase());
+    const description = camera.Views[0].Description.toLowerCase();
+    const matchesITSOnly = !itsOnly || !description.includes("rwis");
+    let routeMatches = true;
+    if (routeFilterDropdown.value !== "All") {
+      const routeObj = curatedRoutes.find(route => route.name === routeFilterDropdown.value);
+      if (routeObj) {
+        routeMatches = routeObj.locations.includes(camera.Location);
       }
-      col.style.display = (matchesCity && matchesRegion && matchesSearch && matchesITSOnly && routeMatches) ? "block" : "none";
+    }
+    return matchesCity && matchesRegion && matchesSearch && matchesITSOnly && routeMatches;
+  });
+
+  updateCameraCount();
+  renderGallery(visibleCameras);
+  currentIndex = 0;
+  buildCarousel();
+}
+
+  function renderGallery(cameras) {
+  galleryContainer.innerHTML = ""; // Clear previous elements
+  cameras.forEach((camera, index) => {
+    const col = document.createElement("div");
+    col.classList.add("col");
+
+    const aspectBox = document.createElement("div");
+    aspectBox.classList.add("aspect-ratio-box");
+
+    const anchor = document.createElement("a");
+    anchor.href = "#";
+    anchor.setAttribute("data-bs-toggle", "modal");
+    anchor.setAttribute("data-bs-target", "#imageModal");
+    anchor.addEventListener("click", (e) => {
+      e.preventDefault();
+      showImage(index);
     });
-    updateCameraCount();
-    currentIndex = 0;
-    buildCarousel();
-  }
+
+    const image = document.createElement("img");
+    image.src = camera.Views[0].Url; // Directly load the image
+    image.alt = `Camera at ${camera.Location}`;
+
+    anchor.appendChild(image);
+    aspectBox.appendChild(anchor);
+    col.appendChild(aspectBox);
+    galleryContainer.appendChild(col);
+  });
+}
+
 
   // --- Change Image Size ---
   function changeImageSize(minWidth) {
@@ -437,7 +468,7 @@
     if(prevSelected) prevSelected.classList.remove("selected");
 
     currentIndex = index;
-    const camera = camerasList[index];
+    const camera = visibleCameras[index];
     modalImage.src = camera.Views[0].Url;
     modalTitle.textContent = camera.Location;
 
