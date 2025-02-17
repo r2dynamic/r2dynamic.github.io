@@ -103,25 +103,6 @@
   let itsOnly = false;
   let debounceTimer;
 
-  // --- Intersection Observer for Lazy Loading ---
-  const observerOptions = {
-    root: null,
-    rootMargin: '0px',
-    threshold: 0.1
-  };
-  const lazyLoadObserver = new IntersectionObserver((entries, observer) => {
-    entries.forEach(entry => {
-      if(entry.isIntersecting) {
-        const img = entry.target;
-        if(img.dataset.src) {
-          img.src = img.dataset.src;
-          img.onload = () => img.classList.add('loaded');
-          observer.unobserve(img);
-        }
-      }
-    });
-  }, observerOptions);
-
   // --- Utility: Debounce Function ---
   function debounce(func, delay) {
     return function(...args) {
@@ -216,21 +197,15 @@
       });
 
       const image = document.createElement("img");
-      image.dataset.src = camera.Views[0].Url;
+      // Directly assign the URL since lazy loading is removed
+      image.src = camera.Views[0].Url;
       image.alt = `Camera at ${camera.Location}`;
-      image.loading = "lazy";
 
-      // Add a spinner until the image loads
-      const spinner = document.createElement("div");
-      spinner.className = "spinner";
-      aspectBox.appendChild(spinner);
-
+      // Append the image directly (spinner removed as well)
       anchor.appendChild(image);
       aspectBox.appendChild(anchor);
       col.appendChild(aspectBox);
       galleryContainer.appendChild(col);
-
-      lazyLoadObserver.observe(image);
     });
   }
   createImageElements();
@@ -333,7 +308,8 @@
     carouselIndices.forEach(camIdx => {
       const camera = camerasList[camIdx];
       const thumbImg = document.createElement("img");
-      thumbImg.dataset.src = camera.Views[0].Url;
+      // Directly assign the thumbnail URL
+      thumbImg.src = camera.Views[0].Url;
       thumbImg.alt = `Thumbnail for ${camera.Location}`;
       thumbImg.style.height = "70px";
       thumbImg.style.width = "auto";
@@ -349,16 +325,11 @@
       }
       thumbImg.addEventListener("click", () => showImage(camIdx));
       thumbnailContainer.appendChild(thumbImg);
-      lazyLoadObserver.observe(thumbImg);
     });
     // Center selected thumbnail
     const selectedThumb = thumbnailContainer.querySelector("img.selected-carousel");
     if(selectedThumb) {
-      if (!selectedThumb.complete) {
-        selectedThumb.addEventListener("load", () => centerThumbnail(thumbnailContainer, selectedThumb));
-      } else {
-        centerThumbnail(thumbnailContainer, selectedThumb);
-      }
+      centerThumbnail(thumbnailContainer, selectedThumb);
     }
   }
 
