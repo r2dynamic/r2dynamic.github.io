@@ -56,6 +56,79 @@
 
   const curatedRoutes = [
     {
+  name: "I-84 (Weber Canyon)",
+  locations: [
+    "US-89 @ I-84 EB Exit Ramp, SWE",
+    "I-84 EB @ Mouth of Weber Cyn / MP 88.18, WB",
+    "I-84 / Weber Canyon @ Power Plant / MP 89.25, WB",
+    "I-84 / Weber Canyon WB @ Milepost 91.35, MN",
+    "I-84 / Weber Canyon WB @ Milepost 92.02, MN",
+    "I-84 WB @ SR-167 / MP 92.42, MN",
+    "I-84 EB @ Milepost 96.63, MN",
+    "I-84 EB @ Milepost 106.44, MN",
+    "I-84 WB @ Milepost 109.39, MN",
+    "I-84 RWIS WB @ Devils Slide / MP 111.74, MN",
+    "I-84 EB @ I-80 / Echo Jct / MP 119.36, SU (Local)",
+    "I-84 EB @ I-80 / Echo Jct / MP 119.6, SU"
+  ]
+},
+    {
+  name: "US-89/91 (Sardine Canyon)",
+  locations: [
+    "1100 S / US-89/91 @ Main St / US-89 / SR-13, BRC",
+    "US-89/91 @ 100 S / MP 5.61, MTU",
+    "US-89/91 @ Sardine Summit / MP 10.05, BE",
+    "US-89/91 @ Milepost 12.26, CA",
+    "US-89/91 @ Milepost 13.93, WVL",
+    "US-89/91 @ Milepost 14.31, WVL",
+    "US-89/91 @ Milepost 15.17, WVL",
+    "US-89/91 @ 950 S / MP 17.18, WVL",
+    "US-89/91 @ Main St / SR-101 / MP 19.18, WVL",
+    "US-89/91 RWIS SB @ Milepost 19.9, WVL",
+    "US-89/91 @ 3200 S / 2000 W, NIB",
+    "US-89/91 @ 1000 W / SR-252, LGN",
+    "US-89/91 @ 1700 S / Park Ave / 600 W, LGN",
+    "US-89/91 @ 100 W, LGN"
+  ]
+},
+        {
+  name: "Parley's Canyon",
+  locations: [
+    "I-80 / Parley`s Canyon EB @ Exit 130 to SB I-215 E / MP 128.5, SL",
+    "I-80 / Parley`s Canyon WB @ Chain Up Area West / MP 129.2, SL",
+    "I-80 / Parley`s Canyon EB @ Chain Up Area East / MP 129.5, SL",
+    "I-80 / Parley`s Canyon WB @ Quarry / MP 129.88, SL",
+    "I-80 / Parley`s Canyon RWIS EB @ East Quarry / MP 130.36, SL (Low Lite)",
+    "I-80 / Parley`s Canyon WB @ East Quarry / MP 130.38, SL",
+    "I-80 / Parley`s Canyon WB @ Milepost 131.1, SL",
+    "I-80 / Parley`s Canyon EB @ Milepost 131.42, SL",
+    "I-80 / Parley`s Canyon WB @ Mt Aire Canyon Rd / MP 132.01, SL",
+    "I-80 / Parley`s Canyon EB @ Milepost 132.53, SL",
+    "I-80 / Parley`s Canyon EB @ Milepost 132.97, SL",
+    "I-80 / Parley`s Canyon WB @ East Canyon / SR-65 On-ramp / MP 133.61, SL",
+    "I-80 / Parley`s Canyon EB @ East Canyon / SR-65 / MP 133.96, SL",
+    "I-80 / Parley`s Canyon EB @ Milepost 134.2, SL",
+    "I-80 / Parley`s Canyon EB @ Milepost 134.47, SL",
+    "I-80 / Parley`s Canyon WB @ Mountain Dell / MP 134.54, SL",
+    "I-80 / Parley`s Canyon EB @ Milepost 134.93, SL",
+    "I-80 / Parley`s Canyon WB @ Milepost 135.35, SL",
+    "I-80 / Parleys Canyon EB @ Milepost 135.46, SL",
+    "I-80 / Parley`s Canyon WB @ Lamb`s Canyon Rd Off-ramp / MP 136.45, SL",
+    "I-80 / Parleys Canyon EB @ Milepost 136.95, SL",
+    "I-80 RWIS EB @ Parley`s Summit / MP 138.87, SL (Low Lite)",
+    "I-80 WB @ Parley`s Summit / MP 138.9, SL",
+    "I-80 EB @ Parley`s Summit / MP 139.24, SU",
+    "I-80 EB @ Summit Park / MP 140.13, SU",
+    "I-80 WB @ Milepost 141.04, SU",
+    "I-80 WB @ Jeremy Ranch / MP 141.8, SU",
+    "I-80 EB @ Powderwood Rd / MP 143.46, SU",
+    "I-80 WB @ Kimball Jct / SR-224 / MP 144.22, SU",
+    "I-80 EB @ West of US-40 / MP 145.4, SU",
+    "I-80 WB @ Silver Creek Jct / US-40 / MP 146.84, SU",
+    "I-80 WB @ Milepost 147.56, SU"
+  ]
+},
+    {
       name: "Big Cottonwood Cyn",
       locations: [
         "Wasatch Blvd / SR-190/SR-210 @ Big Cottonwood Canyon Rd / Fort Union Blvd / SR-190, CWH",
@@ -69,7 +142,7 @@
       ]
     },
     {
-      name: "Big Cottonwood Cyn",
+      name: "Little Cottonwood Cyn",
       locations: [
         "North Little Cottonwood Rd / Little Cottonwood Canyon Rd / SR-210 @ Little Cottonwood Rd / SR-209, SL",
         "Little Cottonwood Rd / SR-210 RWIS EB @ Powerhouse / MP 5.67, SL",
@@ -110,40 +183,25 @@
   ]
 },
     {
-  name: "Parley's Canyon",
+  name: "US-6",
   locations: [
-    "I-80 / Parley`s Canyon EB @ Exit 130 to SB I-215 E / MP 128.5, SL",
-    "I-80 / Parley`s Canyon WB @ Chain Up Area West / MP 129.2, SL",
-    "I-80 / Parley`s Canyon EB @ Chain Up Area East / MP 129.5, SL",
-    "I-80 / Parley`s Canyon WB @ Quarry / MP 129.88, SL",
-    "I-80 / Parley`s Canyon RWIS EB @ East Quarry / MP 130.36, SL (Low Lite)",
-    "I-80 / Parley`s Canyon WB @ East Quarry / MP 130.38, SL",
-    "I-80 / Parley`s Canyon WB @ Milepost 131.1, SL",
-    "I-80 / Parley`s Canyon EB @ Milepost 131.42, SL",
-    "I-80 / Parley`s Canyon WB @ Mt Aire Canyon Rd / MP 132.01, SL",
-    "I-80 / Parley`s Canyon EB @ Milepost 132.53, SL",
-    "I-80 / Parley`s Canyon EB @ Milepost 132.97, SL",
-    "I-80 / Parley`s Canyon WB @ East Canyon / SR-65 On-ramp / MP 133.61, SL",
-    "I-80 / Parley`s Canyon EB @ East Canyon / SR-65 / MP 133.96, SL",
-    "I-80 / Parley`s Canyon EB @ Milepost 134.2, SL",
-    "I-80 / Parley`s Canyon EB @ Milepost 134.47, SL",
-    "I-80 / Parley`s Canyon WB @ Mountain Dell / MP 134.54, SL",
-    "I-80 / Parley`s Canyon EB @ Milepost 134.93, SL",
-    "I-80 / Parley`s Canyon WB @ Milepost 135.35, SL",
-    "I-80 / Parleys Canyon EB @ Milepost 135.46, SL",
-    "I-80 / Parley`s Canyon WB @ Lamb`s Canyon Rd Off-ramp / MP 136.45, SL",
-    "I-80 / Parleys Canyon EB @ Milepost 136.95, SL",
-    "I-80 RWIS EB @ Parley`s Summit / MP 138.87, SL (Low Lite)",
-    "I-80 WB @ Parley`s Summit / MP 138.9, SL",
-    "I-80 EB @ Parley`s Summit / MP 139.24, SU",
-    "I-80 EB @ Summit Park / MP 140.13, SU",
-    "I-80 WB @ Milepost 141.04, SU",
-    "I-80 WB @ Jeremy Ranch / MP 141.8, SU",
-    "I-80 EB @ Powderwood Rd / MP 143.46, SU",
-    "I-80 WB @ Kimball Jct / SR-224 / MP 144.22, SU",
-    "I-80 EB @ West of US-40 / MP 145.4, SU",
-    "I-80 WB @ Silver Creek Jct / US-40 / MP 146.84, SU",
-    "I-80 WB @ Milepost 147.56, SU"
+    "I-15 SB @ US-6 / MP 257.65, SPF",
+    "US-6 @ Center St / 1430 E, SPF",
+    "US-6 @ Spanish Fork Pkwy / 2550 E, SPF",
+    "US-6 @ Canyon Rd / SR-198 / MP 177.12, SPF",
+    "US-6 @ Powerhouse Rd / MP 177.52, SPF",
+    "US-6 @ Milepost 182.39, UT",
+    "UDOT Rural - Trailer 4 Diamond Fork",
+    "US-6 @ Billies Mtn / MP 186.37, UT",
+    "US-6 @ US-89 / MP 187.47, UT",
+    "US-89 @ Thistle / MP 311.09, UT",
+    "US-6 RWIS EB @ Red Narrows / MP 192.9, UT",
+    "US-6 @ Cedar Haven / Sheep Creek Rd / MP 195.08, UT",
+    "US-6 @ Tie Fork Rest Area / MP 202.05, UT",
+    "US-6 @ Gilluly Switchback / MP 206.46, UT",
+    "US-6 WB @ Soldier Summit / MP 210.36, UT",
+    "US-6 @ Colton Shed / MP 217.11, UT",
+    "US-6 @ US-191 / MP 229.82, CC"
   ]
 },
     {
