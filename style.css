@@ -74,7 +74,7 @@ body {
   position: relative;
   padding-bottom: 56.25%; /* 16:9 ratio */
   overflow: hidden;
-  background: #ccc;
+ 
 }
 .aspect-ratio-box img {
   position: absolute;
