@@ -945,39 +945,51 @@
     }
     
     function buildCarousel() {
-      const thumbnailContainer = document.getElementById("thumbnailContainer");
-      thumbnailContainer.innerHTML = "";
-      const visibleImages = getVisibleImageIndices();
+  const thumbnailContainer = document.getElementById("thumbnailContainer");
+  thumbnailContainer.innerHTML = "";
+  const visibleImages = getVisibleImageIndices();
+  if (visibleImages.length === 0) return;
+  
+  // Find the position of the current image among the visible ones
+  let currentVisibleIndex = visibleImages.indexOf(currentIndex);
+  if (currentVisibleIndex === -1) currentVisibleIndex = 0;
+  
+  // Determine previous and next indices with wrap-around
+  const prevIndex = visibleImages[(currentVisibleIndex - 1 + visibleImages.length) % visibleImages.length];
+  const nextIndex = visibleImages[(currentVisibleIndex + 1) % visibleImages.length];
+  
+  // Build the carousel using only the previous, current, and next images
+  [prevIndex, currentIndex, nextIndex].forEach((camIdx) => {
+    const camera = camerasList[camIdx];
+    const thumbImg = document.createElement("img");
+    thumbImg.setAttribute("loading", "lazy");
+    thumbImg.src = camera.Views[0].Url;
+    thumbImg.style.height = "70px";
+    thumbImg.style.width = "auto";
+    thumbImg.style.objectFit = "contain";
+    thumbImg.style.border = "2px solid transparent";
+    thumbImg.style.borderRadius = "4px";
+    thumbImg.style.cursor = "pointer";
+    thumbImg.setAttribute("draggable", "false");
+    thumbImg.style.userSelect = "none";
     
-      visibleImages.forEach((camIdx) => {
-        const camera = camerasList[camIdx];
-        const thumbImg = document.createElement("img");
-        thumbImg.setAttribute("loading", "lazy");
-        thumbImg.src = camera.Views[0].Url;
-        // Force a uniform thumbnail height (70px) while keeping aspect ratio:
-        thumbImg.style.height = "70px";
-        thumbImg.style.width = "auto";
-        thumbImg.style.objectFit = "contain";
-        thumbImg.style.border = "2px solid transparent";
-        thumbImg.style.borderRadius = "4px";
-        thumbImg.style.cursor = "pointer";
-        // Disable dragging to improve desktop scrolling
-        thumbImg.setAttribute("draggable", "false");
-        thumbImg.style.userSelect = "none";
-    
-        if (camIdx === currentIndex) {
-          thumbImg.style.border = "2px solid orange";
-        }
-    
-        thumbImg.addEventListener("click", () => {
-          showImage(camIdx);
-        });
-    
-        thumbnailContainer.appendChild(thumbImg);
-      });
-    
-      scrollThumbnailIntoView();
+    // Apply the orange border only to the current image
+    if (camIdx === currentIndex) {
+      thumbImg.style.border = "2px solid orange";
     }
+    
+    thumbImg.addEventListener("click", () => {
+      showImage(camIdx);
+    });
+    
+    thumbnailContainer.appendChild(thumbImg);
+  });
+  
+  // Center the three thumbnails in the container
+  thumbnailContainer.style.display = "flex";
+  thumbnailContainer.style.justifyContent = "center";
+}
+
     
 function scrollThumbnailIntoView() {
   setTimeout(() => {
