@@ -5,6 +5,7 @@ const FILES_TO_CACHE = [
   '/index.html',
   '/style.css',
   '/script.js',
+  '/cameras.json',
   '/manifest.json',
   '/camIcon1.png',
   '/offline.html',
