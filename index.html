@@ -13,120 +13,27 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4C4E52">
   <!-- External CSS -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
   <link rel="stylesheet" href="style.css">
   <title>UDOT Cameras</title>
-  <style>
-    /* Button styling from your snippet */
-    .button {
-      display: inline-block;
-      padding: 15px 27px;
-      font-size: 17px;
-      cursor: pointer;
-      text-align: center;
-      text-decoration: none;
-      outline: none;
-      color: hsl(0, 100%, 100%);
-      background-color: hsla(125, 82%, 29%, 0.5);
-      border: none;
-      border-radius: 15px;
-      box-shadow: 0 9px hsla(0, 0%, 61%, 0.8);
-      font-weight: bold;
-      flex-wrap: wrap;
-      font-family: "Lucida Console", "Courier New", monospace;
-      margin-top: 100px;
-    }
-    .button span {
-      cursor: pointer;
-      display: inline-block;
-      position: relative;
-      transition: 0.5s;
-    }
-    .button span:after {
-      content: '\00bb';
-      position: absolute;
-      opacity: 0;
-      top: 0;
-      right: -20px;
-      transition: 0.5s;
-    }
-    .button:hover span {
-      padding-right: 25px;
-    }
-    .button:hover span:after {
-      opacity: 1;
-      right: 0;
-    }
-    .button:hover { background-color: #3e8e41; }
-    .button:active {
-      background-color: #3e8e41;
-      box-shadow: 0 5px #666;
-      transform: translateY(8px);
-    }
-    /* Splash Screen Styles */
-    #splashScreen {
-      position: fixed;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      z-index: 2000;
-      background-color: #000;
-      display: flex;
-      flex-direction: column;
-      align-items: center;
-      justify-content: center;
-      overflow: hidden;
-    }
-#splashScreen video {
-  position: absolute;
-  top: 50%;
-  left: 50%;
-  min-width: 100%;
-  min-height: 100%;
-  width: auto;
-  height: auto;
-  z-index: -1;
-  transform: translate(-50%, -50%);
-  object-fit: cover;
-}
-
-/* Media query for smaller screens */
-@media (max-width: 576px) {
-  #splashScreen video {
-    /* Optionally adjust object-position if necessary */
-    object-position: center;
-  }
-}
-
-    #splashScreen .splash-buttons {
-      z-index: 1;
-    }
-  </style>
 </head>
 <body>
   <!-- Splash Screen -->
-  <div id="splashScreen">
-    <video autoplay muted loop playsinline id="splashVideo">
-      <source src="SLCvideo.mp4" type="video/mp4" />
+  <div id="splash">
+    <!-- Background Video -->
+    <video id="splashVideo" autoplay muted loop playsinline>
+      <source src="SLCvideo.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
-    <div class="splash-buttons">
-      <!-- Customize these buttons as desired. For example, one button to view all cameras -->
-      <button class="button" id="viewAllBtn"><span>View All Cameras</span></button>
-      <!-- You can add additional buttons for other filtered views -->
-      <button class="button" id="curatedBtn"><span></span></button>
+    <!-- Overlay for buttons -->
+    <div id="splashOverlay">
+      <button class="button" id="btnFiltered"><span>View Filtered</span></button>
+      <button class="button" id="btnAll"><span>View All Cameras</span></button>
     </div>
   </div>
 
-  <!-- Header Controls Container (visible after splash screen is hidden) -->
+  <!-- Header Controls Container (initially hidden) -->
   <div class="header-controls" id="headerControls" style="display:none;">
     <!-- Camera Count -->
     <div id="cameraCount" class="camera-count" aria-live="polite" title="Click to view version history"></div>
@@ -136,22 +43,26 @@
         <i class="fas fa-filter"></i>
       </button>
       <div class="dropdown-menu p-3" style="min-width: 200px; background-color: #4C4E52;" aria-label="Filter options">
+        <!-- City Filter -->
         <div class="mb-2">
           <label for="cityFilter" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">City/County:</label>
           <select class="form-select city-filter" id="cityFilter">
             <option value="">All</option>
           </select>
         </div>
+        <!-- Region Filter -->
         <div class="mb-2">
           <label for="regionFilter" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">Region:</label>
           <select class="form-select regions-filter" id="regionFilter">
             <option value="">Regions</option>
           </select>
         </div>
+        <!-- Search -->
         <div class="mb-2">
           <label for="cameraSearch" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">Search:</label>
           <input type="text" id="cameraSearch" placeholder="Search by Name" class="form-control" />
         </div>
+        <!-- ITS Only Toggle -->
         <div class="form-check mb-2">
           <input class="form-check-input" type="checkbox" id="itsOnly" autocomplete="off" />
           <label class="form-check-label" for="itsOnly" style="color:#fff; font-size:12px;">Exclude RWIS</label>
@@ -169,29 +80,33 @@
     </div>
   </div>
 
-  <!-- Gallery Container (also hidden until splash is dismissed) -->
-  <div class="container-fluid" id="galleryWrapper" style="display:none;">
-    <div id="imageGallery" class="container-fluid"></div>
+  <!-- Gallery Container (initially hidden) -->
+  <div class="container-fluid" id="gallerySection" style="display:none;">
+    <div id="imageGallery" class="container-fluid">
+      <!-- Images will be added dynamically -->
+    </div>
   </div>
 
-  <!-- Image Modal and Version History Modal remain as before -->
-  <!-- ... (Your modals code here) ... -->
+  <!-- Image Modal & Version History Modal remain as before -->
+  <!-- ... [Your modals code here] ... -->
 
   <!-- External JavaScript Files -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
   <script src="script.js"></script>
+  <!-- Service Worker Registration -->
   <script>
-    // Simple splash screen handling:
-    // When a button is clicked, hide the splash screen and show the header and gallery
-    document.getElementById("viewAllBtn").addEventListener("click", function() {
-      document.getElementById("splashScreen").style.display = "none";
-      document.getElementById("headerControls").style.display = "flex";
-      document.getElementById("galleryWrapper").style.display = "block";
-      // Optionally, call filterImages() if needed:
-      filterImages();
-    });
-    // If you want a separate button for curated routes, add a similar event listener.
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('sw.js')
+          .then(function(registration) {
+            console.log('Service Worker registered with scope:', registration.scope);
+          })
+          .catch(function(error) {
+            console.log('Service Worker registration failed:', error);
+          });
+      });
+    }
   </script>
 </body>
 </html>
