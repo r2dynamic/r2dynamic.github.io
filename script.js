@@ -201,7 +201,6 @@
       image.src = camera.Views[0].Url;
       image.alt = `Camera at ${camera.Location}`;
 
-      // Append the image directly (spinner removed as well)
       anchor.appendChild(image);
       aspectBox.appendChild(anchor);
       col.appendChild(aspectBox);
