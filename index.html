@@ -3,12 +3,14 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
+<meta name="viewport" content="width=device-width, initial-scale=1" />
 <meta property="og:title" content="UDOT Cameras">
 <meta property="og:description" content="Interact with UDOT Cameras in a grid format">
 <meta property="og:image" content="https://udotcameras.com/camIcon1.png">
 <meta property="og:url" content="https://udotcameras.com">
 <!-- Favicon -->
 <link rel="icon" href="/camIcon1.png" type="image/png">
+
   <!-- PWA Manifest & Theme Color -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4C4E52">
@@ -989,6 +991,71 @@
   thumbnailContainer.style.display = "flex";
   thumbnailContainer.style.justifyContent = "center";
 }
+
+    
+function scrollThumbnailIntoView() {
+  setTimeout(() => {
+    const thumbnailContainer = document.getElementById("thumbnailContainer");
+    const thumbs = Array.from(thumbnailContainer.children);
+    const targetThumb = thumbs.find((thumb) => thumb.style.border.includes("orange"));
+    if (!targetThumb) return;
+
+    const newScrollLeft = targetThumb.offsetLeft - (thumbnailContainer.clientWidth / 2) + (targetThumb.offsetWidth / 2);
+    thumbnailContainer.scrollTo({
+      left: newScrollLeft,
+      behavior: "smooth"
+    });
+  }, 150); // Delay in ms to allow mobile layout to settle
+}
+
+
+    
+    (function enableDragForThumbnails() {
+      const thumbnailContainer = document.getElementById("thumbnailContainer");
+      let isDown = false;
+      let startX, scrollLeft;
+    
+      thumbnailContainer.addEventListener('mousedown', (e) => {
+        isDown = true;
+        startX = e.pageX - thumbnailContainer.offsetLeft;
+        scrollLeft = thumbnailContainer.scrollLeft;
+      });
+      thumbnailContainer.addEventListener('mouseleave', () => {
+        isDown = false;
+      });
+      thumbnailContainer.addEventListener('mouseup', () => {
+        isDown = false;
+      });
+      thumbnailContainer.addEventListener('mousemove', (e) => {
+        if (!isDown) return;
+        e.preventDefault();
+        const x = e.pageX - thumbnailContainer.offsetLeft;
+        const walk = x - startX;
+        thumbnailContainer.scrollLeft = scrollLeft - walk;
+      });
+    
+      thumbnailContainer.addEventListener('touchstart', (e) => {
+        isDown = true;
+        const touch = e.touches[0];
+        startX = touch.pageX - thumbnailContainer.offsetLeft;
+        scrollLeft = thumbnailContainer.scrollLeft;
+      });
+      thumbnailContainer.addEventListener('touchend', () => {
+        isDown = false;
+      });
+      thumbnailContainer.addEventListener('touchmove', (e) => {
+        if (!isDown) return;
+        const touch = e.touches[0];
+        const x = touch.pageX - thumbnailContainer.offsetLeft;
+        const walk = x - startX;
+        thumbnailContainer.scrollLeft = scrollLeft - walk;
+      });
+    
+      thumbnailContainer.addEventListener('wheel', (e) => {
+        e.preventDefault();
+        thumbnailContainer.scrollLeft += e.deltaY;
+      }, { passive: false });
+    })();
     
     function showNextImage() {
       const visibleImages = getVisibleImageIndices();
