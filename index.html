@@ -25,6 +25,20 @@
   <title>UDOT Cameras</title>
 </head>
 <body>
+  <!-- Landing Overlay -->
+<div id="landingPage" class="landing-overlay">
+  <video autoplay muted loop id="bgVideo">
+    <source src="background.mp4" type="video/mp4">
+    Your browser does not support the video tag.
+  </video>
+  <div class="landing-content">
+    <h1>Welcome to UDOT Cameras</h1>
+    <button id="viewAllBtn">View All Cameras</button>
+    <button id="viewRoutesBtn">Curated Routes</button>
+    <button id="viewFiltersBtn">Filtered View</button>
+  </div>
+</div>
+
   <!-- Header Controls Container -->
   <div class="header-controls">
     <!-- Camera Count (always visible, click to view version history) -->
