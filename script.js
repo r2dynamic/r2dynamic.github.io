@@ -44,7 +44,7 @@
     "BHD": "Brian Head",
     "BRC": "Brigham City",
     "BCC": "Bryce Canyon City"
-    // ... add additional mappings as needed
+    // ... additional mappings as needed
   };
 
   const regionCities = {
@@ -99,16 +99,9 @@
   const udotTrafficLink = document.getElementById("udotTrafficLink");
   const thumbnailContainer = document.getElementById("thumbnailContainer");
 
-  // --- Version Update DOM Elements ---
-  const saveVersionBtn = document.getElementById("saveVersionBtn");
-  const updateDateInput = document.getElementById("updateDate");
-  const versionCommentsInput = document.getElementById("versionComments");
-
   let currentIndex = 0;
   let itsOnly = false;
   let debounceTimer;
-  let versionUpdateDate = "";
-  let versionComments = "";
 
   // --- Intersection Observer for Lazy Loading ---
   const observerOptions = {
@@ -196,25 +189,11 @@
   cameraSearchInput.addEventListener("input", debounce(filterImages, DEBOUNCE_DELAY));
   imageSizeRange.addEventListener("input", () => changeImageSize(imageSizeRange.value));
 
-  // --- Camera Count: Show Version Update Modal on Click ---
+  // --- Camera Count: Show Version History Modal on Click ---
   cameraCountElement.addEventListener("click", () => {
     const versionModalEl = document.getElementById("versionModal");
     const versionModalInstance = new bootstrap.Modal(versionModalEl);
     versionModalInstance.show();
-  });
-
-  // --- Save Version Update ---
-  saveVersionBtn.addEventListener("click", () => {
-    versionUpdateDate = updateDateInput.value;
-    versionComments = versionCommentsInput.value;
-    updateCameraCount();
-    // Hide the modal
-    const versionModalEl = document.getElementById("versionModal");
-    const versionModalInstance = bootstrap.Modal.getInstance(versionModalEl);
-    if (versionModalInstance) versionModalInstance.hide();
-    // Clear the form inputs
-    updateDateInput.value = "";
-    versionCommentsInput.value = "";
   });
 
   // --- Build Image Gallery ---
@@ -237,7 +216,7 @@
       });
 
       const image = document.createElement("img");
-      image.dataset.src = camera.Views[0].Url; // Use data-src for lazy loading
+      image.dataset.src = camera.Views[0].Url;
       image.alt = `Camera at ${camera.Location}`;
       image.loading = "lazy";
 
@@ -256,7 +235,7 @@
   }
   createImageElements();
 
-  // --- Update Camera Count (and display version info if available) ---
+  // --- Update Camera Count (display only the count) ---
   function updateCameraCount() {
     const filteredCameras = camerasList.filter(camera => {
       const city = camera.Location.split(",").pop().trim();
@@ -274,16 +253,7 @@
       }
       return matchesCity && matchesRegion && matchesSearch && matchesITSOnly && routeMatches;
     });
-    let countHtml = `${filteredCameras.length}`;
-    if (versionUpdateDate) {
-      countHtml += `<br><small>Last update: ${versionUpdateDate}</small>`;
-    }
-    cameraCountElement.innerHTML = countHtml;
-    if (versionComments) {
-      cameraCountElement.title = versionComments;
-    } else {
-      cameraCountElement.removeAttribute("title");
-    }
+    cameraCountElement.innerHTML = `${filteredCameras.length}`;
   }
 
   // --- Filter Images ---
