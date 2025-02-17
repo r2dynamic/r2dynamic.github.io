@@ -57,13 +57,14 @@
     "Region 4": ["ALN","ANB","ANT","APV","ARA","BVR","BRL","BKL","BGW","BLA","BMT","BLD","BHD","BCC","CNV","CDL","CVY","CDC","CNF","CEV","CRV","CLW","CVD","DLT","ECB","EMO","ELS","EMR","ENO","ENT","EPH","ESC","FRV","FAY","FRN","FIL","FOU","GDL","GWD","GRR","GUN","HKV","HAT","HLP","HNV","HIA","HDL","HKY","HDN","HTN","HRC","IVN","JSP","JCT","KNB","KRV","KSH","KNG","KOO","LVR","LMT","LED","LOA","LUN","LYM","LDL","MTI","MRV","MAY","MDW","MXH","MFD","MRV","MAB","MRO","MZC","MNC","MRN","MCR","MCJ","MTP","NCL","NHR","OAC","OGV","ODV","PNG","PGH","PWN","PRC","RED","RFD","RKV","SLA","SCL","SCP","SCO","SIG","SPC","SDL","STG","STE","SMT","SNY","TOQ","TOR","TRO","VEY","VRG","WAL","WAS","WTN","MD","SJ","CC","GR","EM","SE","BV","PT","SJ","RN","GA","WN","KN","WE","SP"]
   };
 
- let curatedRoutes = [];
-try {
-  const response = await fetch('routes.json');
-  curatedRoutes = await response.json();
-} catch(e) {
-  console.error('Error fetching routes:', e);
-}
+  // --- Load Curated Routes from external file ---
+  let curatedRoutes = [];
+  try {
+    const response = await fetch('routes.json');
+    curatedRoutes = await response.json();
+  } catch(e) {
+    console.error('Error fetching routes:', e);
+  }
   const defaultRoute = "All";
 
   // --- DOM Elements ---
@@ -267,11 +268,8 @@ try {
   // --- Get Visible Image Indices ---
   function getVisibleImageIndices() {
     const cols = Array.from(document.querySelectorAll("#imageGallery .col"));
-    return cols.reduce((indices, col, idx) => {
-      // Since we're re-rendering only visible images, assume all are visible
-      indices.push(idx);
-      return indices;
-    }, []);
+    // Since we're re-rendering only visible images, assume all are visible
+    return cols.map((col, idx) => idx);
   }
 
   // --- Show Image in Modal ---
@@ -361,13 +359,14 @@ try {
 
   // --- External Link Functions ---
   function openGoogleMaps() {
-    const camera = camerasList[currentIndex];
+    // Use visibleCameras so that the correct camera is referenced.
+    const camera = visibleCameras[currentIndex];
     const googleMapsUrl = `https://www.google.com/maps?q=${camera.Latitude},${camera.Longitude}`;
     window.open(googleMapsUrl, "_blank");
   }
   function openUdotTraffic() {
-    const cameraId = camerasList[currentIndex].Id;
-    const udotTrafficUrl = `https://www.udottraffic.utah.gov/map/#camera-${cameraId}`;
+    const camera = visibleCameras[currentIndex];
+    const udotTrafficUrl = `https://www.udottraffic.utah.gov/map/#camera-${camera.Id}`;
     window.open(udotTrafficUrl, "_blank");
   }
   function openImageInNewTab() {
