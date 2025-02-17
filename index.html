@@ -25,86 +25,61 @@
   <title>UDOT Cameras</title>
 </head>
 <body>
-  <!-- Camera Count (always displayed, click to view version history) -->
-  <div id="cameraCount" class="camera-count" aria-live="polite" title="Click to view version history"></div>
+  <!-- Header Controls Container -->
+  <div class="header-controls">
+    <!-- Camera Count (always visible, click to view version history) -->
+    <div id="cameraCount" class="camera-count" aria-live="polite" title="Click to view version history"></div>
 
-  <!-- Combined Filters Dropdown -->
-  <div class="dropdown filter-dropdown" style="display:inline-block; margin-right: 10px;">
-    <button 
-      id="filterButton"
-      class="btn btn-secondary dropdown-toggle btn-smaller" 
-      type="button" 
-      data-bs-toggle="dropdown" 
-      aria-expanded="false"
-      title="Filter"
-    >
-      <i class="fas fa-filter"></i>
-    </button>
-    <div 
-      class="dropdown-menu p-3" 
-      style="min-width: 200px; background-color: #4C4E52;"
-      aria-label="Filter options"
-    >
-      <!-- City Filter -->
-      <div class="mb-2">
-        <label for="cityFilter" style="color:#fff; font-size:12px; font-weight:bold;">City/County:</label>
-        <select class="form-select city-filter" id="cityFilter">
-          <option value="">All</option>
-          <!-- Options populated by JS -->
-        </select>
-      </div>
-      <!-- Region Filter -->
-      <div class="mb-2">
-        <label for="regionFilter" style="color:#fff; font-size:12px; font-weight:bold;">Region:</label>
-        <select class="form-select regions-filter" id="regionFilter">
-          <option value="">Regions</option>
-          <!-- Options populated by JS -->
-        </select>
-      </div>
-      <!-- Search -->
-      <div class="mb-2">
-        <label for="cameraSearch" style="color:#fff; font-size:12px; font-weight:bold;">Search:</label>
-        <input type="text" id="cameraSearch" placeholder="Search by Name" />
-      </div>
-      <!-- ITS Only Toggle -->
-      <div class="form-check mb-2">
-        <input
-          class="form-check-input"
-          type="checkbox"
-          id="itsOnly"
-          autocomplete="off"
-        />
-        <label class="form-check-label" for="itsOnly" style="color:#fff; font-size:12px;">
-          Exclude RWIS
-        </label>
+    <!-- Filter Dropdown -->
+    <div class="dropdown">
+      <button id="filterButton" class="btn btn-secondary dropdown-toggle btn-smaller" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filter">
+        <i class="fas fa-filter"></i>
+      </button>
+      <div class="dropdown-menu p-3" style="min-width: 200px; background-color: #4C4E52;" aria-label="Filter options">
+        <!-- City Filter -->
+        <div class="mb-2">
+          <label for="cityFilter" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">City/County:</label>
+          <select class="form-select city-filter" id="cityFilter">
+            <option value="">All</option>
+          </select>
+        </div>
+        <!-- Region Filter -->
+        <div class="mb-2">
+          <label for="regionFilter" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">Region:</label>
+          <select class="form-select regions-filter" id="regionFilter">
+            <option value="">Regions</option>
+          </select>
+        </div>
+        <!-- Search -->
+        <div class="mb-2">
+          <label for="cameraSearch" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">Search:</label>
+          <input type="text" id="cameraSearch" placeholder="Search by Name" class="form-control" />
+        </div>
+        <!-- ITS Only Toggle -->
+        <div class="form-check mb-2">
+          <input class="form-check-input" type="checkbox" id="itsOnly" autocomplete="off" />
+          <label class="form-check-label" for="itsOnly" style="color:#fff; font-size:12px;">Exclude RWIS</label>
+        </div>
       </div>
     </div>
-  </div>
 
-  <!-- Curated Routes Dropdown -->
-  <div style="display:inline-block; margin-right: 10px; vertical-align: top;">
-    <select id="routeFilter" class="camera-count" style="width:auto;">
-      <!-- Options populated via JS -->
-    </select>
-  </div>
+    <!-- Curated Routes Dropdown -->
+    <div>
+      <select id="routeFilter" class="camera-count" style="width:auto;"></select>
+    </div>
 
-  <!-- Slider to Control Image Size -->
-  <div class="slider-container" style="display: inline-block; margin-right: 10px;">
-    <label for="imageSizeRange" style="color:#fff; font-weight:bold;">Size:</label>
-    <input
-      type="range"
-      id="imageSizeRange"
-      min="25"
-      max="370"
-      value="120"
-      step="1"
-    />
+    <!-- Size Slider -->
+    <div class="slider-container">
+      <label for="imageSizeRange" style="color:#fff; font-weight:bold;">Size:</label>
+      <input type="range" id="imageSizeRange" min="25" max="370" value="120" step="1" />
+    </div>
   </div>
+  <!-- End Header Controls -->
 
   <!-- Image Gallery -->
   <div class="container-fluid">
     <div id="imageGallery" class="container-fluid">
-      <!-- Images added dynamically via JS -->
+      <!-- Images added dynamically via script.js -->
     </div>
   </div>
 
@@ -143,36 +118,16 @@
               </a>
             </div>
             <div class="d-flex mt-2">
-              <button
-                type="button"
-                class="btn btn-secondary btn-animated btn-orange me-1"
-                id="prevImageBtn"
-                title="Previous Image"
-              >
+              <button type="button" class="btn btn-secondary btn-animated btn-orange me-1" id="prevImageBtn" title="Previous Image">
                 <i class="fas fa-arrow-left"></i>
               </button>
-              <button
-                type="button"
-                class="btn btn-secondary btn-animated btn-orange me-1"
-                id="nextImageBtn"
-                title="Next Image"
-              >
+              <button type="button" class="btn btn-secondary btn-animated btn-orange me-1" id="nextImageBtn" title="Next Image">
                 <i class="fas fa-arrow-right"></i>
               </button>
-              <button
-                type="button"
-                class="btn btn-secondary btn-animated btn-orange me-1"
-                id="openInNewTabBtn"
-                title="Open image in new tab"
-              >
+              <button type="button" class="btn btn-secondary btn-animated btn-orange me-1" id="openInNewTabBtn" title="Open image in new tab">
                 <i class="fas fa-expand"></i>
               </button>
-              <button
-                type="button"
-                class="btn btn-danger btn-animated"
-                data-bs-dismiss="modal"
-                title="Close Modal"
-              >
+              <button type="button" class="btn btn-danger btn-animated" data-bs-dismiss="modal" title="Close Modal">
                 <i class="fas fa-times"></i>
               </button>
             </div>
@@ -182,7 +137,7 @@
     </div>
   </div>
 
-  <!-- Version History Modal (static content) -->
+  <!-- Version History Modal (static content edited directly in HTML) -->
   <div class="modal fade" id="versionModal" tabindex="-1" aria-labelledby="versionModalLabel" aria-hidden="true" role="dialog">
     <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content">
@@ -192,8 +147,8 @@
         </div>
         <div class="modal-body">
           <p>Last Update: <strong>2025-02-16</strong></p>
-          <p>Version 1.0.7 – .</p>
-          <p>Comments: Removed Lazy Loading</p>
+          <p>Version 1.0.8 – </p>
+          <p>Comments: </p>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
