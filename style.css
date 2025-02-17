@@ -14,18 +14,13 @@ body {
   background-color: #4C4E52;
   display: flex;
   align-items: center;
-  justify-content: space-around;
+  justify-content: center;
   padding: 5px 10px;
-  gap: 10px;
+  gap: 5px;
   flex-wrap: nowrap;
 }
 
-/* Ensure the header remains on one row on very small screens */
-@media (max-width: 576px) {
-  .header-controls {
-    overflow-x: auto;
-  }
-}
+
 
 /* Button animations */
 .btn-animated:hover { transform: scale(1.1); }
@@ -176,7 +171,7 @@ input[type=range] {
   -webkit-appearance: none;
   -moz-appearance: none;
   appearance: none;
-  width: 150px;
+  width: 100px;
   height: 10px;
   background: #888;
   border-radius: 5px;
