@@ -234,6 +234,8 @@
     });
   }
   createImageElements();
+  // Call filterImages once on initial load so the camera count and gallery update correctly.
+  filterImages();
 
   // --- Update Camera Count (display only the count) ---
   function updateCameraCount() {
