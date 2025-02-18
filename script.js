@@ -437,8 +437,8 @@ document.addEventListener("DOMContentLoaded", () => {
   sizeSlider.id = "sizeSlider";
   sizeSlider.type = "range";
   sizeSlider.min = "25";
-  sizeSlider.max = "420";
-  sizeSlider.value = "120";
+  sizeSlider.max = "370";
+  sizeSlider.value = "160";
   sizeSlider.step = "1";
   sizeSlider.classList.add("vertical-slider");
   
