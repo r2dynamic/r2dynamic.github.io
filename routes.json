@@ -1,22 +1,5 @@
 [
-  {
-    "name": "I-84 (Weber Canyon)",
-    "locations": [
-      "US-89 @ I-84 EB Exit Ramp, SWE",
-      "I-84 EB @ Mouth of Weber Cyn / MP 88.18, WB",
-      "I-84 / Weber Canyon @ Power Plant / MP 89.25, WB",
-      "I-84 / Weber Canyon WB @ Milepost 91.35, MN",
-      "I-84 / Weber Canyon WB @ Milepost 92.02, MN",
-      "I-84 WB @ SR-167 / MP 92.42, MN",
-      "I-84 EB @ Milepost 96.63, MN",
-      "I-84 EB @ Milepost 106.44, MN",
-      "I-84 WB @ Milepost 109.39, MN",
-      "I-84 RWIS WB @ Devils Slide / MP 111.74, MN",
-      "I-84 EB @ I-80 / Echo Jct / MP 119.36, SU (Local)",
-      "I-84 EB @ I-80 / Echo Jct / MP 119.6, SU"
-    ]
-  },
-  {
+    {
     "name": "US-89/91 (Sardine Canyon)",
     "locations": [
       "1100 S / US-89/91 @ Main St / US-89 / SR-13, BRC",
@@ -33,6 +16,23 @@
       "US-89/91 @ 1000 W / SR-252, LGN",
       "US-89/91 @ 1700 S / Park Ave / 600 W, LGN",
       "US-89/91 @ 100 W, LGN"
+    ]
+  },
+  {
+    "name": "I-84 (Weber Canyon)",
+    "locations": [
+      "US-89 @ I-84 EB Exit Ramp, SWE",
+      "I-84 EB @ Mouth of Weber Cyn / MP 88.18, WB",
+      "I-84 / Weber Canyon @ Power Plant / MP 89.25, WB",
+      "I-84 / Weber Canyon WB @ Milepost 91.35, MN",
+      "I-84 / Weber Canyon WB @ Milepost 92.02, MN",
+      "I-84 WB @ SR-167 / MP 92.42, MN",
+      "I-84 EB @ Milepost 96.63, MN",
+      "I-84 EB @ Milepost 106.44, MN",
+      "I-84 WB @ Milepost 109.39, MN",
+      "I-84 RWIS WB @ Devils Slide / MP 111.74, MN",
+      "I-84 EB @ I-80 / Echo Jct / MP 119.36, SU (Local)",
+      "I-84 EB @ I-80 / Echo Jct / MP 119.6, SU"
     ]
   },
   {
