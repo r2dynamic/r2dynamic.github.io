@@ -75,7 +75,6 @@
   const cityFilterDropdown = document.getElementById("cityFilter");
   const regionFilterDropdown = document.getElementById("regionFilter");
   const routeFilterDropdown = document.getElementById("routeFilter");
-  const imageSizeRange = document.getElementById("imageSizeRange");
   const cameraSearchInput = document.getElementById("cameraSearch");
   const itsOnlyCheckbox = document.getElementById("itsOnly");
 
@@ -155,7 +154,7 @@
     filterImages();
   });
   cameraSearchInput.addEventListener("input", debounce(filterImages, DEBOUNCE_DELAY));
-  imageSizeRange.addEventListener("input", () => changeImageSize(imageSizeRange.value));
+
 
   // --- Camera Count: Show Version History Modal on Click ---
   cameraCountElement.addEventListener("click", () => {
@@ -281,12 +280,7 @@ renderGallery(visibleCameras);
     });
   }
 
-  // --- Change Image Size ---
-  function changeImageSize(minWidth) {
-    galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${minWidth}px, 1fr))`;
-  }
-  changeImageSize(imageSizeRange.value);
-
+  
   // --- Get Visible Image Indices ---
   function getVisibleImageIndices() {
     const cols = Array.from(document.querySelectorAll("#imageGallery .col"));
@@ -415,3 +409,155 @@ renderGallery(visibleCameras);
   udotTrafficLink.addEventListener("click", (e) => { e.preventDefault(); openUdotTraffic(); });
 
 })();
+
+
+
+// --- Image size selector ---
+document.addEventListener("DOMContentLoaded", () => {
+  const headerControls = document.querySelector(".header-controls");
+  
+  // Create container for the slider dropdown
+  const sizeControlContainer = document.createElement("div");
+  sizeControlContainer.id = "sizeControlContainer";
+  sizeControlContainer.classList.add("dropdown-control");
+  
+  // Create button that triggers the slider dropdown with two icons
+  const sizeControlButton = document.createElement("div");
+  sizeControlButton.id = "sizeControlButton";
+  sizeControlButton.innerHTML = "<i class='fas fa-compress'></i> <i class='fas fa-expand'></i>";
+  sizeControlContainer.appendChild(sizeControlButton);
+  headerControls.appendChild(sizeControlContainer);
+
+  // Create the hidden slider dropdown
+  const sizeSliderContainer = document.createElement("div");
+  sizeSliderContainer.id = "sizeSliderContainer";
+  sizeSliderContainer.classList.add("slider-dropdown");
+  
+  const sizeSlider = document.createElement("input");
+  sizeSlider.id = "sizeSlider";
+  sizeSlider.type = "range";
+  sizeSlider.min = "25";
+  sizeSlider.max = "420";
+  sizeSlider.value = "120";
+  sizeSlider.step = "1";
+  sizeSlider.classList.add("vertical-slider");
+  
+  sizeSliderContainer.appendChild(sizeSlider);
+  sizeControlContainer.appendChild(sizeSliderContainer);
+  
+  const imageGallery = document.getElementById("imageGallery");
+  let hideTimeout;
+
+  function updateImageSize(size) {
+      imageGallery.style.gridTemplateColumns = `repeat(auto-fit, minmax(${size}px, 1fr))`;
+  }
+
+  function showSlider() {
+      sizeSliderContainer.classList.add("active");
+      sizeSliderContainer.style.maxHeight = "150px";
+      sizeSliderContainer.style.opacity = "1";
+      clearTimeout(hideTimeout);
+  }
+
+  function hideSlider() {
+      hideTimeout = setTimeout(() => {
+          sizeSliderContainer.style.maxHeight = "0px";
+          sizeSliderContainer.style.opacity = "0";
+          sizeSliderContainer.classList.remove("active");
+      }, 2000);
+  }
+
+  sizeControlButton.addEventListener("click", () => {
+      if (sizeSliderContainer.classList.contains("active")) {
+          hideSlider();
+      } else {
+          showSlider();
+      }
+  });
+  sizeSlider.addEventListener("input", () => {
+      updateImageSize(sizeSlider.value);
+      showSlider();
+      if (navigator.vibrate) {
+          navigator.vibrate(10);
+      }
+  });
+  sizeSlider.addEventListener("change", hideSlider);
+
+  // Add required CSS dynamically
+  const style = document.createElement("style");
+  style.innerHTML = `
+      #sizeControlContainer {
+          display: inline-block;
+          position: relative;
+      }
+      #sizeControlButton {
+          background: #4CAF50;
+          color: white;
+          border: 3px solid white;
+          padding: 5px 10px;
+          font-size: 16px;
+          cursor: pointer;
+          border-radius: 6px;
+          transition: all 0.3s ease;
+          display: flex;
+          align-items: center;
+          gap: 5px;
+      }
+      #sizeControlButton i {
+          font-size: 14px;
+      }
+      #sizeControlButton:hover {
+          background: #0BDA51;
+      }
+      .slider-dropdown {
+          position: absolute;
+          top: 100%;
+          left: 50%;
+          transform: translateX(-50%);
+          width: 60px;
+          background: rgba(255, 255, 255, 0.1);
+          backdrop-filter: blur(10px);
+          border: 2px solid rgba(255, 255, 255, 0.3);
+          padding: 10px;
+          border-radius: 12px;
+          box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+          max-height: 0px;
+          opacity: 0;
+          overflow: hidden;
+          transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+          display: flex;
+          align-items: center;
+          justify-content: center;
+      }
+      .slider-dropdown.active {
+          max-height: 150px;
+          opacity: 1;
+      }
+      .vertical-slider {
+          writing-mode: bt-lr;
+          -webkit-appearance: slider-vertical;
+          appearance: slider-vertical;
+          height: 120px;
+          width: 8px;
+          background: white;
+          border-radius: 10px;
+          outline: none;
+          transition: opacity 0.3s ease-in-out;
+      }
+      .vertical-slider::-webkit-slider-thumb {
+          appearance: none;
+          width: 15px;
+          height: 15px;
+          background: #FFA500;
+          border-radius: 50%;
+          cursor: pointer;
+          transition: transform 0.2s;
+      }
+      .vertical-slider::-webkit-slider-thumb:hover {
+          transform: scale(1.2);
+      }
+  `;
+  document.head.appendChild(style);
+});
+
+
