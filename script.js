@@ -214,17 +214,39 @@
       const description = camera.Views[0].Description.toLowerCase();
       const matchesITSOnly = !itsOnly || !description.includes("rwis");
       let routeMatches = true;
-      if (routeFilterDropdown.value !== "All") {
-        const routeObj = curatedRoutes.find(route => route.name === routeFilterDropdown.value);
-        if (routeObj) {
-          routeMatches = routeObj.locations.includes(camera.Location);
-        }
-      }
+let routeIndex = 0;
+
+if (routeFilterDropdown.value !== "All") {
+  const routeObj = curatedRoutes.find(route => route.name === routeFilterDropdown.value);
+  if (routeObj) {
+    const locationIndex = routeObj.locations.indexOf(camera.Location);
+    if (locationIndex === -1) {
+      routeMatches = false;
+    } else {
+      routeMatches = true;
+      routeIndex = locationIndex; // Store the index for sorting later
+    }
+  }
+}
+
       return matchesCity && matchesRegion && matchesSearch && matchesITSOnly && routeMatches;
     });
 
     updateCameraCount();
-    renderGallery(visibleCameras);
+    // Sort visible cameras by their order in the selected route (if applicable)
+if (routeFilterDropdown.value !== "All") {
+  const routeObj = curatedRoutes.find(route => route.name === routeFilterDropdown.value);
+  if (routeObj) {
+    visibleCameras.sort((a, b) => {
+      const indexA = routeObj.locations.indexOf(a.Location);
+      const indexB = routeObj.locations.indexOf(b.Location);
+      return indexA - indexB;
+    });
+  }
+}
+
+renderGallery(visibleCameras);
+
     currentIndex = 0;
     buildCarousel();
   }
