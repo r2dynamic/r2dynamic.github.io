@@ -1,25 +1,25 @@
 // Wrap everything in an async IIFE so we can await the fetch
 (async function() {
   'use strict';
-
+ 
   // --- Constants ---
   const DEBOUNCE_DELAY = 300;
   const LEFT_COUNT = 10;
   const RIGHT_COUNT = 10;
-
+ 
   // --- Fetch cameras JSON from external file ---
   let camerasList = [];
   try {
     const response = await fetch('cameras.json');
     const data = await response.json();
     camerasList = data.CamerasList.filter(camera => !(camera.Latitude === 0.0 && camera.Longitude === 0.0));
-  } catch(e) {
+  } catch (e) {
     console.error('Error fetching cameras JSON:', e);
   }
-
+ 
   // Global array to store the cameras that pass the filters
   let visibleCameras = [];
-
+ 
   // --- Mappings & Data ---
   const cityFullNames = {
     "ALP": "Alpine",
@@ -49,46 +49,60 @@
     "BCC": "Bryce Canyon City"
     // ... additional mappings as needed
   };
-
+ 
   const regionCities = {
     "Region 1": ["AMG","BRV","BTF","BRC","CVL","CLK","CFD","CTN","CRN","CNS","ELW","FRM","FRW","FLD","FRU","GRC","GAR","HRV","HYV","HPR","HWL","HTV","HYD","HYR","KAY","LKT","LTN","LEW","LGN","MTU","MSV","MDN","MLV","MGN","NTN","NIB","NLG","NOG","NSL","OGD","PDS","PRY","PLC","PLV","PLY","PTG","PVD","RAN","RMD","RHT","RDL","ROY","SMF","SNO","SOG","SWE","SUN","SYR","TRE","TNT","UIN","VAL","WTE","WVL","WBN","WHV","WPT","WIL","WDF","WXS","BE","CA","RI","WB","MN","DA"],
     "Region 2": ["ALT","BLF","CNR","CLV","CWH","CWW","DPR","DUG","EMC","ERD","FRA","GNT","GVL","HFR","HRR","HDY","KMS","KRN","LKP","MAG","MDV","MCK","MTO","MUR","OKY","OPH","OQR","PKC","RVT","RVY","SLC","SND","SJO","SSL","STP","STO","TAY","TLE","UNI","VRN","WEN","WJD","WVC","WHC","SU","SL","TE"],
     "Region 3": ["ALP","ALM","AFK","BAL","CDF","CDH","CHR","DAN","DCH","EAG","ELK","EUR","FRF","FTD","GEN","GOS","HBR","HLD","KTY","LHI","LVN","LDN","MAE","MNL","MPL","MWY","MNA","MYT","NPL","NEO","NPH","ORM","PSN","PLG","PVO","RDT","RKR","RSV","STQ","SSP","SOL","SPF","SPV","TAB","THI","VNL","VIN","WBG","WRK","WLH","JU","UT","WA","DU","UN","DG"],
     "Region 4": ["ALN","ANB","ANT","APV","ARA","BVR","BRL","BKL","BGW","BLA","BMT","BLD","BHD","BCC","CNV","CDL","CVY","CDC","CNF","CEV","CRV","CLW","CVD","DLT","ECB","EMO","ELS","EMR","ENO","ENT","EPH","ESC","FRV","FAY","FRN","FIL","FOU","GDL","GWD","GRR","GUN","HKV","HAT","HLP","HNV","HIA","HDL","HKY","HDN","HTN","HRC","IVN","JSP","JCT","KNB","KRV","KSH","KNG","KOO","LVR","LMT","LED","LOA","LUN","LYM","LDL","MTI","MRV","MAY","MDW","MXH","MFD","MRV","MAB","MRO","MZC","MNC","MRN","MCR","MCJ","MTP","NCL","NHR","OAC","OGV","ODV","PNG","PGH","PWN","PRC","RED","RFD","RKV","SLA","SCL","SCP","SCO","SIG","SPC","SDL","STG","STE","SMT","SNY","TOQ","TOR","TRO","VEY","VRG","WAL","WAS","WTN","MD","SJ","CC","GR","EM","SE","BV","PT","SJ","RN","GA","WN","KN","WE","SP"]
   };
-
+ 
   // --- Load Curated Routes from external file ---
   let curatedRoutes = [];
   try {
     const response = await fetch('routes.json');
     curatedRoutes = await response.json();
-  } catch(e) {
+  } catch (e) {
     console.error('Error fetching routes:', e);
   }
   const defaultRoute = "All";
-
+ 
   // --- DOM Elements ---
   const galleryContainer = document.getElementById("imageGallery");
   const modalImage = document.getElementById("modalImage");
   const modalTitle = document.querySelector(".modal-title");
   const cameraCountElement = document.getElementById("cameraCount");
-  const cityFilterDropdown = document.getElementById("cityFilter");
-  const regionFilterDropdown = document.getElementById("regionFilter");
-  const routeFilterDropdown = document.getElementById("routeFilter");
-  const cameraSearchInput = document.getElementById("cameraSearch");
-  const itsOnlyCheckbox = document.getElementById("itsOnly");
-
+  
+  // Search dropdown input element
+  const searchInput = document.getElementById("searchInput");
+  
+  // Elements for City/County and Region dropdowns
+  const cityFilterMenu = document.getElementById("cityFilterMenu");
+  const regionFilterMenu = document.getElementById("regionFilterMenu");
+  const cityDropdownButton = document.getElementById("cityDropdownButton");
+  const regionDropdownButton = document.getElementById("regionDropdownButton");
+  
+  // Elements for Curated Routes dropdown
+  const routeFilterButton = document.getElementById("routeFilterButton");
+  const routeFilterMenu = document.getElementById("routeFilterMenu");
+  
+  // Other DOM elements remain unchanged
   const prevImageBtn = document.getElementById("prevImageBtn");
   const nextImageBtn = document.getElementById("nextImageBtn");
   const openInNewTabBtn = document.getElementById("openInNewTabBtn");
   const googleMapsLink = document.getElementById("googleMapsLink");
   const udotTrafficLink = document.getElementById("udotTrafficLink");
   const thumbnailContainer = document.getElementById("thumbnailContainer");
-
+ 
   let currentIndex = 0;
-  let itsOnly = false;
   let debounceTimer;
-
+ 
+  // Variables for selections
+  let selectedCity = "";
+  let selectedRegion = "";
+  let searchQuery = "";
+  let selectedRoute = "All";
+ 
   // --- Utility: Debounce Function ---
   function debounce(func, delay) {
     return function(...args) {
@@ -96,84 +110,149 @@
       debounceTimer = setTimeout(() => func.apply(this, args), delay);
     };
   }
-
-  // --- Populate Dropdowns ---
-  function updateRouteOptions() {
-    routeFilterDropdown.innerHTML = '<option value="All">All Routes</option>';
-    curatedRoutes.forEach(route => {
-      const option = document.createElement("option");
-      option.value = route.name;
-      option.textContent = route.name;
-      routeFilterDropdown.appendChild(option);
-    });
-    routeFilterDropdown.value = defaultRoute;
-  }
-  updateRouteOptions();
-
-  function populateRegionOptions() {
-    Object.keys(regionCities).forEach(region => {
-      const option = document.createElement("option");
-      option.value = region;
-      option.textContent = region;
-      regionFilterDropdown.appendChild(option);
-    });
-    regionFilterDropdown.value = "";
-  }
-  populateRegionOptions();
-
-  // Extract unique cities from camera data (using the last comma-separated part)
+ 
+  // --- Populate City Dropdown ---
   const cities = camerasList.map(camera => camera.Location.split(",").pop().trim());
   const uniqueCities = [...new Set(cities.filter(city => city.length <= 4))];
-
-  function updateCityOptions() {
-    const regionValue = regionFilterDropdown.value;
+ 
+  function updateCityDropdown() {
+    cityFilterMenu.innerHTML = "";
+    // Default option
+    const defaultLi = document.createElement("li");
+    const defaultA = document.createElement("a");
+    defaultA.classList.add("dropdown-item");
+    defaultA.href = "#";
+    defaultA.setAttribute("data-value", "");
+    defaultA.textContent = "All";
+    defaultLi.appendChild(defaultA);
+    cityFilterMenu.appendChild(defaultLi);
+ 
     let filteredCities = uniqueCities;
-    if (regionValue && regionCities[regionValue]) {
-      filteredCities = uniqueCities.filter(city => regionCities[regionValue].includes(city));
+    if (selectedRegion && regionCities[selectedRegion]) {
+      filteredCities = uniqueCities.filter(city => regionCities[selectedRegion].includes(city));
     }
-    cityFilterDropdown.innerHTML = '<option value="">All</option>';
     filteredCities.sort().forEach(city => {
-      const option = document.createElement("option");
-      option.value = city;
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.classList.add("dropdown-item");
+      a.href = "#";
+      a.setAttribute("data-value", city);
       const fullName = cityFullNames[city] || "";
-      option.textContent = fullName ? `${city} (${fullName})` : city;
-      cityFilterDropdown.appendChild(option);
+      a.textContent = fullName ? `${city} (${fullName})` : city;
+      li.appendChild(a);
+      cityFilterMenu.appendChild(li);
     });
   }
-  updateCityOptions();
-
-  // --- Event Listeners for Filters ---
-  regionFilterDropdown.addEventListener("change", () => {
-    updateCityOptions();
-    filterImages();
+  updateCityDropdown();
+ 
+  // --- Populate Region Dropdown ---
+  function populateRegionDropdown() {
+    regionFilterMenu.innerHTML = "";
+    // Default option
+    const defaultLi = document.createElement("li");
+    const defaultA = document.createElement("a");
+    defaultA.classList.add("dropdown-item");
+    defaultA.href = "#";
+    defaultA.setAttribute("data-value", "");
+    defaultA.textContent = "All Regions";
+    defaultLi.appendChild(defaultA);
+    regionFilterMenu.appendChild(defaultLi);
+ 
+    Object.keys(regionCities).forEach(region => {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.classList.add("dropdown-item");
+      a.href = "#";
+      a.setAttribute("data-value", region);
+      a.textContent = region;
+      li.appendChild(a);
+      regionFilterMenu.appendChild(li);
+    });
+  }
+  populateRegionDropdown();
+ 
+  // --- Populate Curated Routes Dropdown ---
+  function updateRouteOptions() {
+    routeFilterMenu.innerHTML = '<li><a class="dropdown-item" href="#" data-value="All">All Routes</a></li>';
+    curatedRoutes.forEach(route => {
+      const li = document.createElement("li");
+      const a = document.createElement("a");
+      a.classList.add("dropdown-item");
+      a.href = "#";
+      a.setAttribute("data-value", route.name);
+      a.textContent = route.name;
+      li.appendChild(a);
+      routeFilterMenu.appendChild(li);
+    });
+  }
+  updateRouteOptions();
+ 
+  // --- Event Listeners for City Dropdown ---
+  cityFilterMenu.addEventListener("click", function(e) {
+    e.preventDefault();
+    if (e.target && e.target.matches("a.dropdown-item")) {
+      selectedCity = e.target.getAttribute("data-value");
+      cityDropdownButton.innerHTML = `<i class="fas fa-map-marked-alt"></i>`;
+      if (e.target.textContent !== "All") {
+        cityDropdownButton.innerHTML += ` ${e.target.textContent}`;
+      }
+      filterImages();
+    }
   });
-  cityFilterDropdown.addEventListener("change", filterImages);
-  routeFilterDropdown.addEventListener("change", filterImages);
-  itsOnlyCheckbox.addEventListener("change", () => {
-    itsOnly = itsOnlyCheckbox.checked;
-    filterImages();
+ 
+  // --- Event Listeners for Region Dropdown ---
+  regionFilterMenu.addEventListener("click", function(e) {
+    e.preventDefault();
+    if (e.target && e.target.matches("a.dropdown-item")) {
+      selectedRegion = e.target.getAttribute("data-value");
+      regionDropdownButton.innerHTML = `<i class="fas fa-industry"></i>`;
+      if (e.target.textContent !== "All Regions") {
+        regionDropdownButton.innerHTML += ` ${e.target.textContent}`;
+      }
+      // Reset city selection when region changes
+      selectedCity = "";
+      cityDropdownButton.innerHTML = `<i class="fas fa-map-marked-alt"></i>`;
+      updateCityDropdown();
+      filterImages();
+    }
   });
-  cameraSearchInput.addEventListener("input", debounce(filterImages, DEBOUNCE_DELAY));
-
-
-  // --- Camera Count: Show Version History Modal on Click ---
+ 
+  // --- Event Listener for Curated Routes Dropdown ---
+  routeFilterMenu.addEventListener("click", function(e) {
+    e.preventDefault();
+    if (e.target && e.target.matches("a.dropdown-item")) {
+      selectedRoute = e.target.getAttribute("data-value");
+      routeFilterButton.innerHTML = `<i class="fas fa-road"></i>`;
+      if (e.target.textContent !== "All Routes") {
+        routeFilterButton.innerHTML += ` ${e.target.textContent}`;
+      }
+      filterImages();
+    }
+  });
+ 
+  // --- Event Listener for Search Dropdown ---
+  searchInput.addEventListener("input", debounce(function() {
+    searchQuery = searchInput.value;
+    filterImages();
+  }, DEBOUNCE_DELAY));
+ 
+  // --- Camera Count Click ---
   cameraCountElement.addEventListener("click", () => {
     const versionModalEl = document.getElementById("versionModal");
     const versionModalInstance = new bootstrap.Modal(versionModalEl);
     versionModalInstance.show();
   });
-
+ 
   // --- Build Image Gallery ---
-  // Initially, create all image elements (they will be replaced by renderGallery when filtering)
   function createImageElements() {
     galleryContainer.innerHTML = "";
     camerasList.forEach((camera, index) => {
       const col = document.createElement("div");
       col.classList.add("col");
-
+ 
       const aspectBox = document.createElement("div");
       aspectBox.classList.add("aspect-ratio-box");
-
+ 
       const anchor = document.createElement("a");
       anchor.href = "#";
       anchor.setAttribute("data-bs-toggle", "modal");
@@ -182,12 +261,11 @@
         e.preventDefault();
         showImage(index);
       });
-
+ 
       const image = document.createElement("img");
-      // Directly assign the URL since lazy loading is removed
       image.src = camera.Views[0].Url;
       image.alt = `Camera at ${camera.Location}`;
-
+ 
       anchor.appendChild(image);
       aspectBox.appendChild(anchor);
       col.appendChild(aspectBox);
@@ -195,71 +273,45 @@
     });
   }
   createImageElements();
-  // Call filterImages once on initial load so the camera count and gallery update correctly.
   filterImages();
-
-  // --- Update Camera Count ---
+ 
   function updateCameraCount() {
     cameraCountElement.innerHTML = `${visibleCameras.length}`;
   }
-
+ 
   // --- Filter Images ---
   function filterImages() {
     visibleCameras = camerasList.filter(camera => {
       const city = camera.Location.split(",").pop().trim();
-      const matchesCity = !cityFilterDropdown.value || city === cityFilterDropdown.value;
-      const matchesRegion = !regionFilterDropdown.value || (regionCities[regionFilterDropdown.value] && regionCities[regionFilterDropdown.value].includes(city));
-      const matchesSearch = camera.Location.toLowerCase().includes(cameraSearchInput.value.toLowerCase());
-      const description = camera.Views[0].Description.toLowerCase();
-      const matchesITSOnly = !itsOnly || !description.includes("rwis");
+      const matchesCity = !selectedCity || city === selectedCity;
+      const matchesRegion = !selectedRegion || (regionCities[selectedRegion] && regionCities[selectedRegion].includes(city));
+      const matchesSearch = camera.Location.toLowerCase().includes(searchQuery.toLowerCase());
       let routeMatches = true;
-let routeIndex = 0;
-
-if (routeFilterDropdown.value !== "All") {
-  const routeObj = curatedRoutes.find(route => route.name === routeFilterDropdown.value);
-  if (routeObj) {
-    const locationIndex = routeObj.locations.indexOf(camera.Location);
-    if (locationIndex === -1) {
-      routeMatches = false;
-    } else {
-      routeMatches = true;
-      routeIndex = locationIndex; // Store the index for sorting later
-    }
-  }
-}
-
-      return matchesCity && matchesRegion && matchesSearch && matchesITSOnly && routeMatches;
+      if (selectedRoute !== "All") {
+        const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
+        if (routeObj) {
+          routeMatches = routeObj.locations.includes(camera.Location);
+        }
+      }
+      return matchesCity && matchesRegion && matchesSearch && routeMatches;
     });
-
+ 
     updateCameraCount();
-    // Sort visible cameras by their order in the selected route (if applicable)
-if (routeFilterDropdown.value !== "All") {
-  const routeObj = curatedRoutes.find(route => route.name === routeFilterDropdown.value);
-  if (routeObj) {
-    visibleCameras.sort((a, b) => {
-      const indexA = routeObj.locations.indexOf(a.Location);
-      const indexB = routeObj.locations.indexOf(b.Location);
-      return indexA - indexB;
-    });
-  }
-}
-
-renderGallery(visibleCameras);
-
+    renderGallery(visibleCameras);
     currentIndex = 0;
     buildCarousel();
   }
-
-  // --- Render Gallery for Filtered Cameras ---
+ 
+  // --- Render Gallery ---
   function renderGallery(cameras) {
-    galleryContainer.innerHTML = ""; // Clear previous elements
+    galleryContainer.innerHTML = "";
     cameras.forEach((camera, index) => {
       const col = document.createElement("div");
       col.classList.add("col");
-
+ 
       const aspectBox = document.createElement("div");
       aspectBox.classList.add("aspect-ratio-box");
-
+ 
       const anchor = document.createElement("a");
       anchor.href = "#";
       anchor.setAttribute("data-bs-toggle", "modal");
@@ -268,55 +320,50 @@ renderGallery(visibleCameras);
         e.preventDefault();
         showImage(index);
       });
-
+ 
       const image = document.createElement("img");
-      image.src = camera.Views[0].Url; // Directly load the image
+      image.src = camera.Views[0].Url;
       image.alt = `Camera at ${camera.Location}`;
-
+ 
       anchor.appendChild(image);
       aspectBox.appendChild(anchor);
       col.appendChild(aspectBox);
       galleryContainer.appendChild(col);
     });
   }
-
-  
-  // --- Get Visible Image Indices ---
+ 
   function getVisibleImageIndices() {
     const cols = Array.from(document.querySelectorAll("#imageGallery .col"));
-    // Since we're re-rendering only visible images, assume all are visible
     return cols.map((col, idx) => idx);
   }
-
-  // --- Show Image in Modal ---
+ 
   function showImage(index) {
     const prevSelected = document.querySelector(".aspect-ratio-box.selected");
-    if(prevSelected) prevSelected.classList.remove("selected");
-
+    if (prevSelected) prevSelected.classList.remove("selected");
+ 
     currentIndex = index;
     const camera = visibleCameras[index];
     modalImage.src = camera.Views[0].Url;
     modalTitle.textContent = camera.Location;
-
+ 
     const selectedBox = galleryContainer.children[index].querySelector(".aspect-ratio-box");
-    if(selectedBox) selectedBox.classList.add("selected");
-
+    if (selectedBox) selectedBox.classList.add("selected");
+ 
     buildCarousel();
   }
-
-  // --- Build Carousel for Thumbnails ---
+ 
   function buildCarousel() {
     thumbnailContainer.innerHTML = "";
     const visibleImages = getVisibleImageIndices();
-    if(visibleImages.length === 0) return;
+    if (visibleImages.length === 0) return;
     const totalVisible = visibleImages.length;
     const desiredWindow = LEFT_COUNT + 1 + RIGHT_COUNT;
     const windowSize = Math.min(totalVisible, desiredWindow);
     let currentVisibleIndex = visibleImages.indexOf(currentIndex);
-    if(currentVisibleIndex === -1) currentVisibleIndex = 0;
+    if (currentVisibleIndex === -1) currentVisibleIndex = 0;
     const start = (((currentVisibleIndex - LEFT_COUNT) % totalVisible) + totalVisible) % totalVisible;
     const carouselIndices = [];
-    for(let i = 0; i < windowSize; i++){
+    for (let i = 0; i < windowSize; i++) {
       const idx = (start + i) % totalVisible;
       carouselIndices.push(visibleImages[idx]);
     }
@@ -333,20 +380,19 @@ renderGallery(visibleCameras);
       thumbImg.style.cursor = "pointer";
       thumbImg.draggable = false;
       thumbImg.style.userSelect = "none";
-      if(camIdx === currentIndex) {
+      if (camIdx === currentIndex) {
         thumbImg.style.border = "2px solid orange";
         thumbImg.classList.add("selected-carousel");
       }
       thumbImg.addEventListener("click", () => showImage(camIdx));
       thumbnailContainer.appendChild(thumbImg);
     });
-    // Center selected thumbnail
     const selectedThumb = thumbnailContainer.querySelector("img.selected-carousel");
-    if(selectedThumb) {
+    if (selectedThumb) {
       centerThumbnail(thumbnailContainer, selectedThumb);
     }
   }
-
+ 
   function centerThumbnail(container, thumb) {
     const containerWidth = container.offsetWidth;
     const thumbLeft = thumb.offsetLeft;
@@ -354,210 +400,158 @@ renderGallery(visibleCameras);
     const scrollPos = thumbLeft - (containerWidth / 2) + (thumbWidth / 2);
     container.scroll({ left: scrollPos, behavior: "smooth" });
   }
-
-  // --- Navigation Functions ---
+ 
   function showNextImage() {
     const visibleImages = getVisibleImageIndices();
-    if(visibleImages.length === 0) return;
+    if (visibleImages.length === 0) return;
     const currentVisibleIndex = visibleImages.indexOf(currentIndex);
-    if(currentVisibleIndex === -1) return;
+    if (currentVisibleIndex === -1) return;
     const nextIndex = (currentVisibleIndex + 1) % visibleImages.length;
     showImage(visibleImages[nextIndex]);
   }
+ 
   function showPreviousImage() {
     const visibleImages = getVisibleImageIndices();
-    if(visibleImages.length === 0) return;
+    if (visibleImages.length === 0) return;
     const currentVisibleIndex = visibleImages.indexOf(currentIndex);
-    if(currentVisibleIndex === -1) return;
+    if (currentVisibleIndex === -1) return;
     const prevIndex = (currentVisibleIndex - 1 + visibleImages.length) % visibleImages.length;
     showImage(visibleImages[prevIndex]);
   }
-
-  // --- External Link Functions ---
+ 
   function openGoogleMaps() {
-    // Use visibleCameras so that the correct camera is referenced.
     const camera = visibleCameras[currentIndex];
     const googleMapsUrl = `https://www.google.com/maps?q=${camera.Latitude},${camera.Longitude}`;
     window.open(googleMapsUrl, "_blank");
   }
+  
   function openUdotTraffic() {
     const camera = visibleCameras[currentIndex];
     const udotTrafficUrl = `https://www.udottraffic.utah.gov/map/#camera-${camera.Id}`;
     window.open(udotTrafficUrl, "_blank");
   }
+  
   function openImageInNewTab() {
     window.open(modalImage.src, "_blank");
   }
-
-  // --- Keyboard Navigation in Modal ---
+ 
   document.addEventListener("keydown", (event) => {
     const modalIsOpen = document.querySelector("#imageModal.show");
-    if(!modalIsOpen) return;
-    if(event.key === "ArrowLeft") showPreviousImage();
-    else if(event.key === "ArrowRight") showNextImage();
-    else if(event.key === "Escape") {
+    if (!modalIsOpen) return;
+    if (event.key === "ArrowLeft") showPreviousImage();
+    else if (event.key === "ArrowRight") showNextImage();
+    else if (event.key === "Escape") {
       const modal = bootstrap.Modal.getInstance(document.getElementById("imageModal"));
-      if(modal) modal.hide();
+      if (modal) modal.hide();
     }
   });
-
-  // --- Button Event Listeners ---
+ 
   prevImageBtn.addEventListener("click", showPreviousImage);
   nextImageBtn.addEventListener("click", showNextImage);
   openInNewTabBtn.addEventListener("click", openImageInNewTab);
   googleMapsLink.addEventListener("click", (e) => { e.preventDefault(); openGoogleMaps(); });
   udotTrafficLink.addEventListener("click", (e) => { e.preventDefault(); openUdotTraffic(); });
-
 })();
-
-
-
-// --- Image size selector ---
-document.addEventListener("DOMContentLoaded", () => {
-  const headerControls = document.querySelector(".header-controls");
+ 
+// --- Additional DOMContentLoaded for auto-close behavior, slider events, and haptic feedback ---
+document.addEventListener('DOMContentLoaded', () => {
+  // For each dropdown toggle, add mouseenter/mouseleave to delay auto-close when interacting
+  const dropdownToggles = document.querySelectorAll('.dropdown-toggle');
+  dropdownToggles.forEach(toggle => {
+      let closeTimer;
+      const dropdownMenu = toggle.nextElementSibling;
+      toggle.addEventListener('shown.bs.dropdown', function () {
+          // Hide any other open dropdowns immediately
+          dropdownToggles.forEach(otherToggle => {
+            if (otherToggle !== toggle) {
+              const instance = bootstrap.Dropdown.getInstance(otherToggle);
+              if (instance) instance.hide();
+            }
+          });
+      });
+      if (dropdownMenu) {
+          dropdownMenu.addEventListener('mouseenter', () => {
+              clearTimeout(closeTimer);
+          });
+          dropdownMenu.addEventListener('mouseleave', () => {
+              closeTimer = setTimeout(() => {
+                  const instance = bootstrap.Dropdown.getInstance(toggle);
+                  if (instance) instance.hide();
+              }, 5000);
+          });
+      }
+  });
   
-  // Create container for the slider dropdown
-  const sizeControlContainer = document.createElement("div");
-  sizeControlContainer.id = "sizeControlContainer";
-  sizeControlContainer.classList.add("dropdown-control");
+  // Close dropdowns if clicking outside
+  document.addEventListener('click', function(event) {
+    dropdownToggles.forEach(function(toggle) {
+      const dropdownMenu = toggle.nextElementSibling;
+      if (dropdownMenu && !toggle.contains(event.target) && !dropdownMenu.contains(event.target)) {
+        const instance = bootstrap.Dropdown.getInstance(toggle);
+        if (instance) instance.hide();
+      }
+    });
+  });
   
-  // Create button that triggers the slider dropdown with two icons
-  const sizeControlButton = document.createElement("div");
-  sizeControlButton.id = "sizeControlButton";
-  sizeControlButton.innerHTML = "<i class='fas fa-compress'></i> <i class='fas fa-expand'></i>";
-  sizeControlContainer.appendChild(sizeControlButton);
-  headerControls.appendChild(sizeControlContainer);
-
-  // Create the hidden slider dropdown
-  const sizeSliderContainer = document.createElement("div");
-  sizeSliderContainer.id = "sizeSliderContainer";
-  sizeSliderContainer.classList.add("slider-dropdown");
-  
-  const sizeSlider = document.createElement("input");
-  sizeSlider.id = "sizeSlider";
-  sizeSlider.type = "range";
-  sizeSlider.min = "25";
-  sizeSlider.max = "370";
-  sizeSlider.value = "160";
-  sizeSlider.step = "1";
-  sizeSlider.classList.add("vertical-slider");
-  
-  sizeSliderContainer.appendChild(sizeSlider);
-  sizeControlContainer.appendChild(sizeSliderContainer);
-  
+  // --- Image Size Slider event handlers ---
+  const sizeControlButton = document.getElementById("sizeControlButton");
+  const sizeSliderContainer = document.getElementById("sizeSliderContainer");
+  const sizeSlider = document.getElementById("sizeSlider");
   const imageGallery = document.getElementById("imageGallery");
   let hideTimeout;
-
+  
   function updateImageSize(size) {
-      imageGallery.style.gridTemplateColumns = `repeat(auto-fit, minmax(${size}px, 1fr))`;
+    imageGallery.style.gridTemplateColumns = `repeat(auto-fit, minmax(${size}px, 1fr))`;
   }
-
+  
   function showSlider() {
-      sizeSliderContainer.classList.add("active");
-      sizeSliderContainer.style.maxHeight = "150px";
-      sizeSliderContainer.style.opacity = "1";
-      clearTimeout(hideTimeout);
+    sizeSliderContainer.classList.add("active");
+    sizeSliderContainer.style.maxHeight = "150px";
+    sizeSliderContainer.style.opacity = "1";
+    clearTimeout(hideTimeout);
   }
-
+  
   function hideSlider() {
-      hideTimeout = setTimeout(() => {
-          sizeSliderContainer.style.maxHeight = "0px";
-          sizeSliderContainer.style.opacity = "0";
-          sizeSliderContainer.classList.remove("active");
-      }, 2000);
+    hideTimeout = setTimeout(() => {
+      sizeSliderContainer.style.maxHeight = "0px";
+      sizeSliderContainer.style.opacity = "0";
+      sizeSliderContainer.classList.remove("active");
+    }, 2000);
   }
-
+  
   sizeControlButton.addEventListener("click", () => {
-      if (sizeSliderContainer.classList.contains("active")) {
-          hideSlider();
-      } else {
-          showSlider();
-      }
-  });
-  sizeSlider.addEventListener("input", () => {
-      updateImageSize(sizeSlider.value);
+    if (sizeSliderContainer.classList.contains("active")) {
+      hideSlider();
+    } else {
       showSlider();
-      if (navigator.vibrate) {
-          navigator.vibrate(10);
-      }
+    }
   });
+  
+  sizeSlider.addEventListener("input", () => {
+    updateImageSize(sizeSlider.value);
+    showSlider();
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  });
+  
   sizeSlider.addEventListener("change", hideSlider);
-
-  // Add required CSS dynamically
-  const style = document.createElement("style");
-  style.innerHTML = `
-      #sizeControlContainer {
-          display: inline-block;
-          position: relative;
+  
+  // New: Close the slider if a click occurs outside its container or its button
+  document.addEventListener("click", function(event) {
+    if (sizeSliderContainer.classList.contains("active")) {
+      if (!sizeSliderContainer.contains(event.target) && !sizeControlButton.contains(event.target)) {
+        hideSlider();
       }
-      #sizeControlButton {
-          background: #4CAF50;
-          color: white;
-          border: 3px solid white;
-          padding: 5px 10px;
-          font-size: 16px;
-          cursor: pointer;
-          border-radius: 6px;
-          transition: all 0.3s ease;
-          display: flex;
-          align-items: center;
-          gap: 5px;
+    }
+  });
+  
+  // --- Haptic Feedback on All Buttons ---
+  document.querySelectorAll('.button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (navigator.vibrate) {
+        navigator.vibrate(10);
       }
-      #sizeControlButton i {
-          font-size: 14px;
-      }
-      #sizeControlButton:hover {
-          background: #0BDA51;
-      }
-      .slider-dropdown {
-          position: absolute;
-          top: 100%;
-          left: 50%;
-          transform: translateX(-50%);
-          width: 60px;
-          background: rgba(255, 255, 255, 0.1);
-          backdrop-filter: blur(10px);
-          border: 2px solid rgba(255, 255, 255, 0.3);
-          padding: 10px;
-          border-radius: 12px;
-          box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
-          max-height: 0px;
-          opacity: 0;
-          overflow: hidden;
-          transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
-          display: flex;
-          align-items: center;
-          justify-content: center;
-      }
-      .slider-dropdown.active {
-          max-height: 150px;
-          opacity: 1;
-      }
-      .vertical-slider {
-          writing-mode: bt-lr;
-          -webkit-appearance: slider-vertical;
-          appearance: slider-vertical;
-          height: 120px;
-          width: 8px;
-          background: white;
-          border-radius: 10px;
-          outline: none;
-          transition: opacity 0.3s ease-in-out;
-      }
-      .vertical-slider::-webkit-slider-thumb {
-          appearance: none;
-          width: 15px;
-          height: 15px;
-          background: #FFA500;
-          border-radius: 50%;
-          cursor: pointer;
-          transition: transform 0.2s;
-      }
-      .vertical-slider::-webkit-slider-thumb:hover {
-          transform: scale(1.2);
-      }
-  `;
-  document.head.appendChild(style);
+    });
+  });
 });
-
-
