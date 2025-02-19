@@ -15,82 +15,104 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  padding: 5px 10px;
+  padding: 5px 5px;
   gap: 5px;
-
 }
 
-
-
-/* Button animations */
-.btn-animated:hover { transform: scale(1.1); }
-.btn-animated:active { transform: scale(0.9); }
-.btn-transparent-green {
-  background-color: transparent;
-  color: #FFA500;
-  border-color: #FFA500;
-}
-
-/* Modal styling */
-.modal-header {
-  background-color: #333;
-  color: #FFA500;
+/* Animated Button Style */
+.button {
+  padding: 6px 10px;
+  font-size: 14px;
   text-align: center;
+  cursor: pointer;
+  outline: none;
+  color: #fff;
+  background-color: #04AA6D;
+  border: 3px solid white;
+  border-radius: 15px;
+  box-shadow: 0 9px #999;
+  transition: background-color 0.3s, box-shadow 0.3s, transform 0.1s;
 }
-.modal-title {
-  font-size: 12px;
-  color: #FFA500;
-  margin: 0 auto;
-  display: inline-block;
+
+.button:hover {
+  background-color: #3e8e41;
 }
-.modal-content { 
-  background-color: #333; 
-  max-height: 90vh;
-  overflow-y: auto;
+
+.button:active {
+  background-color: #3e8e41;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
 }
-.modal-body {
-  position: relative;
-  width: 100%;
-  padding-bottom: 56.25%; /* 16:9 ratio */
-  background: #333;
-  overflow: hidden;
+
+/* Glassmorphism Styling for Dropdowns and Nested Elements */
+.dropdown-menu {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(12px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  transition: opacity 0.3s ease-in-out, transform 0.2s ease-in-out;
 }
-.modal-body::-webkit-scrollbar { display: none; }
-#modalImage {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
+
+/* Dropdown Items */
+.dropdown-menu .dropdown-item {
+  color: white !important;
+  font-weight: bold;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.2s ease-in-out;
+}
+
+.dropdown-menu .dropdown-item:hover {
+  background: rgba(255, 255, 255, 0.2) !important;
+}
+
+/* Glassmorphism for select and input in dropdowns */
+.dropdown-menu select,
+.dropdown-menu input {
+  background: rgba(255, 255, 255, 0.2) !important;
+  color: white !important;
+  border: none;
+  padding: 6px;
   border-radius: 6px;
-}
-.modal-aspect-ratio {
+  outline: none;
   width: 100%;
-  position: relative;
-  aspect-ratio: 16/9;
 }
-.selected {
-  border: 2px solid orange;
-  border-radius: 6px;
+
+.dropdown-menu select:focus,
+.dropdown-menu input:focus {
+  background: rgba(255, 255, 255, 0.3) !important;
+}
+
+/* Auto Hide Effect for Dropdowns */
+.dropdown-menu {
+  opacity: 0;
+  transform: translateY(-10px);
+  visibility: hidden;
+}
+.dropdown-menu.show {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
 }
 
 /* Image Gallery Grid */
 #imageGallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(30px, 1fr));
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
   gap: 2px;
   margin-top: 2px;
   margin-bottom: 200px;
   justify-content: center;
 }
-.col { flex: 1; }
+.col {
+  flex: 1;
+}
 .aspect-ratio-box {
   width: 100%;
   position: relative;
   padding-bottom: 56.25%; /* 16:9 ratio */
   overflow: hidden;
-
 }
 .aspect-ratio-box img {
   position: absolute;
@@ -101,61 +123,16 @@ body {
   object-fit: cover;
   border-radius: 6px;
   transition: opacity 0.5s ease-in-out, transform 0.2s ease-in-out;
-  opacity: 1; /* Ensure images are visible immediately */
+  opacity: 1;
 }
-.aspect-ratio-box:hover img { transform: scale(1.05); }
-.aspect-ratio-box:active img { transform: scale(1.02); }
+.aspect-ratio-box:hover img {
+  transform: scale(1.05);
+}
+.aspect-ratio-box:active img {
+  transform: scale(1.02);
+}
 
-/* Filters, buttons, and inputs */
-.btn-smaller,
-.btn-medium,
-.btn-larger,
-.city-filter,
-.regions-filter {
-  padding: 0.15rem 0.5rem;
-  font-size: 12px;
-  font-weight: bold;
-  margin-right: 5px;
-  background-color: #4CAF50;
-  color: #fff;
-  border: 3px solid #fff;
-  transition: border-color 0.5s ease-in-out;
-}
-.btn-smaller:hover,
-.btn-medium:hover,
-.btn-larger:hover,
-.city-filter:hover,
-.regions-filter:hover,
-.btn-smaller.active,
-.btn-medium.active,
-.btn-larger.active,
-.city-filter.active,
-.regions-filter.active {
-  background-color: #0BDA51;
-  border-color: #c0c0c0;
-  transform: scale(1.1);
-}
-.camera-count {
-  position: relative;
-  display: inline-block;
-  background-color: #4CAF50;
-  color: #fff;
-  padding: 0.15rem 0.5rem;
-  border: 3px solid #fff;
-  font-weight: bold;
-  font-size: 12px;
-  margin-right: 5px;
-  border-radius: 6px;
-}
-#cameraSearch {
-  padding: 0.15rem 0.5rem;
-  font-size: 12px;
-  font-weight: bold;
-  border: 3px solid #fff;
-  background-color: #4CAF50;
-  color: #fff;
-  width: 100%;
-}
+/* Notification styling */
 .notification {
   position: fixed;
   top: 10px;
@@ -166,19 +143,75 @@ body {
   border-radius: 5px;
 }
 
-
-/* Carousel thumbnails */
-#thumbnailContainer {
-  display: flex;
-  gap: 10px;
-  overflow-x: auto;
-  scrollbar-width: none;
-  width: 100%;
-  justify-content: center;
-  cursor: default;
-}
-#thumbnailContainer::-webkit-scrollbar { display: none; }
-#routeFilter {
-  width: auto !important;
+/* Image Size Slider styles */
+#sizeControlContainer {
   display: inline-block;
+  position: relative;
+}
+#sizeControlButton {
+  background: #04AA6D;
+  color: white;
+  border: 3px solid white;
+  padding: 8px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 15px;
+  box-shadow: 0 9px #999;
+  transition: background-color 0.3s, box-shadow 0.3s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+#sizeControlButton i {
+  font-size: 14px;
+}
+#sizeControlButton:hover {
+  background-color: #3e8e41;
+}
+.slider-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  background: rgba(255, 255, 255, 0.1);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  padding: 10px;
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
+  max-height: 0px;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.slider-dropdown.active {
+  max-height: 150px;
+  opacity: 1;
+}
+.vertical-slider {
+  writing-mode: bt-lr;
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
+  height: 120px;
+  width: 8px;
+  background: white;
+  border-radius: 10px;
+  outline: none;
+  transition: opacity 0.3s ease-in-out;
+}
+.vertical-slider::-webkit-slider-thumb {
+  appearance: none;
+  width: 15px;
+  height: 15px;
+  background: #FFA500;
+  border-radius: 50%;
+  cursor: pointer;
+  transition: transform 0.2s;
+}
+.vertical-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
 }
