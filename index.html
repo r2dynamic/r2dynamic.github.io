@@ -13,151 +13,94 @@
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4C4E52">
   <!-- External CSS -->
-  <link
-    href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css"
-    rel="stylesheet"
-  />
-  <link
-    rel="stylesheet"
-    href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css"
-  />
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
   <link rel="stylesheet" href="style.css">
   <title>UDOT Cameras</title>
 </head>
 <body>
   <!-- Header Controls Container -->
   <div class="header-controls">
-    <!-- Camera Count (always visible, click to view version history) -->
-    <div id="cameraCount" class="camera-count" aria-live="polite" title="Click to view version history"></div>
-
-    <!-- Filter Dropdown -->
+    <!-- Camera Count -->
+    <div id="cameraCount" class="camera-count button" aria-live="polite" title="Click to view version history"></div>
+    
+    <!-- Search Dropdown -->
     <div class="dropdown">
-      <button id="filterButton" class="btn btn-secondary dropdown-toggle btn-smaller" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Filter">
-        <i class="fas fa-filter"></i>
+      <button id="searchDropdownButton" class="dropdown-toggle button" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Search">
+        <i class="fas fa-search"></i>
       </button>
-      <div class="dropdown-menu p-3" style="min-width: 200px; background-color: #4C4E52;" aria-label="Filter options">
-        <!-- City Filter -->
-        <div class="mb-2">
-          <label for="cityFilter" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">City/County:</label>
-          <select class="form-select city-filter" id="cityFilter">
-            <option value="">All</option>
-          </select>
-        </div>
-        <!-- Region Filter -->
-        <div class="mb-2">
-          <label for="regionFilter" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">Region:</label>
-          <select class="form-select regions-filter" id="regionFilter">
-            <option value="">Regions</option>
-          </select>
-        </div>
-        <!-- Search -->
-        <div class="mb-2">
-          <label for="cameraSearch" class="form-label" style="color:#fff; font-size:12px; font-weight:bold;">Search:</label>
-          <input type="text" id="cameraSearch" placeholder="Search by Name" class="form-control" />
-        </div>
-        <!-- ITS Only Toggle -->
-        <div class="form-check mb-2">
-          <input class="form-check-input" type="checkbox" id="itsOnly" autocomplete="off" />
-          <label class="form-check-label" for="itsOnly" style="color:#fff; font-size:12px;">Exclude RWIS</label>
-        </div>
+      <div class="dropdown-menu glass-dropdown p-3" style="min-width: 250px;" aria-label="Search options">
+        <input type="text" id="searchInput" placeholder="Search by Name" class="form-control glass-dropdown-input" />
       </div>
     </div>
-
+    
+    <!-- City/County Dropdown -->
+    <div class="dropdown">
+      <button id="cityDropdownButton" class="dropdown-toggle button" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="City/County">
+        <i class="fas fa-map-marked-alt"></i>
+      </button>
+      <ul class="dropdown-menu glass-dropdown" id="cityFilterMenu" aria-labelledby="cityDropdownButton">
+        <!-- Options populated dynamically -->
+      </ul>
+    </div>
+    
+    <!-- Region Dropdown -->
+    <div class="dropdown">
+      <button id="regionDropdownButton" class="dropdown-toggle button" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Region">
+        <i class="fas fa-industry"></i>
+      </button>
+      <ul class="dropdown-menu glass-dropdown" id="regionFilterMenu" aria-labelledby="regionDropdownButton">
+        <!-- Options populated dynamically -->
+      </ul>
+    </div>
+    
     <!-- Curated Routes Dropdown -->
-    <div>
-      <select id="routeFilter" class="camera-count" style="width:auto;"></select>
+    <div class="dropdown">
+      <button id="routeFilterButton" class="dropdown-toggle button" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Routes">
+        <i class="fas fa-road"></i>
+      </button>
+      <ul class="dropdown-menu glass-dropdown p-2" id="routeFilterMenu">
+        <li><a class="dropdown-item" href="#" data-value="All">All Routes</a></li>
+      </ul>
+    </div>
+    
+    <!-- Image Size Slider -->
+    <div id="sizeControlContainer" class="dropdown-control">
+      <div id="sizeControlButton" class="button">
+        <i class="fas fa-compress"></i> <i class="fas fa-expand"></i>
+      </div>
+      <div id="sizeSliderContainer" class="slider-dropdown">
+        <input id="sizeSlider" type="range" min="25" max="420" value="120" step="1" class="vertical-slider">
+      </div>
     </div>
   </div>
-  <!-- End Header Controls -->
-
+ 
   <!-- Image Gallery -->
   <div class="container-fluid">
-    <div id="imageGallery" class="container-fluid">
-      <!-- Images added dynamically via script.js -->
-    </div>
+    <div id="imageGallery" class="container-fluid"></div>
   </div>
-
-  <!-- Image Modal -->
-  <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true" role="dialog">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
-      <div class="modal-content border-0">
-        <div class="modal-header">
-          <h5 class="modal-title" id="imageModalLabel"></h5>
-        </div>
-        <div class="modal-body p-0">
-          <div class="modal-aspect-ratio">
-            <img src="" id="modalImage" alt="Camera view" />
-          </div>
-        </div>
-        <div class="modal-footer d-flex flex-column">
-          <div id="thumbnailContainer"></div>
-          <div class="btn-group mt-2">
-            <button
-              type="button"
-              class="btn btn-success btn-animated btn-transparent-green btn-smaller dropdown-toggle"
-              id="linksDropdown"
-              data-bs-toggle="dropdown"
-              aria-haspopup="true"
-              aria-expanded="false"
-              title="Links"
-            >
-              <i class="fas fa-map-marker-alt"></i> Links
-            </button>
-            <div class="dropdown-menu" aria-labelledby="linksDropdown">
-              <a class="dropdown-item" href="#" id="googleMapsLink">
-                <i class="fas fa-map-marker-alt"></i> Open Google Maps
-              </a>
-              <a class="dropdown-item" href="#" id="udotTrafficLink">
-                <i class="fas fa-road"></i> Open UDOT Traffic
-              </a>
-            </div>
-            <div class="d-flex mt-2">
-              <button type="button" class="btn btn-secondary btn-animated btn-orange me-1" id="prevImageBtn" title="Previous Image">
-                <i class="fas fa-arrow-left"></i>
-              </button>
-              <button type="button" class="btn btn-secondary btn-animated btn-orange me-1" id="nextImageBtn" title="Next Image">
-                <i class="fas fa-arrow-right"></i>
-              </button>
-              <button type="button" class="btn btn-secondary btn-animated btn-orange me-1" id="openInNewTabBtn" title="Open image in new tab">
-                <i class="fas fa-expand"></i>
-              </button>
-              <button type="button" class="btn btn-danger btn-animated" data-bs-dismiss="modal" title="Close Modal">
-                <i class="fas fa-times"></i>
-              </button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-  </div>
-
-  <!-- Version History Modal (static content edited directly in HTML) -->
-  <div class="modal fade" id="versionModal" tabindex="-1" aria-labelledby="versionModalLabel" aria-hidden="true" role="dialog">
-    <div class="modal-dialog modal-dialog-centered">
-      <div class="modal-content">
-        <div class="modal-header">
-          <h5 class="modal-title" id="versionModalLabel">Version History</h5>
-          <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-        </div>
-        <div class="modal-body">
-          <p>Last Update: <strong>2025-02-16</strong></p>
-          <p>Version 1.0.12 – </p>
-          <p>Comments: </p>
-        </div>
-        <div class="modal-footer">
-          <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-        </div>
-      </div>
-    </div>
-  </div>
-
+ 
   <!-- External JavaScript Files -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
   <script src="script.js"></script>
-
+ 
   <!-- Service Worker Registration -->
   <script>
+    if ('serviceWorker' in navigator) {
+      window.addEventListener('load', function() {
+        navigator.serviceWorker.register('sw.js')
+          .then(function(registration) {
+            console.log('Service Worker registered with scope:', registration.scope);
+          })
+          .catch(function(error) {
+            console.log('Service Worker registration failed:', error);
+          });
+      });
+    }
+  </script>
+   <!-- Service Worker Registration -->
+   <script>
     if ('serviceWorker' in navigator) {
       window.addEventListener('load', function() {
         navigator.serviceWorker.register('sw.js')
