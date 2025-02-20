@@ -247,15 +247,15 @@ body {
 }
 .vertical-slider::-webkit-slider-thumb {
   appearance: none;
-  width: 15px;
-  height: 15px;
-  background: #01bd3c;
+  width: 25px;
+  height: 25px;
+  background: #707070;
   border-radius: 50%;
   cursor: pointer;
-  transition: transform 0.2s;
+  transition: transform 0.4s;
 }
 .vertical-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.2);
+  transform: scale(1.4);
 }
 
 /* Glassmorphism modal style */
