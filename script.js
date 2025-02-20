@@ -870,3 +870,55 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
 });
+
+// Haversine formula to calculate the distance (in kilometers) between two lat/long points
+function haversineDistance(lat1, lon1, lat2, lon2) {
+  const toRad = angle => (angle * Math.PI) / 180;
+  const R = 6371; // Earth's radius in kilometers
+  const dLat = toRad(lat2 - lat1);
+  const dLon = toRad(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRad(lat1)) * Math.cos(toRad(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// Location button event listener
+document.getElementById("locationButton").addEventListener("click", function() {
+  if (navigator.geolocation) {
+    navigator.geolocation.getCurrentPosition(function(position) {
+      const userLat = position.coords.latitude;
+      const userLon = position.coords.longitude;
+
+      // Calculate distance from user for each camera
+      const camerasWithDistance = camerasList.map(camera => {
+        const camLat = camera.Latitude;
+        const camLon = camera.Longitude;
+        // Save computed distance as a new property
+        camera.distanceFromUser = haversineDistance(userLat, userLon, camLat, camLon);
+        return camera;
+      });
+
+      // Sort cameras by distance (ascending)
+      camerasWithDistance.sort((a, b) => a.distanceFromUser - b.distanceFromUser);
+
+      // Select the 10 nearest cameras (or fewer if there aren't 10)
+      visibleCameras = camerasWithDistance.slice(0, 10);
+
+      // Update the image grid
+      updateCameraCount();
+      renderGallery(visibleCameras);
+      currentIndex = 0;
+      buildCarousel();
+
+    }, function(error) {
+      console.error("Error obtaining location: ", error);
+      alert("Unable to retrieve your location.");
+    });
+  } else {
+    alert("Geolocation is not supported by your browser.");
+  }
+});
+
