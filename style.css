@@ -49,7 +49,7 @@ body {
   color: #fff;
   background-color: #04AA6D;
   border: 3px solid white;
-  border-radius: 10px;
+  border-radius: 8px;
   box-shadow: 0 6px #999;
   transition: background-color 0.3s, box-shadow 0.3s, transform 0.1s;
 }
@@ -189,7 +189,7 @@ body {
   padding: 10px 10px;
   font-size: 14px;
   cursor: pointer;
-  border-radius: 10px;
+  border-radius: 8px;
   box-shadow: 0 6px #999;
   transition: background-color 0.3s, box-shadow 0.3s, transform 0.1s;
   display: flex;
