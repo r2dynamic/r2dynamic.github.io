@@ -23,6 +23,8 @@ body {
 @media (max-width: 600px) {
   .header-controls .button {
     max-width: 150px;
+    box-shadow: 0 4px #999;
+    border-radius: 6px;
     font-size: 11px; /* slightly smaller buttons on mobile */
     padding: 3px 5px;
   }
@@ -204,6 +206,8 @@ body {
 @media (max-width: 600px) {
   #sizeControlButton {
     max-width: 150px;
+    box-shadow: 0 4px #999;
+    border-radius: 6px;
     font-size: 11px; /* slightly smaller buttons on mobile */
     padding: 6px 5px;
   }
