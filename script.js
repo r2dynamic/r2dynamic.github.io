@@ -726,40 +726,6 @@
       if (modal) modal.hide();
     }
   });
-document.getElementById("locationButton").addEventListener("click", function() {
-  if (navigator.geolocation) {
-    navigator.geolocation.getCurrentPosition(function(position) {
-      const userLat = position.coords.latitude;
-      const userLon = position.coords.longitude;
-      
-      // Compute distance for each camera, ensuring numbers
-      const camerasWithDistance = camerasList.map(camera => {
-        const camLat = parseFloat(camera.Latitude);
-        const camLon = parseFloat(camera.Longitude);
-        camera.distanceFromUser = haversineDistance(userLat, userLon, camLat, camLon);
-        return camera;
-      });
-      
-      // Sort cameras by distance ascending
-      camerasWithDistance.sort((a, b) => a.distanceFromUser - b.distanceFromUser);
-      
-      // Keep only the 10 nearest cameras
-      visibleCameras = camerasWithDistance.slice(0, 10);
-      
-      updateCameraCount();
-      renderGallery(visibleCameras);
-      currentIndex = 0;
-      buildCarousel();
-      
-    }, function(error) {
-      console.error("Error obtaining location:", error);
-      alert("Unable to retrieve your location.");
-    });
-  } else {
-    alert("Geolocation is not supported by your browser.");
-  }
-});
-
  
   prevImageBtn.addEventListener("click", showPreviousImage);
   nextImageBtn.addEventListener("click", showNextImage);
