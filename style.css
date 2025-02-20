@@ -13,13 +13,24 @@ body {
   z-index: 1000;
   background-color: #4C4E52;
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   justify-content: center;
-  padding: 15px 5px;
+  padding: 10px 2px;
   gap: 5px;
 }
+
+@media (max-width: 600px) {
+  .header-controls .button {
+    max-width: 150px;
+    font-size: 11px; /* slightly smaller buttons on mobile */
+    padding: 3px 5px;
+  }
+}
+
+
 .header-controls .button {
-  max-width: 150px; /* adjust as needed */
+  max-width: 200px; /* adjust as needed */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -189,6 +200,16 @@ body {
 #sizeControlButton:hover {
   background-color: #3e8e41;
 }
+
+@media (max-width: 600px) {
+  #sizeControlButton {
+    max-width: 150px;
+    font-size: 11px; /* slightly smaller buttons on mobile */
+    padding: 6px 5px;
+  }
+}
+
+
 .slider-dropdown {
   position: absolute;
   top: 100%;
