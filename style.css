@@ -30,13 +30,12 @@ body {
   }
 }
 
-
 .header-controls .button {
   max-width: 200px; /* adjust as needed */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex-shrink: 1;  /* ensure they shrink in a flex container */
+  flex-shrink: 1;
 }
 
 /* Animated Button Style */
@@ -119,16 +118,14 @@ body {
 .dropdown-menu {
   max-height: 400px; /* or another height as needed */
   overflow-y: auto;
-  -webkit-overflow-scrolling: touch; /* smooth scrolling on mobile */
-  scrollbar-width: none; /* Firefox */
-  -ms-overflow-style: none;  /* Internet Explorer 10+ */
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
 }
 
 .dropdown-menu::-webkit-scrollbar {
-  display: none; /* Chrome, Safari, Opera */
+  display: none;
 }
-
-
 
 /* Image Gallery Grid */
 #imageGallery {
@@ -208,11 +205,10 @@ body {
     max-width: 150px;
     box-shadow: 0 4px #999;
     border-radius: 6px;
-    font-size: 11px; /* slightly smaller buttons on mobile */
+    font-size: 11px;
     padding: 5.3px 5px;
   }
 }
-
 
 .slider-dropdown {
   position: absolute;
@@ -254,12 +250,12 @@ body {
   width: 25px;
   height: 25px;
   background: #707070;
-  border-radius: 50%;
+  border-radius: 80%;
   cursor: pointer;
   transition: transform 0.4s;
 }
 .vertical-slider::-webkit-slider-thumb:hover {
-  transform: scale(1.4);
+  transform: scale(1.2);
 }
 
 /* Glassmorphism modal style */
@@ -268,7 +264,7 @@ body {
   backdrop-filter: blur(12px);
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
-  animation: modalFadeIn 0.4s ease-out;
+  animation: modalFadeIn 0.9s ease-out;
 }
 
 /* Fade-in animation for modal */
@@ -303,8 +299,8 @@ body {
   white-space: nowrap;
   display: inline-block;
   overflow: hidden;
-  text-overflow: ellipsis; /* Avoid clipping in a harsh way */
-  font-size: calc(1vmin + 1vw); /* This scales with viewport size */
+  text-overflow: ellipsis;
+  font-size: calc(1vmin + 1vw);
   margin: 0 auto;
   text-align: center;
   color: white;
