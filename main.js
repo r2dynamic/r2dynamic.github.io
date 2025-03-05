@@ -275,6 +275,7 @@ function setupEventListeners() {
 
 // --- Additional UI Behaviors ---
 function setupAdditionalUI() {
+  let hideTimeout;
   function updateImageSize(size) {
     imageGallery.style.gridTemplateColumns = `repeat(auto-fit, minmax(${size}px, 1fr))`;
   }
@@ -293,8 +294,6 @@ function setupAdditionalUI() {
       sizeSliderContainer.classList.remove("active");
     }, 2000);
   }
-  
-  let hideTimeout;
   
   sizeControlButton.addEventListener("click", () => {
     if (sizeSliderContainer.classList.contains("active")) {
@@ -323,7 +322,7 @@ function setupAdditionalUI() {
   });
   
   // --- Pinch-to-Zoom Support ---
-  // This adds touch event listeners to imageGallery to support pinch-to-zoom for grid resizing.
+  // Use requestAnimationFrame to throttle updates and clamp to a safe minimum (30px) to avoid layout issues.
   function setupPinchToZoom() {
     let initialDistance = null;
     let initialSize = parseInt(sizeSlider.value, 10) || 125;
@@ -341,9 +340,11 @@ function setupAdditionalUI() {
         const newDistance = getDistance(e.touches[0], e.touches[1]);
         const scaleFactor = newDistance / initialDistance;
         let newSize = Math.round(initialSize * scaleFactor);
-        // Clamp newSize between slider min and max (25 and 380)
-        newSize = Math.max(25, Math.min(newSize, 380));
-        updateImageSize(newSize);
+        // Clamp newSize between safe minimum (30px) and max (380px)
+        newSize = Math.max(30, Math.min(newSize, 380));
+        requestAnimationFrame(() => {
+          updateImageSize(newSize);
+        });
         sizeSlider.value = newSize;
         e.preventDefault();
       }
