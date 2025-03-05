@@ -35,13 +35,45 @@ const sizeControlButton = document.getElementById("sizeControlButton");
 const sizeSliderContainer = document.getElementById("sizeSliderContainer");
 const sizeSlider = document.getElementById("sizeSlider");
 const imageGallery = document.getElementById("imageGallery");
+const nearestButton = document.getElementById("nearestButton"); // New button for nearest camera
 
 // --- Utility Functions ---
 function debounce(func, delay) {
-  return function(...args) {
+  return function (...args) {
     clearTimeout(debounceTimer);
     debounceTimer = setTimeout(() => func.apply(this, args), delay);
   };
+}
+
+function toRadians(deg) {
+  return deg * Math.PI / 180;
+}
+
+function computeDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371; // Radius of the earth in km
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+  const a =
+    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+function findNearestCamera(userLat, userLng) {
+  let nearestCamera = null;
+  let minDistance = Infinity;
+  camerasList.forEach(camera => {
+    const lat = camera.Latitude;
+    const lng = camera.Longitude;
+    const d = computeDistance(userLat, userLng, lat, lng);
+    if (d < minDistance) {
+      minDistance = d;
+      nearestCamera = camera;
+    }
+  });
+  return nearestCamera;
 }
 
 // --- Dropdown & Gallery Setup ---
@@ -211,9 +243,46 @@ function filterImages() {
   currentIndex = 0;
 }
 
+// --- Nearest Camera Feature ---
+function setupNearestCameraButton() {
+  if (nearestButton) {
+    nearestButton.addEventListener("click", () => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            const nearestCamera = findNearestCamera(userLat, userLng);
+            if (nearestCamera) {
+              // Reset filters to show all cameras
+              selectedCity = "";
+              selectedRegion = "";
+              searchQuery = "";
+              selectedRoute = "All";
+              filterImages();
+              // Find the index of the nearest camera in visibleCameras (which equals camerasList if no filter)
+              const index = visibleCameras.findIndex(camera => camera.Id === nearestCamera.Id);
+              if (index >= 0) {
+                showImage(index);
+              } else {
+                console.error("Nearest camera not found in visible cameras.");
+              }
+            }
+          },
+          (error) => {
+            alert("Error getting your location: " + error.message);
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by your browser.");
+      }
+    });
+  }
+}
+
 // --- Event Listeners ---
 function setupEventListeners() {
-  cityFilterMenu.addEventListener("click", function(e) {
+  cityFilterMenu.addEventListener("click", function (e) {
     e.preventDefault();
     if (e.target && e.target.matches("a.dropdown-item")) {
       selectedCity = e.target.getAttribute("data-value");
@@ -225,7 +294,7 @@ function setupEventListeners() {
     }
   });
 
-  regionFilterMenu.addEventListener("click", function(e) {
+  regionFilterMenu.addEventListener("click", function (e) {
     e.preventDefault();
     if (e.target && e.target.matches("a.dropdown-item")) {
       selectedRegion = e.target.getAttribute("data-value");
@@ -240,7 +309,7 @@ function setupEventListeners() {
     }
   });
 
-  routeFilterMenu.addEventListener("click", function(e) {
+  routeFilterMenu.addEventListener("click", function (e) {
     e.preventDefault();
     if (e.target && e.target.matches("a.dropdown-item")) {
       selectedRoute = e.target.getAttribute("data-value");
@@ -252,7 +321,7 @@ function setupEventListeners() {
     }
   });
 
-  searchInput.addEventListener("input", debounce(function() {
+  searchInput.addEventListener("input", debounce(function () {
     searchQuery = searchInput.value;
     filterImages();
   }, DEBOUNCE_DELAY));
@@ -280,14 +349,14 @@ function setupAdditionalUI() {
   function updateImageSize(size) {
     imageGallery.style.gridTemplateColumns = `repeat(auto-fit, minmax(${size}px, 1fr))`;
   }
-  
+
   function showSlider() {
     sizeSliderContainer.classList.add("active");
     sizeSliderContainer.style.maxHeight = "150px";
     sizeSliderContainer.style.opacity = "1";
     clearTimeout(hideTimeout);
   }
-  
+
   function hideSlider() {
     hideTimeout = setTimeout(() => {
       sizeSliderContainer.style.maxHeight = "0px";
@@ -295,7 +364,7 @@ function setupAdditionalUI() {
       sizeSliderContainer.classList.remove("active");
     }, 2000);
   }
-  
+
   // Updated slider handler that clamps size to a safe minimum (30)
   sizeSlider.addEventListener("input", () => {
     let newSize = parseInt(sizeSlider.value, 10);
@@ -307,31 +376,31 @@ function setupAdditionalUI() {
       navigator.vibrate(10);
     }
   });
-  
+
   sizeSlider.addEventListener("change", hideSlider);
-  
-  document.addEventListener("click", function(event) {
+
+  document.addEventListener("click", function (event) {
     if (sizeSliderContainer.classList.contains("active")) {
       if (!sizeSliderContainer.contains(event.target) && !sizeControlButton.contains(event.target)) {
         hideSlider();
       }
     }
   });
-  
+
   // --- Pinch-to-Zoom Support ---
   function setupPinchToZoom() {
     let initialDistance = null;
     let initialSize = parseInt(sizeSlider.value, 10) || 125;
-    
-    imageGallery.addEventListener("touchstart", function(e) {
+
+    imageGallery.addEventListener("touchstart", function (e) {
       if (e.touches.length === 2) {
         initialDistance = getDistance(e.touches[0], e.touches[1]);
         initialSize = parseInt(sizeSlider.value, 10) || 125;
         e.preventDefault();
       }
     });
-    
-    imageGallery.addEventListener("touchmove", function(e) {
+
+    imageGallery.addEventListener("touchmove", function (e) {
       if (e.touches.length === 2 && initialDistance !== null) {
         const newDistance = getDistance(e.touches[0], e.touches[1]);
         const scaleFactor = newDistance / initialDistance;
@@ -344,22 +413,22 @@ function setupAdditionalUI() {
         e.preventDefault();
       }
     });
-    
-    imageGallery.addEventListener("touchend", function(e) {
+
+    imageGallery.addEventListener("touchend", function (e) {
       if (e.touches.length < 2) {
         initialDistance = null;
       }
     });
   }
-  
+
   function getDistance(touch1, touch2) {
     const dx = touch2.clientX - touch1.clientX;
     const dy = touch2.clientY - touch1.clientY;
     return Math.sqrt(dx * dx + dy * dy);
   }
-  
+
   setupPinchToZoom();
-  
+
   // Modal Fade Reset for consistent animation on mobile:
   if (imageModalEl) {
     imageModalEl.addEventListener('hidden.bs.modal', () => {
@@ -369,7 +438,7 @@ function setupAdditionalUI() {
       imageModalEl.classList.add("fade");
     });
   }
-  
+
   document.querySelectorAll('.button').forEach(btn => {
     btn.addEventListener('click', () => {
       if (navigator.vibrate) {
@@ -377,34 +446,34 @@ function setupAdditionalUI() {
       }
     });
   });
-  
+
   // --- Draggable Modal ---
   const modalDialog = imageModalEl.querySelector(".draggable-modal");
   const modalHeader = imageModalEl.querySelector(".modal-header");
   if (modalDialog && modalHeader) {
     let isDragging = false, offsetX = 0, offsetY = 0;
-    
-    modalHeader.addEventListener("mousedown", function(e) {
+
+    modalHeader.addEventListener("mousedown", function (e) {
       isDragging = true;
       const rect = modalDialog.getBoundingClientRect();
       offsetX = e.clientX - rect.left;
       offsetY = e.clientY - rect.top;
       modalDialog.style.transition = "none";
     });
-    
-    document.addEventListener("mousemove", function(e) {
+
+    document.addEventListener("mousemove", function (e) {
       if (isDragging) {
         modalDialog.style.left = (e.clientX - offsetX) + "px";
         modalDialog.style.top = (e.clientY - offsetY) + "px";
       }
     });
-    
-    document.addEventListener("mouseup", function() {
+
+    document.addEventListener("mouseup", function () {
       isDragging = false;
       modalDialog.style.transition = "";
     });
-    
-    imageModalEl.addEventListener("shown.bs.modal", function() {
+
+    imageModalEl.addEventListener("shown.bs.modal", function () {
       modalDialog.style.left = "";
       modalDialog.style.top = "";
     });
@@ -423,6 +492,7 @@ function initialize() {
     filterImages();
     setupEventListeners();
     setupAdditionalUI();
+    setupNearestCameraButton();
   });
 }
 
