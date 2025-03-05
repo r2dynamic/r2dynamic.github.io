@@ -61,21 +61,6 @@ function computeDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-function findNearestCamera(userLat, userLng) {
-  let nearestCamera = null;
-  let minDistance = Infinity;
-  camerasList.forEach(camera => {
-    const lat = camera.Latitude;
-    const lng = camera.Longitude;
-    const d = computeDistance(userLat, userLng, lat, lng);
-    if (d < minDistance) {
-      minDistance = d;
-      nearestCamera = camera;
-    }
-  });
-  return nearestCamera;
-}
-
 // --- Dropdown & Gallery Setup ---
 function updateCityDropdown() {
   const cities = camerasList.map(camera => camera.Location.split(",").pop().trim());
@@ -243,7 +228,7 @@ function filterImages() {
   currentIndex = 0;
 }
 
-// --- Nearest Camera Feature ---
+// --- Nearest Cameras Feature ---
 function setupNearestCameraButton() {
   if (nearestButton) {
     nearestButton.addEventListener("click", () => {
@@ -252,15 +237,20 @@ function setupNearestCameraButton() {
           (position) => {
             const userLat = position.coords.latitude;
             const userLng = position.coords.longitude;
-            const nearestCamera = findNearestCamera(userLat, userLng);
-            if (nearestCamera) {
-              // Filter the grid to show only the nearest camera
-              visibleCameras = [nearestCamera];
-              updateCameraCount();
-              renderGallery(visibleCameras);
-              currentIndex = 0;
-              showImage(0);
-            }
+            // Compute distances and sort cameras
+            const camerasWithDistance = camerasList.map(camera => {
+              return {
+                camera,
+                distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
+              };
+            });
+            camerasWithDistance.sort((a, b) => a.distance - b.distance);
+            // Get the six nearest cameras
+            visibleCameras = camerasWithDistance.slice(0, 6).map(item => item.camera);
+            updateCameraCount();
+            renderGallery(visibleCameras);
+            currentIndex = 0;
+            showImage(0);
           },
           (error) => {
             alert("Error getting your location: " + error.message);
@@ -358,7 +348,7 @@ function setupAdditionalUI() {
     }, 2000);
   }
   
-  // Re-add the event listener for the slider button click
+  // Slider button click handler
   sizeControlButton.addEventListener("click", () => {
     if (sizeSliderContainer.classList.contains("active")) {
       hideSlider();
