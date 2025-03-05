@@ -35,7 +35,7 @@ const sizeControlButton = document.getElementById("sizeControlButton");
 const sizeSliderContainer = document.getElementById("sizeSliderContainer");
 const sizeSlider = document.getElementById("sizeSlider");
 const imageGallery = document.getElementById("imageGallery");
-const nearestButton = document.getElementById("nearestButton"); // New button for nearest camera
+const nearestButton = document.getElementById("nearestButton"); // Nearest camera button
 
 // --- Utility Functions ---
 function debounce(func, delay) {
@@ -254,19 +254,12 @@ function setupNearestCameraButton() {
             const userLng = position.coords.longitude;
             const nearestCamera = findNearestCamera(userLat, userLng);
             if (nearestCamera) {
-              // Reset filters to show all cameras
-              selectedCity = "";
-              selectedRegion = "";
-              searchQuery = "";
-              selectedRoute = "All";
-              filterImages();
-              // Find the index of the nearest camera in visibleCameras (which equals camerasList if no filter)
-              const index = visibleCameras.findIndex(camera => camera.Id === nearestCamera.Id);
-              if (index >= 0) {
-                showImage(index);
-              } else {
-                console.error("Nearest camera not found in visible cameras.");
-              }
+              // Filter the grid to show only the nearest camera
+              visibleCameras = [nearestCamera];
+              updateCameraCount();
+              renderGallery(visibleCameras);
+              currentIndex = 0;
+              showImage(0);
             }
           },
           (error) => {
