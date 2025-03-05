@@ -35,7 +35,7 @@ const sizeControlButton = document.getElementById("sizeControlButton");
 const sizeSliderContainer = document.getElementById("sizeSliderContainer");
 const sizeSlider = document.getElementById("sizeSlider");
 const imageGallery = document.getElementById("imageGallery");
-const nearestButton = document.getElementById("nearestButton"); // Nearest camera button
+const nearestButton = document.getElementById("nearestButton");
 
 // --- Utility Functions ---
 function debounce(func, delay) {
@@ -50,13 +50,13 @@ function toRadians(deg) {
 }
 
 function computeDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Radius of the earth in km
+  const R = 6371; // Earth's radius in km
   const dLat = toRadians(lat2 - lat1);
   const dLon = toRadians(lon2 - lon1);
   const a =
-    Math.sin(dLat / 2) * Math.sin(dLat / 2) +
+    Math.sin(dLat / 2) ** 2 +
     Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
-    Math.sin(dLon / 2) * Math.sin(dLon / 2);
+    Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -342,14 +342,14 @@ function setupAdditionalUI() {
   function updateImageSize(size) {
     imageGallery.style.gridTemplateColumns = `repeat(auto-fit, minmax(${size}px, 1fr))`;
   }
-
+  
   function showSlider() {
     sizeSliderContainer.classList.add("active");
     sizeSliderContainer.style.maxHeight = "150px";
     sizeSliderContainer.style.opacity = "1";
     clearTimeout(hideTimeout);
   }
-
+  
   function hideSlider() {
     hideTimeout = setTimeout(() => {
       sizeSliderContainer.style.maxHeight = "0px";
@@ -357,7 +357,16 @@ function setupAdditionalUI() {
       sizeSliderContainer.classList.remove("active");
     }, 2000);
   }
-
+  
+  // Re-add the event listener for the slider button click
+  sizeControlButton.addEventListener("click", () => {
+    if (sizeSliderContainer.classList.contains("active")) {
+      hideSlider();
+    } else {
+      showSlider();
+    }
+  });
+  
   // Updated slider handler that clamps size to a safe minimum (30)
   sizeSlider.addEventListener("input", () => {
     let newSize = parseInt(sizeSlider.value, 10);
@@ -369,9 +378,9 @@ function setupAdditionalUI() {
       navigator.vibrate(10);
     }
   });
-
+  
   sizeSlider.addEventListener("change", hideSlider);
-
+  
   document.addEventListener("click", function (event) {
     if (sizeSliderContainer.classList.contains("active")) {
       if (!sizeSliderContainer.contains(event.target) && !sizeControlButton.contains(event.target)) {
@@ -379,12 +388,12 @@ function setupAdditionalUI() {
       }
     }
   });
-
+  
   // --- Pinch-to-Zoom Support ---
   function setupPinchToZoom() {
     let initialDistance = null;
     let initialSize = parseInt(sizeSlider.value, 10) || 125;
-
+    
     imageGallery.addEventListener("touchstart", function (e) {
       if (e.touches.length === 2) {
         initialDistance = getDistance(e.touches[0], e.touches[1]);
@@ -392,7 +401,7 @@ function setupAdditionalUI() {
         e.preventDefault();
       }
     });
-
+    
     imageGallery.addEventListener("touchmove", function (e) {
       if (e.touches.length === 2 && initialDistance !== null) {
         const newDistance = getDistance(e.touches[0], e.touches[1]);
@@ -406,22 +415,22 @@ function setupAdditionalUI() {
         e.preventDefault();
       }
     });
-
+    
     imageGallery.addEventListener("touchend", function (e) {
       if (e.touches.length < 2) {
         initialDistance = null;
       }
     });
   }
-
+  
   function getDistance(touch1, touch2) {
     const dx = touch2.clientX - touch1.clientX;
     const dy = touch2.clientY - touch1.clientY;
     return Math.sqrt(dx * dx + dy * dy);
   }
-
+  
   setupPinchToZoom();
-
+  
   // Modal Fade Reset for consistent animation on mobile:
   if (imageModalEl) {
     imageModalEl.addEventListener('hidden.bs.modal', () => {
@@ -431,7 +440,7 @@ function setupAdditionalUI() {
       imageModalEl.classList.add("fade");
     });
   }
-
+  
   document.querySelectorAll('.button').forEach(btn => {
     btn.addEventListener('click', () => {
       if (navigator.vibrate) {
@@ -439,13 +448,13 @@ function setupAdditionalUI() {
       }
     });
   });
-
+  
   // --- Draggable Modal ---
   const modalDialog = imageModalEl.querySelector(".draggable-modal");
   const modalHeader = imageModalEl.querySelector(".modal-header");
   if (modalDialog && modalHeader) {
     let isDragging = false, offsetX = 0, offsetY = 0;
-
+    
     modalHeader.addEventListener("mousedown", function (e) {
       isDragging = true;
       const rect = modalDialog.getBoundingClientRect();
@@ -453,19 +462,19 @@ function setupAdditionalUI() {
       offsetY = e.clientY - rect.top;
       modalDialog.style.transition = "none";
     });
-
+    
     document.addEventListener("mousemove", function (e) {
       if (isDragging) {
         modalDialog.style.left = (e.clientX - offsetX) + "px";
         modalDialog.style.top = (e.clientY - offsetY) + "px";
       }
     });
-
+    
     document.addEventListener("mouseup", function () {
       isDragging = false;
       modalDialog.style.transition = "";
     });
-
+    
     imageModalEl.addEventListener("shown.bs.modal", function () {
       modalDialog.style.left = "";
       modalDialog.style.top = "";
