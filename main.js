@@ -304,12 +304,18 @@ function setupAdditionalUI() {
   });
   
   sizeSlider.addEventListener("input", () => {
-    updateImageSize(sizeSlider.value);
+    let newSize = parseInt(sizeSlider.value, 10);
+    // Clamp the size to a safe range (30px minimum, 380px maximum)
+    newSize = Math.max(30, Math.min(newSize, 380));
+    updateImageSize(newSize);
+    // Update the slider's value in case it was below the safe minimum
+    sizeSlider.value = newSize;
     showSlider();
     if (navigator.vibrate) {
       navigator.vibrate(10);
     }
   });
+
   
   sizeSlider.addEventListener("change", hideSlider);
   
