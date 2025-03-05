@@ -20,7 +20,8 @@ let selectedRoute = "All";
 
 // --- DOM Elements ---
 const galleryContainer = document.getElementById("imageGallery");
-const modalImage = document.getElementById("imageModal").querySelector("img");
+const imageModalEl = document.getElementById("imageModal");
+const modalImage = imageModalEl.querySelector("img");
 const modalTitle = document.querySelector(".modal-title");
 const cameraCountElement = document.getElementById("cameraCount");
 const searchInput = document.getElementById("searchInput");
@@ -193,6 +194,7 @@ function filterImages() {
     return matchesCity && matchesRegion && matchesSearch && routeMatches;
   });
 
+  // If a curated route is selected, sort visibleCameras per the route order.
   if (selectedRoute !== "All") {
     const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
     if (routeObj) {
@@ -207,258 +209,6 @@ function filterImages() {
   updateCameraCount();
   renderGallery(visibleCameras);
   currentIndex = 0;
-}
-
-// --- Modal Enhancements ---
-function setupModalEnhancements() {
-  const imageModal = document.getElementById("imageModal");
-  if (!imageModal) return;
-  const modalDialog = imageModal.querySelector(".draggable-modal");
-  const modalContent = imageModal.querySelector(".glass-modal");
-
-  // 1. Reset animation on show
-  imageModal.addEventListener("shown.bs.modal", () => {
-    modalContent.classList.remove("modal-animate");
-    // Force reflow
-    void modalContent.offsetWidth;
-    modalContent.classList.add("modal-animate");
-    // Reset modal position
-    modalDialog.style.left = "";
-    modalDialog.style.top = "";
-  });
-
-  // Helper clamp function
-  function clamp(value, min, max) {
-    return Math.max(min, Math.min(value, max));
-  }
-
-  // 2. Draggable & Fling Support with boundaries
-  let isDragging = false;
-  let startX, startY, initialLeft, initialTop;
-  let lastTouchTime = 0, lastTouchX = 0, lastTouchY = 0;
-  let velocityX = 0, velocityY = 0;
-
-  // Desktop dragging
-  modalContent.addEventListener("mousedown", (e) => {
-    isDragging = true;
-    startX = e.clientX;
-    startY = e.clientY;
-    initialLeft = modalDialog.offsetLeft;
-    initialTop = modalDialog.offsetTop;
-    e.preventDefault();
-  });
-  document.addEventListener("mousemove", (e) => {
-    if (!isDragging) return;
-    let dx = e.clientX - startX;
-    let dy = e.clientY - startY;
-    let newLeft = clamp(initialLeft + dx, 0, window.innerWidth - modalDialog.offsetWidth);
-    let newTop = clamp(initialTop + dy, 0, window.innerHeight - modalDialog.offsetHeight);
-    modalDialog.style.left = newLeft + "px";
-    modalDialog.style.top = newTop + "px";
-  });
-  document.addEventListener("mouseup", () => {
-    isDragging = false;
-  });
-
-  // Mobile dragging & fling
-  modalContent.addEventListener("touchstart", (e) => {
-    if (e.touches.length === 1) {
-      isDragging = true;
-      const touch = e.touches[0];
-      startX = touch.clientX;
-      startY = touch.clientY;
-      initialLeft = modalDialog.offsetLeft;
-      initialTop = modalDialog.offsetTop;
-      lastTouchTime = Date.now();
-      lastTouchX = touch.clientX;
-      lastTouchY = touch.clientY;
-    }
-  });
-  modalContent.addEventListener("touchmove", (e) => {
-    if (isDragging && e.touches.length === 1) {
-      const touch = e.touches[0];
-      let dx = touch.clientX - startX;
-      let dy = touch.clientY - startY;
-      let newLeft = clamp(initialLeft + dx, 0, window.innerWidth - modalDialog.offsetWidth);
-      let newTop = clamp(initialTop + dy, 0, window.innerHeight - modalDialog.offsetHeight);
-      modalDialog.style.left = newLeft + "px";
-      modalDialog.style.top = newTop + "px";
-      let now = Date.now();
-      let dt = now - lastTouchTime;
-      if (dt > 0) {
-        velocityX = (touch.clientX - lastTouchX) / dt;
-        velocityY = (touch.clientY - lastTouchY) / dt;
-        lastTouchTime = now;
-        lastTouchX = touch.clientX;
-        lastTouchY = touch.clientY;
-      }
-      e.preventDefault();
-    }
-  });
-  modalContent.addEventListener("touchend", (e) => {
-    if (isDragging) {
-      isDragging = false;
-      let speed = Math.sqrt(velocityX * velocityX + velocityY * velocityY);
-      if (speed > 0.3) {
-        applyFling(modalDialog, velocityX * 100, velocityY * 100);
-      }
-    }
-  });
-
-  function applyFling(element, initialVX, initialVY) {
-    let vx = initialVX;
-    let vy = initialVY;
-    const friction = 0.95;
-    function step() {
-      vx *= friction;
-      vy *= friction;
-      let newLeft = clamp(element.offsetLeft + vx * 0.016, 0, window.innerWidth - element.offsetWidth);
-      let newTop = clamp(element.offsetTop + vy * 0.016, 0, window.innerHeight - element.offsetHeight);
-      element.style.left = newLeft + "px";
-      element.style.top = newTop + "px";
-      if (Math.abs(vx) > 0.5 || Math.abs(vy) > 0.5) {
-        requestAnimationFrame(step);
-      }
-    }
-    requestAnimationFrame(step);
-  }
-
-  // 3. Resizable Modal
-  // Create a resizer element in the bottom-right corner if not already present
-  let resizer = modalDialog.querySelector(".modal-resizer");
-  if (!resizer) {
-    resizer = document.createElement("div");
-    resizer.classList.add("modal-resizer");
-    modalDialog.appendChild(resizer);
-  }
-  let isResizing = false;
-  let resizeStartX, resizeStartY, startWidth, startHeight;
-  resizer.addEventListener("mousedown", (e) => {
-    isResizing = true;
-    resizeStartX = e.clientX;
-    resizeStartY = e.clientY;
-    startWidth = modalDialog.offsetWidth;
-    startHeight = modalDialog.offsetHeight;
-    e.preventDefault();
-    e.stopPropagation();
-  });
-  document.addEventListener("mousemove", (e) => {
-    if (!isResizing) return;
-    let dx = e.clientX - resizeStartX;
-    let dy = e.clientY - resizeStartY;
-    let newWidth = startWidth + dx;
-    let newHeight = startHeight + dy;
-    newWidth = Math.max(200, newWidth);
-    newHeight = Math.max(200, newHeight);
-    newWidth = Math.min(newWidth, window.innerWidth - modalDialog.offsetLeft);
-    newHeight = Math.min(newHeight, window.innerHeight - modalDialog.offsetTop);
-    modalDialog.style.width = newWidth + "px";
-    modalDialog.style.height = newHeight + "px";
-    e.preventDefault();
-  });
-  document.addEventListener("mouseup", () => {
-    if (isResizing) isResizing = false;
-  });
-
-  // Mobile pinch-to-resize for modal
-  let initialPinchDistance = null;
-  let initialModalWidth = null;
-  let initialModalHeight = null;
-  modalDialog.addEventListener("touchstart", (e) => {
-    if (e.touches.length === 2) {
-      initialPinchDistance = getDistance(e.touches[0], e.touches[1]);
-      initialModalWidth = modalDialog.offsetWidth;
-      initialModalHeight = modalDialog.offsetHeight;
-      e.preventDefault();
-    }
-  });
-  modalDialog.addEventListener("touchmove", (e) => {
-    if (e.touches.length === 2 && initialPinchDistance) {
-      const newDistance = getDistance(e.touches[0], e.touches[1]);
-      const scaleFactor = newDistance / initialPinchDistance;
-      let newWidth = initialModalWidth * scaleFactor;
-      let newHeight = initialModalHeight * scaleFactor;
-      newWidth = Math.max(200, Math.min(newWidth, window.innerWidth - modalDialog.offsetLeft));
-      newHeight = Math.max(200, Math.min(newHeight, window.innerHeight - modalDialog.offsetTop));
-      modalDialog.style.width = newWidth + "px";
-      modalDialog.style.height = newHeight + "px";
-      e.preventDefault();
-    }
-  });
-  modalDialog.addEventListener("touchend", (e) => {
-    if (e.touches.length < 2) {
-      initialPinchDistance = null;
-    }
-  });
-}
-
-function getDistance(t1, t2) {
-  const dx = t2.clientX - t1.clientX;
-  const dy = t2.clientY - t1.clientY;
-  return Math.sqrt(dx * dx + dy * dy);
-}
-
-// --- Additional UI Behaviors (Slider, etc.) ---
-function setupAdditionalUI() {
-  let hideTimeout;
-  function updateImageSize(size) {
-    imageGallery.style.gridTemplateColumns = `repeat(auto-fit, minmax(${size}px, 1fr))`;
-  }
-  
-  function showSlider() {
-    sizeSliderContainer.classList.add("active");
-    sizeSliderContainer.style.maxHeight = "150px";
-    sizeSliderContainer.style.opacity = "1";
-    clearTimeout(hideTimeout);
-  }
-  
-  function hideSlider() {
-    hideTimeout = setTimeout(() => {
-      sizeSliderContainer.style.maxHeight = "0px";
-      sizeSliderContainer.style.opacity = "0";
-      sizeSliderContainer.classList.remove("active");
-    }, 2000);
-  }
-  
-  sizeControlButton.addEventListener("click", () => {
-    if (sizeSliderContainer.classList.contains("active")) {
-      hideSlider();
-    } else {
-      showSlider();
-    }
-  });
-  
-  sizeSlider.addEventListener("input", () => {
-    let newSize = parseInt(sizeSlider.value, 10);
-    newSize = Math.max(30, Math.min(newSize, 380));
-    updateImageSize(newSize);
-    sizeSlider.value = newSize;
-    showSlider();
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-  });
-  
-  sizeSlider.addEventListener("change", hideSlider);
-  
-  document.addEventListener("click", function(event) {
-    if (sizeSliderContainer.classList.contains("active")) {
-      if (!sizeSliderContainer.contains(event.target) && !sizeControlButton.contains(event.target)) {
-        hideSlider();
-      }
-    }
-  });
-  
-  document.querySelectorAll('.button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (navigator.vibrate) {
-        navigator.vibrate(10);
-      }
-    });
-  });
-  
-  // Set up modal enhancements
-  setupModalEnhancements();
 }
 
 // --- Event Listeners ---
@@ -517,9 +267,195 @@ function setupEventListeners() {
 
   document.addEventListener("keydown", (event) => {
     if (event.key === "Escape") {
-      const modal = bootstrap.Modal.getInstance(document.getElementById("imageModal"));
-      if (modal) modal.hide();
+      const modalInstance = bootstrap.Modal.getInstance(imageModalEl);
+      if (modalInstance) modalInstance.hide();
     }
+  });
+}
+
+// --- Additional UI Behaviors ---
+function setupAdditionalUI() {
+  let hideTimeout;
+  
+  function updateImageSize(size) {
+    imageGallery.style.gridTemplateColumns = `repeat(auto-fit, minmax(${size}px, 1fr))`;
+  }
+  
+  function showSlider() {
+    sizeSliderContainer.classList.add("active");
+    sizeSliderContainer.style.maxHeight = "150px";
+    sizeSliderContainer.style.opacity = "1";
+    clearTimeout(hideTimeout);
+  }
+  
+  function hideSlider() {
+    hideTimeout = setTimeout(() => {
+      sizeSliderContainer.style.maxHeight = "0px";
+      sizeSliderContainer.style.opacity = "0";
+      sizeSliderContainer.classList.remove("active");
+    }, 2000);
+  }
+  
+  sizeControlButton.addEventListener("click", () => {
+    if (sizeSliderContainer.classList.contains("active")) {
+      hideSlider();
+    } else {
+      showSlider();
+    }
+  });
+  
+  sizeSlider.addEventListener("input", () => {
+    let newSize = parseInt(sizeSlider.value, 10);
+    // Clamp the slider value between 30 and 380
+    newSize = Math.max(30, Math.min(newSize, 380));
+    updateImageSize(newSize);
+    sizeSlider.value = newSize;
+    showSlider();
+    if (navigator.vibrate) {
+      navigator.vibrate(10);
+    }
+  });
+  
+  sizeSlider.addEventListener("change", hideSlider);
+  
+  document.addEventListener("click", function(event) {
+    if (sizeSliderContainer.classList.contains("active")) {
+      if (!sizeSliderContainer.contains(event.target) && !sizeControlButton.contains(event.target)) {
+        hideSlider();
+      }
+    }
+  });
+  
+  // --- Modal Animation Fix ---
+  // On mobile, force reflow on each modal show to retrigger the fade animation.
+  if (imageModalEl) {
+    imageModalEl.addEventListener("show.bs.modal", function() {
+      this.classList.remove("fade");
+      void this.offsetWidth;
+      this.classList.add("fade");
+    });
+  }
+  
+  // --- Modal Dragging Support (Mouse & Touch) ---
+  const modalDialog = imageModalEl.querySelector(".draggable-modal");
+  const modalHeader = imageModalEl.querySelector(".modal-header");
+  if (modalDialog && modalHeader) {
+    let isDragging = false, offsetX = 0, offsetY = 0;
+    
+    // Mouse events
+    modalHeader.addEventListener("mousedown", function(e) {
+      isDragging = true;
+      const rect = modalDialog.getBoundingClientRect();
+      offsetX = e.clientX - rect.left;
+      offsetY = e.clientY - rect.top;
+      modalDialog.style.transition = "none";
+      e.preventDefault();
+    });
+    document.addEventListener("mousemove", function(e) {
+      if (isDragging) {
+        modalDialog.style.left = (e.clientX - offsetX) + "px";
+        modalDialog.style.top = (e.clientY - offsetY) + "px";
+      }
+    });
+    document.addEventListener("mouseup", function() {
+      isDragging = false;
+      modalDialog.style.transition = "";
+    });
+    
+    // Touch events for mobile dragging
+    modalHeader.addEventListener("touchstart", function(e) {
+      if (e.touches.length === 1) {
+        isDragging = true;
+        const rect = modalDialog.getBoundingClientRect();
+        offsetX = e.touches[0].clientX - rect.left;
+        offsetY = e.touches[0].clientY - rect.top;
+        modalDialog.style.transition = "none";
+        e.preventDefault();
+      }
+    });
+    document.addEventListener("touchmove", function(e) {
+      if (isDragging && e.touches.length === 1) {
+        modalDialog.style.left = (e.touches[0].clientX - offsetX) + "px";
+        modalDialog.style.top = (e.touches[0].clientY - offsetY) + "px";
+        e.preventDefault();
+      }
+    });
+    document.addEventListener("touchend", function() {
+      isDragging = false;
+      modalDialog.style.transition = "";
+    });
+    
+    // Reset position when modal is shown
+    imageModalEl.addEventListener("shown.bs.modal", function() {
+      modalDialog.style.left = "";
+      modalDialog.style.top = "";
+    });
+  }
+  
+  // --- Modal Resizing Support ---
+  function setupModalResize() {
+    if (!modalDialog) return;
+    let isResizing = false;
+    let startWidth, startHeight, startX, startY;
+    
+    // Create a resize handle if it doesn't exist
+    let resizeHandle = modalDialog.querySelector(".resize-handle");
+    if (!resizeHandle) {
+      resizeHandle = document.createElement("div");
+      resizeHandle.classList.add("resize-handle");
+      // Style the handle
+      resizeHandle.style.position = "absolute";
+      resizeHandle.style.width = "20px";
+      resizeHandle.style.height = "20px";
+      resizeHandle.style.right = "0";
+      resizeHandle.style.bottom = "0";
+      resizeHandle.style.cursor = "nwse-resize";
+      resizeHandle.style.background = "rgba(0,0,0,0.3)";
+      modalDialog.appendChild(resizeHandle);
+    }
+    
+    function startResize(e) {
+      isResizing = true;
+      startWidth = modalDialog.offsetWidth;
+      startHeight = modalDialog.offsetHeight;
+      startX = e.clientX || e.touches[0].clientX;
+      startY = e.clientY || e.touches[0].clientY;
+      e.preventDefault();
+    }
+    
+    function performResize(e) {
+      if (!isResizing) return;
+      const clientX = e.clientX || e.touches[0].clientX;
+      const clientY = e.clientY || e.touches[0].clientY;
+      const dx = clientX - startX;
+      const dy = clientY - startY;
+      modalDialog.style.width = startWidth + dx + "px";
+      modalDialog.style.height = startHeight + dy + "px";
+      e.preventDefault();
+    }
+    
+    function stopResize(e) {
+      isResizing = false;
+      e.preventDefault();
+    }
+    
+    resizeHandle.addEventListener("mousedown", startResize);
+    resizeHandle.addEventListener("touchstart", startResize);
+    document.addEventListener("mousemove", performResize);
+    document.addEventListener("touchmove", performResize);
+    document.addEventListener("mouseup", stopResize);
+    document.addEventListener("touchend", stopResize);
+  }
+  
+  setupModalResize();
+  
+  // Optional: Haptic feedback for all buttons
+  document.querySelectorAll('.button').forEach(btn => {
+    btn.addEventListener('click', () => {
+      if (navigator.vibrate) {
+        navigator.vibrate(10);
+      }
+    });
   });
 }
 
