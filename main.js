@@ -20,7 +20,7 @@ let selectedRoute = "All";
 
 // --- DOM Elements ---
 const galleryContainer = document.getElementById("imageGallery");
-const modalImage = document.getElementById("modalImage");
+const modalImage = document.getElementById("imageModal").querySelector("img");
 const modalTitle = document.querySelector(".modal-title");
 const cameraCountElement = document.getElementById("cameraCount");
 const searchInput = document.getElementById("searchInput");
@@ -30,6 +30,10 @@ const cityDropdownButton = document.getElementById("cityDropdownButton");
 const regionDropdownButton = document.getElementById("regionDropdownButton");
 const routeFilterButton = document.getElementById("routeFilterButton");
 const routeFilterMenu = document.getElementById("routeFilterMenu");
+const sizeControlButton = document.getElementById("sizeControlButton");
+const sizeSliderContainer = document.getElementById("sizeSliderContainer");
+const sizeSlider = document.getElementById("sizeSlider");
+const imageGallery = document.getElementById("imageGallery");
 
 // --- Utility Functions ---
 function debounce(func, delay) {
@@ -121,7 +125,6 @@ function createImageElements() {
       showImage(index);
     });
     const image = document.createElement("img");
-    // Enable lazy loading
     image.setAttribute("loading", "lazy");
     image.src = camera.Views[0].Url;
     image.alt = `Camera at ${camera.Location}`;
@@ -152,7 +155,6 @@ function renderGallery(cameras) {
       showImage(index);
     });
     const image = document.createElement("img");
-    // Enable lazy loading for each image
     image.setAttribute("loading", "lazy");
     image.src = camera.Views[0].Url;
     image.alt = `Camera at ${camera.Location}`;
@@ -273,12 +275,6 @@ function setupEventListeners() {
 
 // --- Additional UI Behaviors ---
 function setupAdditionalUI() {
-  const sizeControlButton = document.getElementById("sizeControlButton");
-  const sizeSliderContainer = document.getElementById("sizeSliderContainer");
-  const sizeSlider = document.getElementById("sizeSlider");
-  const imageGallery = document.getElementById("imageGallery");
-  let hideTimeout;
-  
   function updateImageSize(size) {
     imageGallery.style.gridTemplateColumns = `repeat(auto-fit, minmax(${size}px, 1fr))`;
   }
@@ -297,6 +293,8 @@ function setupAdditionalUI() {
       sizeSliderContainer.classList.remove("active");
     }, 2000);
   }
+  
+  let hideTimeout;
   
   sizeControlButton.addEventListener("click", () => {
     if (sizeSliderContainer.classList.contains("active")) {
@@ -323,6 +321,48 @@ function setupAdditionalUI() {
       }
     }
   });
+  
+  // --- Pinch-to-Zoom Support ---
+  // This adds touch event listeners to imageGallery to support pinch-to-zoom for grid resizing.
+  function setupPinchToZoom() {
+    let initialDistance = null;
+    let initialSize = parseInt(sizeSlider.value, 10) || 125;
+    
+    imageGallery.addEventListener("touchstart", function(e) {
+      if (e.touches.length === 2) {
+        initialDistance = getDistance(e.touches[0], e.touches[1]);
+        initialSize = parseInt(sizeSlider.value, 10) || 125;
+        e.preventDefault();
+      }
+    });
+    
+    imageGallery.addEventListener("touchmove", function(e) {
+      if (e.touches.length === 2 && initialDistance !== null) {
+        const newDistance = getDistance(e.touches[0], e.touches[1]);
+        const scaleFactor = newDistance / initialDistance;
+        let newSize = Math.round(initialSize * scaleFactor);
+        // Clamp newSize between slider min and max (25 and 380)
+        newSize = Math.max(25, Math.min(newSize, 380));
+        updateImageSize(newSize);
+        sizeSlider.value = newSize;
+        e.preventDefault();
+      }
+    });
+    
+    imageGallery.addEventListener("touchend", function(e) {
+      if (e.touches.length < 2) {
+        initialDistance = null;
+      }
+    });
+  }
+  
+  function getDistance(touch1, touch2) {
+    const dx = touch2.clientX - touch1.clientX;
+    const dy = touch2.clientY - touch1.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+  
+  setupPinchToZoom();
   
   document.querySelectorAll('.button').forEach(btn => {
     btn.addEventListener('click', () => {
