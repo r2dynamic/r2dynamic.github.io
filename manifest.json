@@ -7,12 +7,12 @@
   "theme_color": "#4C4E52",
   "icons": [
     {
-      "src": "./camIcon1.png",
+      "src": "./Icongridbackground2.png",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "./camIcon1.png",
+      "src": "./Icongridbackground2.png",
       "type": "image/png",
       "sizes": "512x512"
     }
