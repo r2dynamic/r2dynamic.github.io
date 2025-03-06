@@ -36,6 +36,7 @@ const sizeSliderContainer = document.getElementById("sizeSliderContainer");
 const sizeSlider = document.getElementById("sizeSlider");
 const imageGallery = document.getElementById("imageGallery");
 const nearestButton = document.getElementById("nearestButton");
+const refreshButton = document.getElementById("refreshButton"); // New refresh button
 
 // --- Utility Functions ---
 function debounce(func, delay) {
@@ -282,6 +283,16 @@ function autoSortByLocation() {
   }
 }
 
+// --- Refresh Button Feature ---
+function setupRefreshButton() {
+  if (refreshButton) {
+    refreshButton.addEventListener("click", () => {
+      // Simply re-render the current filtered view
+      renderGallery(visibleCameras);
+    });
+  }
+}
+
 // --- Event Listeners ---
 function setupEventListeners() {
   cityFilterMenu.addEventListener("click", function (e) {
@@ -366,7 +377,6 @@ function setupAdditionalUI() {
     }, 2000);
   }
   
-  // Slider button click handler
   sizeControlButton.addEventListener("click", () => {
     if (sizeSliderContainer.classList.contains("active")) {
       hideSlider();
@@ -375,7 +385,6 @@ function setupAdditionalUI() {
     }
   });
   
-  // Updated slider handler that clamps size to a safe minimum (30)
   sizeSlider.addEventListener("input", () => {
     let newSize = parseInt(sizeSlider.value, 10);
     newSize = Math.max(30, Math.min(newSize, 380));
@@ -414,7 +423,6 @@ function setupAdditionalUI() {
       if (e.touches.length === 2 && initialDistance !== null) {
         const newDistance = getDistance(e.touches[0], e.touches[1]);
         let scaleFactor = newDistance / initialDistance;
-        // Apply damping: reduce the effect of the scale factor for a smoother feel
         const damping = 0.8;
         scaleFactor = 1 + ((scaleFactor - 1) * damping);
         let newSize = Math.round(initialSize * scaleFactor);
@@ -458,7 +466,6 @@ function setupAdditionalUI() {
     });
   });
   
-  // --- Draggable Modal ---
   const modalDialog = imageModalEl.querySelector(".draggable-modal");
   const modalHeader = imageModalEl.querySelector(".modal-header");
   if (modalDialog && modalHeader) {
@@ -506,6 +513,7 @@ function initialize() {
     setupEventListeners();
     setupAdditionalUI();
     setupNearestCameraButton();
+    setupRefreshButton();
     // Auto-sort full grid by location on load (if permission is granted)
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
