@@ -64,6 +64,7 @@ function computeDistance(lat1, lon1, lat2, lon2) {
 
 // --- New Function: Automatically apply location default view ---
 function applyLocationDefaultView() {
+  console.log("Applying location default view...");
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -90,11 +91,11 @@ function applyLocationDefaultView() {
 
 // --- Modified Default Location Prompt on Load ---
 function promptForLocationDefault() {
+  console.log("Prompting user for location default view...");
   if (window.confirm("Show cameras sorted by proximity as your default view?")) {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          // Set flag so we don't prompt again
           localStorage.setItem(LOCATION_GRANTED_KEY, "true");
           applyLocationDefaultView();
         },
@@ -306,6 +307,7 @@ function setupNearestCameraButton() {
 
 // --- Default Location Prompt on Load ---
 function promptForLocationDefault() {
+  console.log("Prompting for location default view...");
   if (window.confirm("Show cameras sorted by proximity as your default view?")) {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
@@ -324,6 +326,7 @@ function promptForLocationDefault() {
 
 // --- New: Automatically apply location default view if previously granted ---
 function applyLocationDefaultView() {
+  console.log("Applying location default view automatically...");
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -340,7 +343,7 @@ function applyLocationDefaultView() {
         currentIndex = 0;
       },
       (error) => {
-        console.error("Error getting location:", error);
+        console.error("Error applying location default view:", error);
       }
     );
   }
