@@ -6,6 +6,36 @@ body {
   font-family: Arial, sans-serif;
 }
 
+.selected-filters {
+  background-color: #04AA6D;
+  color: white;
+  padding: 6px 10px;
+  text-align: left;
+  font-size: 14px;
+  border: 3px solid white;
+  border-radius: 8px;
+  box-shadow: 0 6px #999;
+  margin-bottom: 5px;
+  display: none; /* Hidden when no filters are selected */
+  transition: opacity 0.3s ease;
+  white-space: pre-line;
+  font-weight: bold; /* Make entire container bold */
+}
+
+.selected-filter-item {
+  display: flex;
+  align-items: center;
+  margin-bottom: 4px;
+}
+
+.selected-filter-item span {
+  margin-left: 12px;
+  /* Remove any font-weight so it inherits the bold from its parent */
+}
+
+
+
+
 /* Header Controls Container */
 .header-controls {
   position: sticky;
@@ -247,11 +277,11 @@ body {
   transition: opacity 0.3s ease-in-out;
 }
 .vertical-slider::-webkit-slider-thumb {
-  appearance: none;
+  appearance: auto;
   width: 25px;
   height: 25px;
   background: #707070;
-  border-radius: 80%;
+  border-radius: 90%;
   cursor: pointer;
   transition: transform 0.4s;
 }
