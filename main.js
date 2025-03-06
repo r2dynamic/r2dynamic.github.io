@@ -6,6 +6,7 @@ import { cityFullNames, regionCities } from './cityList.js';
 
 // --- Constants ---
 const DEBOUNCE_DELAY = 300;
+const LOCATION_GRANTED_KEY = "locationGranted";
 
 // --- Global Variables ---
 let camerasList = [];
@@ -211,7 +212,6 @@ function filterImages() {
     return matchesCity && matchesRegion && matchesSearch && routeMatches;
   });
 
-  // If a curated route is selected, sort visibleCameras in the order defined in the route list
   if (selectedRoute !== "All") {
     const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
     if (routeObj) {
@@ -242,7 +242,6 @@ function setupNearestCameraButton() {
               distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
             }));
             camerasWithDistance.sort((a, b) => a.distance - b.distance);
-            // Get the six nearest cameras
             visibleCameras = camerasWithDistance.slice(0, 6).map(item => item.camera);
             updateCameraCount();
             renderGallery(visibleCameras);
@@ -260,9 +259,9 @@ function setupNearestCameraButton() {
   }
 }
 
-// --- Default Location Prompt on Load (Sort entire grid by proximity) ---
+// --- Default Location Prompt on Load ---
 function promptForLocationDefault() {
-  if (window.confirm("Show cameras sorted by proximity as your default view?")) {
+  if (window.confirm("Use my location and show me the nearest cameras as default view?")) {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -273,11 +272,12 @@ function promptForLocationDefault() {
             distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
           }));
           camerasWithDistance.sort((a, b) => a.distance - b.distance);
-          // Use the entire sorted list as default view
           visibleCameras = camerasWithDistance.map(item => item.camera);
           updateCameraCount();
           renderGallery(visibleCameras);
           currentIndex = 0;
+          // Save flag so that prompt is not shown again on subsequent loads
+          localStorage.setItem(LOCATION_GRANTED_KEY, "true");
         },
         (error) => {
           console.error("Error getting location:", error);
@@ -372,7 +372,6 @@ function setupAdditionalUI() {
     }, 2000);
   }
   
-  // Slider button click handler
   sizeControlButton.addEventListener("click", () => {
     if (sizeSliderContainer.classList.contains("active")) {
       hideSlider();
@@ -402,7 +401,6 @@ function setupAdditionalUI() {
     }
   });
   
-  // --- Pinch-to-Zoom Support ---
   function setupPinchToZoom() {
     let initialDistance = null;
     let initialSize = parseInt(sizeSlider.value, 10) || 125;
@@ -444,7 +442,6 @@ function setupAdditionalUI() {
   
   setupPinchToZoom();
   
-  // Modal Fade Reset for consistent animation on mobile:
   if (imageModalEl) {
     imageModalEl.addEventListener('hidden.bs.modal', () => {
       imageModalEl.classList.remove("fade");
@@ -461,7 +458,6 @@ function setupAdditionalUI() {
     });
   });
   
-  // --- Draggable Modal ---
   const modalDialog = imageModalEl.querySelector(".draggable-modal");
   const modalHeader = imageModalEl.querySelector(".modal-header");
   if (modalDialog && modalHeader) {
@@ -509,8 +505,10 @@ function initialize() {
     setupEventListeners();
     setupAdditionalUI();
     setupNearestCameraButton();
-    // Prompt user if they want to sort the full grid by proximity
-    promptForLocationDefault();
+    // Prompt for location-based default view only if not already granted
+    if (!localStorage.getItem(LOCATION_GRANTED_KEY)) {
+      promptForLocationDefault();
+    }
   });
 }
 
