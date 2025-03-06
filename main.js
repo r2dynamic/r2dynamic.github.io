@@ -409,19 +409,23 @@ function setupAdditionalUI() {
       }
     });
     
-    imageGallery.addEventListener("touchmove", function (e) {
-      if (e.touches.length === 2 && initialDistance !== null) {
-        const newDistance = getDistance(e.touches[0], e.touches[1]);
-        const scaleFactor = newDistance / initialDistance;
-        let newSize = Math.round(initialSize * scaleFactor);
-        newSize = Math.max(30, Math.min(newSize, 380));
-        requestAnimationFrame(() => {
-          updateImageSize(newSize);
-        });
-        sizeSlider.value = newSize;
-        e.preventDefault();
-      }
+imageGallery.addEventListener("touchmove", function (e) {
+  if (e.touches.length === 2 && initialDistance !== null) {
+    const newDistance = getDistance(e.touches[0], e.touches[1]);
+    let scaleFactor = newDistance / initialDistance;
+    // Apply damping: slow down the scaling effect
+    const damping = 0.8;
+    scaleFactor = 1 + ((scaleFactor - 1) * damping);
+    let newSize = Math.round(initialSize * scaleFactor);
+    newSize = Math.max(30, Math.min(newSize, 380));
+    requestAnimationFrame(() => {
+      updateImageSize(newSize);
     });
+    sizeSlider.value = newSize;
+    e.preventDefault();
+  }
+});
+
     
     imageGallery.addEventListener("touchend", function (e) {
       if (e.touches.length < 2) {
