@@ -6,7 +6,6 @@ import { cityFullNames, regionCities } from './cityList.js';
 
 // --- Constants ---
 const DEBOUNCE_DELAY = 300;
-const LOCATION_GRANTED_KEY = "locationGranted";
 
 // --- Global Variables ---
 let camerasList = [];
@@ -60,52 +59,6 @@ function computeDistance(lat1, lon1, lat2, lon2) {
     Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
-}
-
-// --- New Function: Automatically apply location default view ---
-function applyLocationDefaultView() {
-  console.log("Applying location default view...");
-  if ("geolocation" in navigator) {
-    navigator.geolocation.getCurrentPosition(
-      (position) => {
-        const userLat = position.coords.latitude;
-        const userLng = position.coords.longitude;
-        const camerasWithDistance = camerasList.map(camera => ({
-          camera,
-          distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
-        }));
-        camerasWithDistance.sort((a, b) => a.distance - b.distance);
-        // Use the entire sorted list as default view
-        visibleCameras = camerasWithDistance.map(item => item.camera);
-        updateCameraCount();
-        renderGallery(visibleCameras);
-        currentIndex = 0;
-      },
-      (error) => {
-        console.error("Error getting location:", error);
-        // Fallback: leave grid as loaded from JSON
-      }
-    );
-  }
-}
-
-// --- Modified Default Location Prompt on Load ---
-function promptForLocationDefault() {
-  console.log("Prompting user for location default view...");
-  if (window.confirm("Show cameras sorted by proximity as your default view?")) {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          localStorage.setItem(LOCATION_GRANTED_KEY, "true");
-          applyLocationDefaultView();
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          // Fallback: leave grid as loaded from JSON
-        }
-      );
-    }
-  }
 }
 
 // --- Dropdown & Gallery Setup ---
@@ -305,28 +258,9 @@ function setupNearestCameraButton() {
   }
 }
 
-// --- Default Location Prompt on Load ---
-function promptForLocationDefault() {
-  console.log("Prompting for location default view...");
-  if (window.confirm("Show cameras sorted by proximity as your default view?")) {
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          localStorage.setItem(LOCATION_GRANTED_KEY, "true");
-          applyLocationDefaultView();
-        },
-        (error) => {
-          console.error("Error getting location:", error);
-          // Fallback: leave grid as loaded from JSON
-        }
-      );
-    }
-  }
-}
-
-// --- New: Automatically apply location default view if previously granted ---
-function applyLocationDefaultView() {
-  console.log("Applying location default view automatically...");
+// --- Auto Location Sorting on Load ---
+// Automatically ask for location permission on load so that if granted, the entire grid is sorted by proximity.
+function autoSortByLocation() {
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
@@ -343,7 +277,8 @@ function applyLocationDefaultView() {
         currentIndex = 0;
       },
       (error) => {
-        console.error("Error applying location default view:", error);
+        console.error("Location not granted or error:", error);
+        // If location is not granted, keep the grid in default JSON order.
       }
     );
   }
@@ -556,7 +491,7 @@ function initialize() {
   Promise.all([getCamerasList(), getCuratedRoutes()]).then(results => {
     camerasList = results[0];
     curatedRoutes = results[1];
-    // Default view: full grid as loaded from JSON
+    // Default view: use JSON order
     visibleCameras = camerasList;
     updateCityDropdown();
     populateRegionDropdown();
@@ -566,12 +501,27 @@ function initialize() {
     setupEventListeners();
     setupAdditionalUI();
     setupNearestCameraButton();
-    // If user has already granted location default view, apply it automatically;
-    // otherwise, prompt them.
-    if (localStorage.getItem(LOCATION_GRANTED_KEY)) {
-      applyLocationDefaultView();
-    } else {
-      promptForLocationDefault();
+    // Automatically sort the full grid by location if permission is granted
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLat = position.coords.latitude;
+          const userLng = position.coords.longitude;
+          const camerasWithDistance = camerasList.map(camera => ({
+            camera,
+            distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
+          }));
+          camerasWithDistance.sort((a, b) => a.distance - b.distance);
+          visibleCameras = camerasWithDistance.map(item => item.camera);
+          updateCameraCount();
+          renderGallery(visibleCameras);
+          currentIndex = 0;
+        },
+        (error) => {
+          console.error("Location not granted or error:", error);
+          // If location is not granted, keep grid as loaded from JSON.
+        }
+      );
     }
   });
 }
