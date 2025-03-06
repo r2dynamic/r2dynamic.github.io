@@ -62,6 +62,51 @@ function computeDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+// --- New Function: Automatically apply location default view ---
+function applyLocationDefaultView() {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+        const camerasWithDistance = camerasList.map(camera => ({
+          camera,
+          distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
+        }));
+        camerasWithDistance.sort((a, b) => a.distance - b.distance);
+        // Use the entire sorted list as default view
+        visibleCameras = camerasWithDistance.map(item => item.camera);
+        updateCameraCount();
+        renderGallery(visibleCameras);
+        currentIndex = 0;
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+        // Fallback: leave grid as loaded from JSON
+      }
+    );
+  }
+}
+
+// --- Modified Default Location Prompt on Load ---
+function promptForLocationDefault() {
+  if (window.confirm("Show cameras sorted by proximity as your default view?")) {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          // Set flag so we don't prompt again
+          localStorage.setItem(LOCATION_GRANTED_KEY, "true");
+          applyLocationDefaultView();
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          // Fallback: leave grid as loaded from JSON
+        }
+      );
+    }
+  }
+}
+
 // --- Dropdown & Gallery Setup ---
 function updateCityDropdown() {
   const cities = camerasList.map(camera => camera.Location.split(",").pop().trim());
@@ -261,23 +306,12 @@ function setupNearestCameraButton() {
 
 // --- Default Location Prompt on Load ---
 function promptForLocationDefault() {
-  if (window.confirm("Use my location and show me the nearest cameras as default view?")) {
+  if (window.confirm("Show cameras sorted by proximity as your default view?")) {
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
-          const userLat = position.coords.latitude;
-          const userLng = position.coords.longitude;
-          const camerasWithDistance = camerasList.map(camera => ({
-            camera,
-            distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
-          }));
-          camerasWithDistance.sort((a, b) => a.distance - b.distance);
-          visibleCameras = camerasWithDistance.map(item => item.camera);
-          updateCameraCount();
-          renderGallery(visibleCameras);
-          currentIndex = 0;
-          // Save flag so that prompt is not shown again on subsequent loads
           localStorage.setItem(LOCATION_GRANTED_KEY, "true");
+          applyLocationDefaultView();
         },
         (error) => {
           console.error("Error getting location:", error);
@@ -285,6 +319,30 @@ function promptForLocationDefault() {
         }
       );
     }
+  }
+}
+
+// --- New: Automatically apply location default view if previously granted ---
+function applyLocationDefaultView() {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+        const camerasWithDistance = camerasList.map(camera => ({
+          camera,
+          distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
+        }));
+        camerasWithDistance.sort((a, b) => a.distance - b.distance);
+        visibleCameras = camerasWithDistance.map(item => item.camera);
+        updateCameraCount();
+        renderGallery(visibleCameras);
+        currentIndex = 0;
+      },
+      (error) => {
+        console.error("Error getting location:", error);
+      }
+    );
   }
 }
 
@@ -505,8 +563,11 @@ function initialize() {
     setupEventListeners();
     setupAdditionalUI();
     setupNearestCameraButton();
-    // Prompt for location-based default view only if not already granted
-    if (!localStorage.getItem(LOCATION_GRANTED_KEY)) {
+    // If user has already granted location default view, apply it automatically;
+    // otherwise, prompt them.
+    if (localStorage.getItem(LOCATION_GRANTED_KEY)) {
+      applyLocationDefaultView();
+    } else {
       promptForLocationDefault();
     }
   });
