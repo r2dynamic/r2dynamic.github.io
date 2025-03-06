@@ -36,7 +36,7 @@ const sizeSliderContainer = document.getElementById("sizeSliderContainer");
 const sizeSlider = document.getElementById("sizeSlider");
 const imageGallery = document.getElementById("imageGallery");
 const nearestButton = document.getElementById("nearestButton");
-const refreshButton = document.getElementById("refreshButton"); // New refresh button
+const refreshButton = document.getElementById("refreshButton");
 
 // --- Utility Functions ---
 function debounce(func, delay) {
@@ -61,6 +61,62 @@ function computeDistance(lat1, lon1, lat2, lon2) {
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
+
+// --- Selected Filters Display ---
+// Updates the #selectedFilters container with each active filter on its own line,
+// with an icon to the left of bold text.
+function updateSelectedFilters() {
+  const filtersEl = document.getElementById("selectedFilters");
+  filtersEl.innerHTML = "";
+  let hasFilters = false;
+  
+  if (selectedCity) {
+    const div = document.createElement("div");
+    div.classList.add("selected-filter-item");
+    const icon = document.createElement("i");
+    // Use the same icon as your header button for city/county:
+    icon.className = "fas fa-map-marked-alt"; 
+    const span = document.createElement("span");
+    let cityText = "City/County: " + selectedCity;
+    if (cityFullNames[selectedCity]) {
+      cityText += " (" + cityFullNames[selectedCity] + ")";
+    }
+    span.textContent = cityText;
+    div.appendChild(icon);
+    div.appendChild(span);
+    filtersEl.appendChild(div);
+    hasFilters = true;
+  }
+  
+  if (selectedRegion) {
+    const div = document.createElement("div");
+    div.classList.add("selected-filter-item");
+    const icon = document.createElement("i");
+    icon.className = "fas fa-industry";
+    const span = document.createElement("span");
+    span.textContent = "Region: " + selectedRegion;
+    div.appendChild(icon);
+    div.appendChild(span);
+    filtersEl.appendChild(div);
+    hasFilters = true;
+  }
+  
+  if (selectedRoute && selectedRoute !== "All") {
+    const div = document.createElement("div");
+    div.classList.add("selected-filter-item");
+    const icon = document.createElement("i");
+    icon.className = "fas fa-road";
+    const span = document.createElement("span");
+    span.textContent = "Route: " + selectedRoute;
+    div.appendChild(icon);
+    div.appendChild(span);
+    filtersEl.appendChild(div);
+    hasFilters = true;
+  }
+  
+  filtersEl.style.display = hasFilters ? "block" : "none";
+}
+
 
 // --- Dropdown & Gallery Setup ---
 function updateCityDropdown() {
@@ -226,6 +282,7 @@ function filterImages() {
   updateCameraCount();
   renderGallery(visibleCameras);
   currentIndex = 0;
+  updateSelectedFilters();
 }
 
 // --- Nearest Cameras Feature (6 nearest) ---
@@ -247,6 +304,7 @@ function setupNearestCameraButton() {
             renderGallery(visibleCameras);
             currentIndex = 0;
             showImage(0);
+            updateSelectedFilters();
           },
           (error) => {
             alert("Error getting your location: " + error.message);
@@ -275,6 +333,7 @@ function autoSortByLocation() {
         updateCameraCount();
         renderGallery(visibleCameras);
         currentIndex = 0;
+        updateSelectedFilters();
       },
       (error) => {
         console.error("Location not granted or error:", error);
@@ -287,7 +346,6 @@ function autoSortByLocation() {
 function setupRefreshButton() {
   if (refreshButton) {
     refreshButton.addEventListener("click", () => {
-      // Simply re-render the current filtered view
       renderGallery(visibleCameras);
     });
   }
@@ -299,10 +357,7 @@ function setupEventListeners() {
     e.preventDefault();
     if (e.target && e.target.matches("a.dropdown-item")) {
       selectedCity = e.target.getAttribute("data-value");
-      cityDropdownButton.innerHTML = `<i class="fas fa-map-marked-alt"></i>`;
-      if (e.target.textContent !== "All") {
-        cityDropdownButton.innerHTML += ` ${e.target.textContent}`;
-      }
+      updateSelectedFilters();
       filterImages();
     }
   });
@@ -311,12 +366,8 @@ function setupEventListeners() {
     e.preventDefault();
     if (e.target && e.target.matches("a.dropdown-item")) {
       selectedRegion = e.target.getAttribute("data-value");
-      regionDropdownButton.innerHTML = `<i class="fas fa-industry"></i>`;
-      if (e.target.textContent !== "All Regions") {
-        regionDropdownButton.innerHTML += ` ${e.target.textContent}`;
-      }
+      updateSelectedFilters();
       selectedCity = "";
-      cityDropdownButton.innerHTML = `<i class="fas fa-map-marked-alt"></i>`;
       updateCityDropdown();
       filterImages();
     }
@@ -326,10 +377,7 @@ function setupEventListeners() {
     e.preventDefault();
     if (e.target && e.target.matches("a.dropdown-item")) {
       selectedRoute = e.target.getAttribute("data-value");
-      routeFilterButton.innerHTML = `<i class="fas fa-road"></i>`;
-      if (e.target.textContent !== "All Routes") {
-        routeFilterButton.innerHTML += ` ${e.target.textContent}`;
-      }
+      updateSelectedFilters();
       filterImages();
     }
   });
@@ -529,6 +577,7 @@ function initialize() {
           updateCameraCount();
           renderGallery(visibleCameras);
           currentIndex = 0;
+          updateSelectedFilters();
         },
         (error) => {
           console.error("Location not granted or error:", error);
