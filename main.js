@@ -228,7 +228,7 @@ function filterImages() {
   currentIndex = 0;
 }
 
-// --- Nearest Cameras Feature ---
+// --- Nearest Cameras Feature (Button) ---
 function setupNearestCameraButton() {
   if (nearestButton) {
     nearestButton.addEventListener("click", () => {
@@ -260,6 +260,37 @@ function setupNearestCameraButton() {
         alert("Geolocation is not supported by your browser.");
       }
     });
+  }
+}
+
+// --- Default Location Prompt on Load ---
+function promptForLocationDefault() {
+  // Ask the user if they want to see the nearest cameras as default view
+  if (window.confirm("Show me the nearest cameras as default view?")) {
+    if ("geolocation" in navigator) {
+      navigator.geolocation.getCurrentPosition(
+        (position) => {
+          const userLat = position.coords.latitude;
+          const userLng = position.coords.longitude;
+          // Compute distances and sort all cameras
+          const camerasWithDistance = camerasList.map(camera => ({
+            camera,
+            distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
+          }));
+          camerasWithDistance.sort((a, b) => a.distance - b.distance);
+          // Use the six nearest cameras as the default view
+          visibleCameras = camerasWithDistance.slice(0, 6).map(item => item.camera);
+          updateCameraCount();
+          renderGallery(visibleCameras);
+          currentIndex = 0;
+          showImage(0);
+        },
+        (error) => {
+          console.error("Error getting location:", error);
+          // Fallback: leave grid as loaded from JSON
+        }
+      );
+    }
   }
 }
 
@@ -477,6 +508,8 @@ function initialize() {
   Promise.all([getCamerasList(), getCuratedRoutes()]).then(results => {
     camerasList = results[0];
     curatedRoutes = results[1];
+    // Initially display the grid as loaded from JSON (default non–location view)
+    visibleCameras = camerasList;
     updateCityDropdown();
     populateRegionDropdown();
     updateRouteOptions();
@@ -485,6 +518,8 @@ function initialize() {
     setupEventListeners();
     setupAdditionalUI();
     setupNearestCameraButton();
+    // Prompt user for location-based default view
+    promptForLocationDefault();
   });
 }
 
