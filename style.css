@@ -135,6 +135,7 @@ body {
   margin-top: 2px;
   margin-bottom: 200px;
   justify-content: center;
+  transition: grid-template-columns 0.3s ease-out;
 }
 .col {
   flex: 1;
