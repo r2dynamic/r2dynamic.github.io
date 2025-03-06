@@ -258,8 +258,7 @@ function setupNearestCameraButton() {
   }
 }
 
-// --- Auto Location Sorting on Load ---
-// Automatically ask for location permission on load so that if granted, the entire grid is sorted by proximity.
+// --- Auto-Sort Full Grid by Location on Load ---
 function autoSortByLocation() {
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
@@ -278,7 +277,6 @@ function autoSortByLocation() {
       },
       (error) => {
         console.error("Location not granted or error:", error);
-        // If location is not granted, keep the grid in default JSON order.
       }
     );
   }
@@ -368,6 +366,7 @@ function setupAdditionalUI() {
     }, 2000);
   }
   
+  // Slider button click handler
   sizeControlButton.addEventListener("click", () => {
     if (sizeSliderContainer.classList.contains("active")) {
       hideSlider();
@@ -376,6 +375,7 @@ function setupAdditionalUI() {
     }
   });
   
+  // Updated slider handler that clamps size to a safe minimum (30)
   sizeSlider.addEventListener("input", () => {
     let newSize = parseInt(sizeSlider.value, 10);
     newSize = Math.max(30, Math.min(newSize, 380));
@@ -397,6 +397,7 @@ function setupAdditionalUI() {
     }
   });
   
+  // --- Pinch-to-Zoom Support with Damping ---
   function setupPinchToZoom() {
     let initialDistance = null;
     let initialSize = parseInt(sizeSlider.value, 10) || 125;
@@ -409,23 +410,22 @@ function setupAdditionalUI() {
       }
     });
     
-imageGallery.addEventListener("touchmove", function (e) {
-  if (e.touches.length === 2 && initialDistance !== null) {
-    const newDistance = getDistance(e.touches[0], e.touches[1]);
-    let scaleFactor = newDistance / initialDistance;
-    // Apply damping: slow down the scaling effect
-    const damping = 0.8;
-    scaleFactor = 1 + ((scaleFactor - 1) * damping);
-    let newSize = Math.round(initialSize * scaleFactor);
-    newSize = Math.max(30, Math.min(newSize, 380));
-    requestAnimationFrame(() => {
-      updateImageSize(newSize);
+    imageGallery.addEventListener("touchmove", function (e) {
+      if (e.touches.length === 2 && initialDistance !== null) {
+        const newDistance = getDistance(e.touches[0], e.touches[1]);
+        let scaleFactor = newDistance / initialDistance;
+        // Apply damping: reduce the effect of the scale factor for a smoother feel
+        const damping = 0.8;
+        scaleFactor = 1 + ((scaleFactor - 1) * damping);
+        let newSize = Math.round(initialSize * scaleFactor);
+        newSize = Math.max(30, Math.min(newSize, 380));
+        requestAnimationFrame(() => {
+          updateImageSize(newSize);
+        });
+        sizeSlider.value = newSize;
+        e.preventDefault();
+      }
     });
-    sizeSlider.value = newSize;
-    e.preventDefault();
-  }
-});
-
     
     imageGallery.addEventListener("touchend", function (e) {
       if (e.touches.length < 2) {
@@ -458,6 +458,7 @@ imageGallery.addEventListener("touchmove", function (e) {
     });
   });
   
+  // --- Draggable Modal ---
   const modalDialog = imageModalEl.querySelector(".draggable-modal");
   const modalHeader = imageModalEl.querySelector(".modal-header");
   if (modalDialog && modalHeader) {
@@ -495,7 +496,7 @@ function initialize() {
   Promise.all([getCamerasList(), getCuratedRoutes()]).then(results => {
     camerasList = results[0];
     curatedRoutes = results[1];
-    // Default view: use JSON order
+    // Default view: full grid in JSON order
     visibleCameras = camerasList;
     updateCityDropdown();
     populateRegionDropdown();
@@ -505,7 +506,7 @@ function initialize() {
     setupEventListeners();
     setupAdditionalUI();
     setupNearestCameraButton();
-    // Automatically sort the full grid by location if permission is granted
+    // Auto-sort full grid by location on load (if permission is granted)
     if ("geolocation" in navigator) {
       navigator.geolocation.getCurrentPosition(
         (position) => {
@@ -523,7 +524,6 @@ function initialize() {
         },
         (error) => {
           console.error("Location not granted or error:", error);
-          // If location is not granted, keep grid as loaded from JSON.
         }
       );
     }
