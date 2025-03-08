@@ -600,5 +600,5 @@ document.addEventListener('DOMContentLoaded', () => {
         splash.style.display = 'none';
       }, 1000);
     }
-  }, 8000);
+  }, 8500);
 });
