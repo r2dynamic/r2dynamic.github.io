@@ -588,3 +588,17 @@ function initialize() {
 }
 
 document.addEventListener('DOMContentLoaded', initialize);
+
+document.addEventListener('DOMContentLoaded', () => {
+  // Wait 8 seconds, then fade out the splash screen
+  setTimeout(() => {
+    const splash = document.getElementById('splashScreen');
+    if (splash) {
+      splash.classList.add('fade-out');
+      // After fade-out transition (1s), remove the splash screen from view
+      setTimeout(() => {
+        splash.style.display = 'none';
+      }, 1000);
+    }
+  }, 8000);
+});
