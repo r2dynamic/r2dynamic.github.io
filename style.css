@@ -5,31 +5,58 @@ body {
   padding: 0;
   font-family: Arial, sans-serif;
 }
+
+
+
+/* Splash Screen & Transition */
 .splash-screen {
   position: fixed;
   top: 0;
   left: 0;
   width: 100%;
   height: 100%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   z-index: 9999;
-  overflow: hidden;
+  opacity: 1; /* Initial opacity */
+  transition: opacity 1.5s ease-out;
+}
+.splash-screen.fade-out {
+  opacity: 0;
 }
 
+
+
+/* Splash video styling */
 .splash-screen video {
   width: 100%;
   height: 100%;
-  object-fit: cover; /* Alternatively use 'contain' if you want to see the entire video without cropping */
+  object-fit: cover; /* Change to 'contain' if desired */
+}
+.desktop-video {
+  display: none;
+}
+.mobile-video {
+  display: block;
+}
+@media (min-width: 768px) {
+  .desktop-video {
+    display: block;
+  }
+  .mobile-video {
+    display: none;
+  }
 }
 
-/* This class will be added to fade the splash screen out */
-.fade-out {
+.hidden-on-load {
   opacity: 0;
-  transition: opacity 2s ease-out;
+  visibility: hidden;
 }
 
+.fade-in {
+  opacity: 1;
+  visibility: visible;
+}
+
+/* Selected Filters Container */
 .selected-filters {
   background-color: #04AA6D;
   color: white;
@@ -43,22 +70,23 @@ body {
   display: none; /* Hidden when no filters are selected */
   transition: opacity 0.3s ease;
   white-space: pre-line;
-  font-weight: bold; /* Make entire container bold */
+  font-weight: bold;
+  position: relative; /* For reset button positioning */
 }
 
-.selected-filter-item {
-  display: flex;
-  align-items: center;
-  margin-bottom: 4px;
+/* Reset Button inside Selected Filters */
+.selected-filters .reset-button {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background-color: #fff;
+  color: #04AA6D;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
 }
-
-.selected-filter-item span {
-  margin-left: 12px;
-  /* Remove any font-weight so it inherits the bold from its parent */
-}
-
-
-
 
 /* Header Controls Container */
 .header-controls {
@@ -73,19 +101,17 @@ body {
   padding: 10px 2px;
   gap: 5px;
 }
-
 @media (max-width: 600px) {
   .header-controls .button {
     max-width: 150px;
     box-shadow: 0 4px #999;
     border-radius: 6px;
-    font-size: 11px; /* slightly smaller buttons on mobile */
+    font-size: 11px;
     padding: 3px 5px;
   }
 }
-
 .header-controls .button {
-  max-width: 200px; /* adjust as needed */
+  max-width: 200px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -106,11 +132,9 @@ body {
   box-shadow: 0 6px #999;
   transition: background-color 0.3s, box-shadow 0.3s, transform 0.1s;
 }
-
 .button:hover {
   background-color: #3e8e41;
 }
-
 .button:active {
   background-color: #3e8e41;
   box-shadow: 0 5px #666;
@@ -126,8 +150,6 @@ body {
   box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
   transition: opacity 0.3s ease-in-out, transform 0.2s ease-in-out;
 }
-
-/* Dropdown Items */
 .dropdown-menu .dropdown-item {
   color: white !important;
   font-weight: bold;
@@ -135,12 +157,9 @@ body {
   border-radius: 8px;
   transition: background 0.2s ease-in-out;
 }
-
 .dropdown-menu .dropdown-item:hover {
   background: rgba(255, 255, 255, 0.2) !important;
 }
-
-/* Glassmorphism for select and input in dropdowns */
 .dropdown-menu select,
 .dropdown-menu input {
   background: rgba(255, 255, 255, 0.2) !important;
@@ -151,13 +170,10 @@ body {
   outline: none;
   width: 100%;
 }
-
 .dropdown-menu select:focus,
 .dropdown-menu input:focus {
   background: rgba(255, 255, 255, 0.3) !important;
 }
-
-/* Auto Hide Effect for Dropdowns */
 .dropdown-menu {
   opacity: 0;
   transform: translateY(-10px);
@@ -168,15 +184,13 @@ body {
   transform: translateY(0);
   visibility: visible;
 }
-
 .dropdown-menu {
-  max-height: 400px; /* or another height as needed */
+  max-height: 400px;
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   scrollbar-width: none;
   -ms-overflow-style: none;
 }
-
 .dropdown-menu::-webkit-scrollbar {
   display: none;
 }
@@ -197,7 +211,7 @@ body {
 .aspect-ratio-box {
   width: 100%;
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 ratio */
+  padding-bottom: 56.25%;
   overflow: hidden;
 }
 .aspect-ratio-box img {
@@ -254,7 +268,6 @@ body {
 #sizeControlButton:hover {
   background-color: #3e8e41;
 }
-
 @media (max-width: 600px) {
   #sizeControlButton {
     max-width: 150px;
@@ -264,7 +277,6 @@ body {
     padding: 5.3px 5px;
   }
 }
-
 .slider-dropdown {
   position: absolute;
   top: 100%;
@@ -321,8 +333,6 @@ body {
   border-radius: 12px;
   animation: modalFadeIn 0.9s ease-out;
 }
-
-/* Fade-in animation for modal */
 @keyframes modalFadeIn {
   from {
     opacity: 0;
@@ -341,14 +351,11 @@ body {
   justify-content: center;
   min-height: calc(100% - 1rem);
 }
-
-/* Minimal padding for header and footer */
 .modal-header,
 .modal-footer {
   padding: 0.5rem;
   border: none;
 }
-
 .modal-title {
   margin: 0 auto;
   white-space: nowrap;
@@ -356,27 +363,20 @@ body {
   overflow: hidden;
   text-overflow: ellipsis;
   font-size: calc(1vmin + 1vw);
-  margin: 0 auto;
   text-align: center;
   color: white;
   font-size: 12px;
 }
-
-/* Center the footer and keep minimal padding */
 .modal-footer {
   display: flex;
   justify-content: right;
 }
-
-/* Modal body: center the image */
 .modal-body {
   padding: 0;
   display: flex;
   justify-content: center;
   align-items: center;
 }
-
-/* Modal image styling: add margin and rounded corners */
 #modalImage {
   max-width: 100%;
   max-height: 80vh;
