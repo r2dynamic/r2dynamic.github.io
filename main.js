@@ -77,7 +77,7 @@ function fadeOutSplash() {
     // After the fade-out transition, remove the splash completely
     setTimeout(() => {
       splash.style.display = 'none';
-    }, 2900); // Adjust to match your splash fade-out transition duration
+    }, 2500); // Adjust to match your splash fade-out transition duration
   }
 }
 
@@ -482,17 +482,24 @@ if (modalImage) {
   modalImage.addEventListener("touchstart", (e) => {
     if (e.touches.length === 2) {
       initialDistance = getDistance(e.touches[0], e.touches[1]);
+      const transform = window.getComputedStyle(modalImage).transform;
+      if (transform && transform !== "none") {
+        const values = transform.split('(')[1].split(')')[0].split(',');
+        initialScale = parseFloat(values[0]) || 1;
+      } else {
+        initialScale = 1;
+      }
     }
-  });
+  }, { passive: true });
 
   modalImage.addEventListener("touchmove", (e) => {
     if (e.touches.length === 2 && initialDistance) {
       const currentDistance = getDistance(e.touches[0], e.touches[1]);
       const scale = (currentDistance / initialDistance) * initialScale;
       modalImage.style.transform = `scale(${scale})`;
-      e.preventDefault();
+      e.preventDefault();  // Now this works because the listener is non-passive.
     }
-  });
+  }, { passive: false });
 
   modalImage.addEventListener("touchend", (e) => {
     if (e.touches.length < 2) {
@@ -503,7 +510,7 @@ if (modalImage) {
       }
       initialDistance = null;
     }
-  });
+  }, { passive: true });
 }
 
 function getDistance(touch1, touch2) {
@@ -511,6 +518,7 @@ function getDistance(touch1, touch2) {
   const dy = touch1.clientY - touch2.clientY;
   return Math.sqrt(dx * dx + dy * dy);
 }
+
 
 // --- Search Input Event Listener ---
 if (searchInput) {
