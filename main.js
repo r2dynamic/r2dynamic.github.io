@@ -18,6 +18,69 @@ let selectedRegion = "";
 let searchQuery = "";
 let selectedRoute = "All";
 
+// Variables for pinch-to-zoom
+let initialDistance = null;
+let initialScale = 1;
+
+// --- Initialize Function ---
+// Loads data immediately.
+function initialize() {
+  // Load the cameras data
+  getCamerasList()
+    .then(data => {
+      camerasList = data;
+      visibleCameras = camerasList.slice();
+      renderGallery(visibleCameras);
+      updateCameraCount();
+      updateCityDropdown();
+      populateRegionDropdown();
+    })
+    .catch(err => {
+      console.error("Error loading cameras:", err);
+    });
+
+  // Load curated routes if needed.
+  getCuratedRoutes()
+    .then(routes => {
+      curatedRoutes = routes;
+      updateRouteOptions();
+    })
+    .catch(err => {
+      console.error("Error loading curated routes:", err);
+    });
+}
+
+// --- Function to Reveal Main Content ---
+// Removes the hidden-on-load class and adds fade-in.
+function revealMainContent() {
+  const headerControls = document.querySelector('.header-controls');
+  const imageGallery = document.getElementById('imageGallery');
+  if (headerControls) {
+    headerControls.classList.remove('hidden-on-load');
+    headerControls.classList.add('fade-in');
+  }
+  if (imageGallery) {
+    imageGallery.classList.remove('hidden-on-load');
+    imageGallery.classList.add('fade-in');
+  }
+}
+
+// --- Splash Screen Fade-Out ---
+// Reveals main content immediately, then fades out the splash.
+function fadeOutSplash() {
+  const splash = document.getElementById('splashScreen');
+  if (splash) {
+    // Reveal main content immediately
+    revealMainContent();
+    // Start fading out the splash overlay
+    splash.classList.add('fade-out');
+    // After the fade-out transition, remove the splash completely
+    setTimeout(() => {
+      splash.style.display = 'none';
+    }, 2900); // Adjust to match your splash fade-out transition duration
+  }
+}
+
 // --- DOM Elements ---
 const galleryContainer = document.getElementById("imageGallery");
 const imageModalEl = document.getElementById("imageModal");
@@ -27,16 +90,12 @@ const cameraCountElement = document.getElementById("cameraCount");
 const searchInput = document.getElementById("searchInput");
 const cityFilterMenu = document.getElementById("cityFilterMenu");
 const regionFilterMenu = document.getElementById("regionFilterMenu");
-const cityDropdownButton = document.getElementById("cityDropdownButton");
-const regionDropdownButton = document.getElementById("regionDropdownButton");
-const routeFilterButton = document.getElementById("routeFilterButton");
 const routeFilterMenu = document.getElementById("routeFilterMenu");
-const sizeControlButton = document.getElementById("sizeControlButton");
-const sizeSliderContainer = document.getElementById("sizeSliderContainer");
-const sizeSlider = document.getElementById("sizeSlider");
-const imageGallery = document.getElementById("imageGallery");
 const nearestButton = document.getElementById("nearestButton");
 const refreshButton = document.getElementById("refreshButton");
+const sizeSlider = document.getElementById("sizeSlider");
+const sizeControlButton = document.getElementById("sizeControlButton");
+const sizeSliderContainer = document.getElementById("sizeSliderContainer");
 
 // --- Utility Functions ---
 function debounce(func, delay) {
@@ -62,9 +121,7 @@ function computeDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// --- Selected Filters Display ---
-// Updates the #selectedFilters container with each active filter on its own line,
-// with an icon to the left of bold text.
+// --- Selected Filters Display & Reset ---
 function updateSelectedFilters() {
   const filtersEl = document.getElementById("selectedFilters");
   filtersEl.innerHTML = "";
@@ -74,8 +131,7 @@ function updateSelectedFilters() {
     const div = document.createElement("div");
     div.classList.add("selected-filter-item");
     const icon = document.createElement("i");
-    // Use the same icon as your header button for city/county:
-    icon.className = "fas fa-map-marked-alt"; 
+    icon.className = "fas fa-map-marked-alt";
     const span = document.createElement("span");
     let cityText = "City/County: " + selectedCity;
     if (cityFullNames[selectedCity]) {
@@ -114,23 +170,49 @@ function updateSelectedFilters() {
     hasFilters = true;
   }
   
+  if (hasFilters) {
+    const resetButton = document.createElement("button");
+    resetButton.innerHTML = '<i class="fas fa-undo"></i>';
+    resetButton.classList.add("reset-button");
+    resetButton.addEventListener("click", resetFilters);
+    filtersEl.appendChild(resetButton);
+  }
+  
   filtersEl.style.display = hasFilters ? "block" : "none";
 }
 
+function resetFilters() {
+  selectedCity = "";
+  selectedRegion = "";
+  searchQuery = "";
+  selectedRoute = "All";
+  searchInput.value = "";
+  updateCityDropdown();
+  filterImages();
+  updateSelectedFilters();
+}
 
 // --- Dropdown & Gallery Setup ---
 function updateCityDropdown() {
   const cities = camerasList.map(camera => camera.Location.split(",").pop().trim());
   const uniqueCities = [...new Set(cities.filter(city => city.length <= 4))];
   cityFilterMenu.innerHTML = "";
+  
+  // Default "All" option
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
   defaultA.classList.add("dropdown-item");
   defaultA.href = "#";
   defaultA.setAttribute("data-value", "");
   defaultA.textContent = "All";
+  defaultA.addEventListener("click", (e) => {
+    e.preventDefault();
+    selectedCity = "";
+    filterImages();
+  });
   defaultLi.appendChild(defaultA);
   cityFilterMenu.appendChild(defaultLi);
+  
   let filteredCities = uniqueCities;
   if (selectedRegion && regionCities[selectedRegion]) {
     filteredCities = uniqueCities.filter(city => regionCities[selectedRegion].includes(city));
@@ -143,6 +225,11 @@ function updateCityDropdown() {
     a.setAttribute("data-value", city);
     const fullName = cityFullNames[city] || "";
     a.textContent = fullName ? `${city} (${fullName})` : city;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      selectedCity = city;
+      filterImages();
+    });
     li.appendChild(a);
     cityFilterMenu.appendChild(li);
   });
@@ -150,14 +237,22 @@ function updateCityDropdown() {
 
 function populateRegionDropdown() {
   regionFilterMenu.innerHTML = "";
+  // Default "All Regions" option
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
   defaultA.classList.add("dropdown-item");
   defaultA.href = "#";
   defaultA.setAttribute("data-value", "");
   defaultA.textContent = "All Regions";
+  defaultA.addEventListener("click", (e) => {
+    e.preventDefault();
+    selectedRegion = "";
+    updateCityDropdown();
+    filterImages();
+  });
   defaultLi.appendChild(defaultA);
   regionFilterMenu.appendChild(defaultLi);
+  
   Object.keys(regionCities).forEach(region => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -165,13 +260,34 @@ function populateRegionDropdown() {
     a.href = "#";
     a.setAttribute("data-value", region);
     a.textContent = region;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      selectedRegion = region;
+      updateCityDropdown();
+      filterImages();
+    });
     li.appendChild(a);
     regionFilterMenu.appendChild(li);
   });
 }
 
 function updateRouteOptions() {
-  routeFilterMenu.innerHTML = '<li><a class="dropdown-item" href="#" data-value="All">All Routes</a></li>';
+  routeFilterMenu.innerHTML = "";
+  // Default "All Routes" option
+  const defaultLi = document.createElement("li");
+  const defaultA = document.createElement("a");
+  defaultA.classList.add("dropdown-item");
+  defaultA.href = "#";
+  defaultA.setAttribute("data-value", "All");
+  defaultA.textContent = "All Routes";
+  defaultA.addEventListener("click", (e) => {
+    e.preventDefault();
+    selectedRoute = "All";
+    filterImages();
+  });
+  defaultLi.appendChild(defaultA);
+  routeFilterMenu.appendChild(defaultLi);
+  
   curatedRoutes.forEach(route => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -179,39 +295,14 @@ function updateRouteOptions() {
     a.href = "#";
     a.setAttribute("data-value", route.name);
     a.textContent = route.name;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      selectedRoute = route.name;
+      filterImages();
+    });
     li.appendChild(a);
     routeFilterMenu.appendChild(li);
   });
-}
-
-function createImageElements() {
-  galleryContainer.innerHTML = "";
-  camerasList.forEach((camera, index) => {
-    const col = document.createElement("div");
-    col.classList.add("col");
-    const aspectBox = document.createElement("div");
-    aspectBox.classList.add("aspect-ratio-box");
-    const anchor = document.createElement("a");
-    anchor.href = "#";
-    anchor.setAttribute("data-bs-toggle", "modal");
-    anchor.setAttribute("data-bs-target", "#imageModal");
-    anchor.addEventListener("click", (e) => {
-      e.preventDefault();
-      showImage(index);
-    });
-    const image = document.createElement("img");
-    image.setAttribute("loading", "lazy");
-    image.src = camera.Views[0].Url;
-    image.alt = `Camera at ${camera.Location}`;
-    anchor.appendChild(image);
-    aspectBox.appendChild(anchor);
-    col.appendChild(aspectBox);
-    galleryContainer.appendChild(col);
-  });
-}
-
-function updateCameraCount() {
-  cameraCountElement.innerHTML = `${visibleCameras.length}`;
 }
 
 function renderGallery(cameras) {
@@ -238,6 +329,10 @@ function renderGallery(cameras) {
     col.appendChild(aspectBox);
     galleryContainer.appendChild(col);
   });
+}
+
+function updateCameraCount() {
+  cameraCountElement.innerHTML = `${visibleCameras.length}`;
 }
 
 function showImage(index) {
@@ -351,254 +446,101 @@ function setupRefreshButton() {
   }
 }
 
-// --- Event Listeners ---
-function setupEventListeners() {
-  cityFilterMenu.addEventListener("click", function (e) {
-    e.preventDefault();
-    if (e.target && e.target.matches("a.dropdown-item")) {
-      selectedCity = e.target.getAttribute("data-value");
-      updateSelectedFilters();
-      filterImages();
+// --- Image Size Slider ---
+// Toggle the slider dropdown when clicking on the size control button.
+if (sizeControlButton && sizeSliderContainer) {
+  sizeControlButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+    sizeSliderContainer.classList.toggle("active");
+    setTimeout(() => {
+      sizeSliderContainer.classList.remove("active");
+    }, 3000);
+  });
+}
+
+// Listen for slider changes to update grid columns.
+if (sizeSlider) {
+  sizeSlider.addEventListener("input", () => {
+    const newSize = sizeSlider.value;
+    galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${newSize}px, 1fr))`;
+    clearTimeout(sizeSlider.autoHideTimeout);
+    sizeSlider.autoHideTimeout = setTimeout(() => {
+      sizeSliderContainer.classList.remove("active");
+    }, 3000);
+  });
+}
+
+// Global click listener to hide the slider dropdown if clicking outside.
+document.addEventListener("click", (e) => {
+  if (!sizeControlButton.contains(e.target) && !sizeSliderContainer.contains(e.target)) {
+    sizeSliderContainer.classList.remove("active");
+  }
+});
+
+// --- Pinch-to-Zoom for Modal Image ---
+if (modalImage) {
+  modalImage.addEventListener("touchstart", (e) => {
+    if (e.touches.length === 2) {
+      initialDistance = getDistance(e.touches[0], e.touches[1]);
     }
   });
 
-  regionFilterMenu.addEventListener("click", function (e) {
-    e.preventDefault();
-    if (e.target && e.target.matches("a.dropdown-item")) {
-      selectedRegion = e.target.getAttribute("data-value");
-      updateSelectedFilters();
-      selectedCity = "";
-      updateCityDropdown();
-      filterImages();
+  modalImage.addEventListener("touchmove", (e) => {
+    if (e.touches.length === 2 && initialDistance) {
+      const currentDistance = getDistance(e.touches[0], e.touches[1]);
+      const scale = (currentDistance / initialDistance) * initialScale;
+      modalImage.style.transform = `scale(${scale})`;
+      e.preventDefault();
     }
   });
 
-  routeFilterMenu.addEventListener("click", function (e) {
-    e.preventDefault();
-    if (e.target && e.target.matches("a.dropdown-item")) {
-      selectedRoute = e.target.getAttribute("data-value");
-      updateSelectedFilters();
-      filterImages();
+  modalImage.addEventListener("touchend", (e) => {
+    if (e.touches.length < 2) {
+      const transform = window.getComputedStyle(modalImage).transform;
+      if (transform && transform !== "none") {
+        const values = transform.split('(')[1].split(')')[0].split(',');
+        initialScale = parseFloat(values[0]) || 1;
+      }
+      initialDistance = null;
     }
   });
+}
 
-  searchInput.addEventListener("input", debounce(function () {
-    searchQuery = searchInput.value;
+function getDistance(touch1, touch2) {
+  const dx = touch1.clientX - touch2.clientX;
+  const dy = touch1.clientY - touch2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// --- Search Input Event Listener ---
+if (searchInput) {
+  searchInput.addEventListener("input", debounce((e) => {
+    searchQuery = e.target.value;
     filterImages();
   }, DEBOUNCE_DELAY));
-
-  cameraCountElement.addEventListener("click", () => {
-    const versionModalEl = document.getElementById("versionModal");
-    if (versionModalEl) {
-      const versionModalInstance = new bootstrap.Modal(versionModalEl);
-      versionModalInstance.show();
-    }
-  });
-
-  document.addEventListener("keydown", (event) => {
-    if (event.key === "Escape") {
-      const modal = bootstrap.Modal.getInstance(imageModalEl);
-      if (modal) modal.hide();
-    }
-  });
 }
 
-// --- Additional UI Behaviors ---
-function setupAdditionalUI() {
-  let hideTimeout;
-  function updateImageSize(size) {
-    imageGallery.style.gridTemplateColumns = `repeat(auto-fit, minmax(${size}px, 1fr))`;
-  }
-  
-  function showSlider() {
-    sizeSliderContainer.classList.add("active");
-    sizeSliderContainer.style.maxHeight = "150px";
-    sizeSliderContainer.style.opacity = "1";
-    clearTimeout(hideTimeout);
-  }
-  
-  function hideSlider() {
-    hideTimeout = setTimeout(() => {
-      sizeSliderContainer.style.maxHeight = "0px";
-      sizeSliderContainer.style.opacity = "0";
-      sizeSliderContainer.classList.remove("active");
-    }, 2000);
-  }
-  
-  sizeControlButton.addEventListener("click", () => {
-    if (sizeSliderContainer.classList.contains("active")) {
-      hideSlider();
-    } else {
-      showSlider();
-    }
-  });
-  
-  sizeSlider.addEventListener("input", () => {
-    let newSize = parseInt(sizeSlider.value, 10);
-    newSize = Math.max(30, Math.min(newSize, 380));
-    updateImageSize(newSize);
-    sizeSlider.value = newSize;
-    showSlider();
-    if (navigator.vibrate) {
-      navigator.vibrate(10);
-    }
-  });
-  
-  sizeSlider.addEventListener("change", hideSlider);
-  
-  document.addEventListener("click", function (event) {
-    if (sizeSliderContainer.classList.contains("active")) {
-      if (!sizeSliderContainer.contains(event.target) && !sizeControlButton.contains(event.target)) {
-        hideSlider();
-      }
-    }
-  });
-  
-  // --- Pinch-to-Zoom Support with Damping ---
-  function setupPinchToZoom() {
-    let initialDistance = null;
-    let initialSize = parseInt(sizeSlider.value, 10) || 125;
-    
-    imageGallery.addEventListener("touchstart", function (e) {
-      if (e.touches.length === 2) {
-        initialDistance = getDistance(e.touches[0], e.touches[1]);
-        initialSize = parseInt(sizeSlider.value, 10) || 125;
-        e.preventDefault();
-      }
-    });
-    
-    imageGallery.addEventListener("touchmove", function (e) {
-      if (e.touches.length === 2 && initialDistance !== null) {
-        const newDistance = getDistance(e.touches[0], e.touches[1]);
-        let scaleFactor = newDistance / initialDistance;
-        const damping = 0.8;
-        scaleFactor = 1 + ((scaleFactor - 1) * damping);
-        let newSize = Math.round(initialSize * scaleFactor);
-        newSize = Math.max(30, Math.min(newSize, 380));
-        requestAnimationFrame(() => {
-          updateImageSize(newSize);
-        });
-        sizeSlider.value = newSize;
-        e.preventDefault();
-      }
-    });
-    
-    imageGallery.addEventListener("touchend", function (e) {
-      if (e.touches.length < 2) {
-        initialDistance = null;
-      }
-    });
-  }
-  
-  function getDistance(touch1, touch2) {
-    const dx = touch2.clientX - touch1.clientX;
-    const dy = touch2.clientY - touch1.clientY;
-    return Math.sqrt(dx * dx + dy * dy);
-  }
-  
-  setupPinchToZoom();
-  
-  if (imageModalEl) {
-    imageModalEl.addEventListener('hidden.bs.modal', () => {
-      imageModalEl.classList.remove("fade");
-      void imageModalEl.offsetWidth;
-      imageModalEl.classList.add("fade");
-    });
-  }
-  
-  document.querySelectorAll('.button').forEach(btn => {
-    btn.addEventListener('click', () => {
-      if (navigator.vibrate) {
-        navigator.vibrate(10);
-      }
-    });
-  });
-  
-  const modalDialog = imageModalEl.querySelector(".draggable-modal");
-  const modalHeader = imageModalEl.querySelector(".modal-header");
-  if (modalDialog && modalHeader) {
-    let isDragging = false, offsetX = 0, offsetY = 0;
-    
-    modalHeader.addEventListener("mousedown", function (e) {
-      isDragging = true;
-      const rect = modalDialog.getBoundingClientRect();
-      offsetX = e.clientX - rect.left;
-      offsetY = e.clientY - rect.top;
-      modalDialog.style.transition = "none";
-    });
-    
-    document.addEventListener("mousemove", function (e) {
-      if (isDragging) {
-        modalDialog.style.left = (e.clientX - offsetX) + "px";
-        modalDialog.style.top = (e.clientY - offsetY) + "px";
-      }
-    });
-    
-    document.addEventListener("mouseup", function () {
-      isDragging = false;
-      modalDialog.style.transition = "";
-    });
-    
-    imageModalEl.addEventListener("shown.bs.modal", function () {
-      modalDialog.style.left = "";
-      modalDialog.style.top = "";
-    });
-  }
-}
-
-// --- Initialization ---
-function initialize() {
-  Promise.all([getCamerasList(), getCuratedRoutes()]).then(results => {
-    camerasList = results[0];
-    curatedRoutes = results[1];
-    // Default view: full grid in JSON order
-    visibleCameras = camerasList;
-    updateCityDropdown();
-    populateRegionDropdown();
-    updateRouteOptions();
-    createImageElements();
-    filterImages();
-    setupEventListeners();
-    setupAdditionalUI();
-    setupNearestCameraButton();
-    setupRefreshButton();
-    // Auto-sort full grid by location on load (if permission is granted)
-    if ("geolocation" in navigator) {
-      navigator.geolocation.getCurrentPosition(
-        (position) => {
-          const userLat = position.coords.latitude;
-          const userLng = position.coords.longitude;
-          const camerasWithDistance = camerasList.map(camera => ({
-            camera,
-            distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
-          }));
-          camerasWithDistance.sort((a, b) => a.distance - b.distance);
-          visibleCameras = camerasWithDistance.map(item => item.camera);
-          updateCameraCount();
-          renderGallery(visibleCameras);
-          currentIndex = 0;
-          updateSelectedFilters();
-        },
-        (error) => {
-          console.error("Location not granted or error:", error);
-        }
-      );
-    }
-  });
-}
-
-document.addEventListener('DOMContentLoaded', initialize);
-
+// --- Main Initialization & Splash Setup ---
 document.addEventListener('DOMContentLoaded', () => {
-  // Wait 8 seconds, then fade out the splash screen
+  // Initialize data immediately.
+  initialize();
+  setupNearestCameraButton();
+  setupRefreshButton();
+
+  // Set up splash video event: fade out the splash screen (while main content is revealed concurrently).
+  const splash = document.getElementById('splashScreen');
+  if (splash) {
+    const videos = splash.querySelectorAll('video');
+    videos.forEach(video => {
+      video.addEventListener('ended', fadeOutSplash);
+    });
+  }
+  
+  // Fallback if the video never ends.
   setTimeout(() => {
     const splash = document.getElementById('splashScreen');
-    if (splash) {
-      splash.classList.add('fade-out');
-      // After fade-out transition (1s), remove the splash screen from view
-      setTimeout(() => {
-        splash.style.display = 'none';
-      }, 1000);
+    if (splash && splash.style.display !== 'none') {
+      fadeOutSplash();
     }
-  }, 8500);
+  }, 6000);
 });
