@@ -6,6 +6,21 @@ body {
   font-family: Arial, sans-serif;
 }
 
+/* For WebKit-based browsers (Chrome, Safari, Opera) */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent; /* Optional: just make scrollbar invisible */
+}
+
+/* For Firefox, you can use scrollbar-width property */
+html {
+  scrollbar-width: none;
+}
+
+/* Hide scrollbar on IE and Edge */
+body {
+  -ms-overflow-style: none;
+}
 
 
 /* Splash Screen & Transition */
