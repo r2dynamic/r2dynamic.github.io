@@ -70,14 +70,12 @@ function revealMainContent() {
 function fadeOutSplash() {
   const splash = document.getElementById('splashScreen');
   if (splash) {
-    // Reveal main content immediately
+    // Reveal main content immediately as the splash starts to fade
     revealMainContent();
-    // Start fading out the splash overlay
     splash.classList.add('fade-out');
-    // After the fade-out transition, remove the splash completely
     setTimeout(() => {
       splash.style.display = 'none';
-    }, 2500); // Adjust to match your splash fade-out transition duration
+    }, 2100);
   }
 }
 
@@ -97,6 +95,73 @@ const sizeSlider = document.getElementById("sizeSlider");
 const sizeControlButton = document.getElementById("sizeControlButton");
 const sizeSliderContainer = document.getElementById("sizeSliderContainer");
 
+// --- Modal Map Toggle Elements ---
+const mapButton = document.getElementById("mapButton");
+const modalBody = document.getElementById("modalBody");
+const modalImageContainer = document.getElementById("modalImageContainer");
+let mapDisplayed = false; // Tracks if the map is shown
+
+// Set up the map toggle functionality
+if (mapButton) {
+  mapButton.addEventListener("click", () => {
+    if (!mapDisplayed) {
+      // Retrieve lat/lon stored in modalImage's dataset (set in showImage)
+      const lat = modalImage.dataset.latitude;
+      const lon = modalImage.dataset.longitude;
+      if (!lat || !lon) {
+        alert("No location data available for this camera.");
+        return;
+      }
+      // Create a new container for the map using flex styling
+      const mapContainer = document.createElement("div");
+      mapContainer.id = "modalMapContainer";
+      mapContainer.style.flex = "1"; // Takes equal space
+      // Create the iframe for the embedded Google Map in satellite view
+      const iframe = document.createElement("iframe");
+      iframe.width = "100%";
+      iframe.height = "100%";
+      iframe.frameBorder = "0";
+      iframe.style.border = "0";
+      // Note: Adding &t=k for satellite view
+      iframe.src = `https://maps.google.com/maps?q=${lat},${lon}&z=15&t=k&output=embed`;
+      mapContainer.appendChild(iframe);
+      modalBody.appendChild(mapContainer);
+      
+      // Adjust the modal image container to use flex so both share equal space
+      modalImageContainer.style.flex = "1";
+      // Ensure modalBody uses flexbox
+      modalBody.style.display = "flex";
+      
+      mapButton.textContent = "Hide Map";
+      mapDisplayed = true;
+    } else {
+      // Remove the map container and restore the image container to full flex
+      const mapContainer = document.getElementById("modalMapContainer");
+      if (mapContainer) {
+        modalBody.removeChild(mapContainer);
+      }
+      modalImageContainer.style.flex = "1";
+      mapButton.textContent = "Map";
+      mapDisplayed = false;
+    }
+  });
+}
+
+// Close the map automatically when the modal is hidden
+if (imageModalEl) {
+  imageModalEl.addEventListener("hidden.bs.modal", () => {
+    // Remove map if it exists
+    const mapContainer = document.getElementById("modalMapContainer");
+    if (mapContainer) {
+      modalBody.removeChild(mapContainer);
+    }
+    // Reset image container to full width (flex still 1)
+    modalImageContainer.style.flex = "1";
+    mapButton.textContent = "Map";
+    mapDisplayed = false;
+  });
+}
+
 // --- Utility Functions ---
 function debounce(func, delay) {
   return function (...args) {
@@ -110,7 +175,7 @@ function toRadians(deg) {
 }
 
 function computeDistance(lat1, lon1, lat2, lon2) {
-  const R = 6371; // Earth's radius in km
+  const R = 6371;
   const dLat = toRadians(lat2 - lat1);
   const dLon = toRadians(lon2 - lon1);
   const a =
@@ -342,6 +407,9 @@ function showImage(index) {
   const camera = visibleCameras[index];
   modalImage.src = camera.Views[0].Url;
   modalTitle.textContent = camera.Location;
+  // Store location data for use by the map toggle
+  modalImage.dataset.latitude = camera.Latitude;
+  modalImage.dataset.longitude = camera.Longitude;
   const selectedBox = galleryContainer.children[index].querySelector(".aspect-ratio-box");
   if (selectedBox) selectedBox.classList.add("selected");
 }
@@ -380,7 +448,7 @@ function filterImages() {
   updateSelectedFilters();
 }
 
-// --- Nearest Cameras Header control button ---
+// --- Nearest Cameras Feature (all cameras sorted by distance) ---
 function setupNearestCameraButton() {
   if (nearestButton) {
     nearestButton.addEventListener("click", () => {
@@ -394,7 +462,7 @@ function setupNearestCameraButton() {
               distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
             }));
             camerasWithDistance.sort((a, b) => a.distance - b.distance);
-            // Instead of showing 6 cameras, show all cameras sorted by distance:
+            // Show all cameras sorted by distance
             visibleCameras = camerasWithDistance.map(item => item.camera);
             updateCameraCount();
             renderGallery(visibleCameras);
@@ -412,7 +480,6 @@ function setupNearestCameraButton() {
     });
   }
 }
-
 
 // --- Auto-Sort Full Grid by Location on Load ---
 function autoSortByLocation() {
@@ -480,26 +547,20 @@ document.addEventListener("click", (e) => {
 });
 
 // --- Pinch-to-Zoom for Modal Image ---
+// Basic implementation for pinch-to-zoom using touch events.
 if (modalImage) {
   modalImage.addEventListener("touchstart", (e) => {
     if (e.touches.length === 2) {
       initialDistance = getDistance(e.touches[0], e.touches[1]);
-      const transform = window.getComputedStyle(modalImage).transform;
-      if (transform && transform !== "none") {
-        const values = transform.split('(')[1].split(')')[0].split(',');
-        initialScale = parseFloat(values[0]) || 1;
-      } else {
-        initialScale = 1;
-      }
     }
-  }, { passive: true });
+  });
 
   modalImage.addEventListener("touchmove", (e) => {
     if (e.touches.length === 2 && initialDistance) {
       const currentDistance = getDistance(e.touches[0], e.touches[1]);
       const scale = (currentDistance / initialDistance) * initialScale;
       modalImage.style.transform = `scale(${scale})`;
-      e.preventDefault();  // Now this works because the listener is non-passive.
+      e.preventDefault();
     }
   }, { passive: false });
 
@@ -520,7 +581,6 @@ function getDistance(touch1, touch2) {
   const dy = touch1.clientY - touch2.clientY;
   return Math.sqrt(dx * dx + dy * dy);
 }
-
 
 // --- Search Input Event Listener ---
 if (searchInput) {
@@ -552,5 +612,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (splash && splash.style.display !== 'none') {
       fadeOutSplash();
     }
-  }, 6000);
+  }, 10000);
 });
