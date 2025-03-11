@@ -340,6 +340,17 @@ body {
   transform: scale(1.2);
 }
 
+/* Split screen modal map*/
+#modalBody {
+  display: flex;
+  flex-direction: row;
+  align-items: stretch;
+}
+#modalImageContainer, #modalMapContainer {
+  transition: width 0.3s ease;
+}
+
+
 /* Glassmorphism modal style */
 .glass-modal {
   background: rgba(255, 255, 255, 0.1);
