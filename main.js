@@ -394,7 +394,7 @@ function setupNearestCameraButton() {
               distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
             }));
             camerasWithDistance.sort((a, b) => a.distance - b.distance);
-            visibleCameras = camerasWithDistance.slice(0, 6).map(item => item.camera);
+            visibleCameras = camerasWithDistance.slice(0, 0).map(item => item.camera);
             updateCameraCount();
             renderGallery(visibleCameras);
             currentIndex = 0;
