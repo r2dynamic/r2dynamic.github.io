@@ -380,7 +380,7 @@ function filterImages() {
   updateSelectedFilters();
 }
 
-// --- Nearest Cameras Feature (6 nearest) ---
+// --- Nearest Cameras Header control button ---
 function setupNearestCameraButton() {
   if (nearestButton) {
     nearestButton.addEventListener("click", () => {
@@ -394,7 +394,8 @@ function setupNearestCameraButton() {
               distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
             }));
             camerasWithDistance.sort((a, b) => a.distance - b.distance);
-            visibleCameras = camerasWithDistance.slice(0, 0).map(item => item.camera);
+            // Instead of showing 6 cameras, show all cameras sorted by distance:
+            visibleCameras = camerasWithDistance.map(item => item.camera);
             updateCameraCount();
             renderGallery(visibleCameras);
             currentIndex = 0;
@@ -411,6 +412,7 @@ function setupNearestCameraButton() {
     });
   }
 }
+
 
 // --- Auto-Sort Full Grid by Location on Load ---
 function autoSortByLocation() {
