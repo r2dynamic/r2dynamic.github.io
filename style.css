@@ -25,7 +25,7 @@ body {
 }
 #imageGallery img {
   min-width: 60px; /* Matches MIN_IMAGE_SIZE */
-  min-height: 60px;
+  min-height: auto;
 }
 
 /* Hidden and Fade Classes */
