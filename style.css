@@ -18,17 +18,17 @@ body {
   -ms-overflow-style: none;
 }
 
-/* Touch & Image */
+/* Touch & Image Settings */
 #modalImage {
   touch-action: none;
   -webkit-touch-callout: none;
 }
 #imageGallery img {
-  min-width: 60px;
+  min-width: 60px;  /* Matches MIN_IMAGE_SIZE */
   min-height: 60px;
 }
 
-/* Hidden & Fade classes */
+/* Hidden and Fade Classes */
 .hidden-on-load {
   opacity: 0;
   visibility: hidden;
@@ -43,13 +43,11 @@ body {
   transition: opacity 1s ease-out;
 }
 
-/* Splash Screen Keyframes */
+/* Splash Screen Keyframes & Styles */
 @keyframes splashFade {
   from { opacity: 1; }
   to { opacity: 0; }
 }
-
-/* Splash Screen */
 .splash-screen {
   position: fixed;
   top: 0;
@@ -69,14 +67,18 @@ body {
   height: 100%;
   object-fit: cover;
 }
-.desktop-video { display: none; }
-.mobile-video { display: block; }
+.desktop-video {
+  display: none;
+}
+.mobile-video {
+  display: block;
+}
 @media (min-width: 768px) {
   .desktop-video { display: block; }
   .mobile-video { display: none; }
 }
 
-/* Selected Filters */
+/* Selected Filters Container */
 .selected-filters {
   background-color: #04AA6D;
   color: white;
@@ -106,6 +108,14 @@ body {
   font-size: 12px;
 }
 
+.selected-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 8px; /* Adjust the gap value as needed */
+}
+
+
+
 /* Header Controls */
 .header-controls {
   position: sticky;
@@ -118,6 +128,8 @@ body {
   justify-content: center;
   padding: 10px 2px;
   gap: 5px;
+  /* Explicitly set a consistent font-size and button size */
+  font-size: 14px;
 }
 @media (max-width: 600px) {
   .header-controls .button {
@@ -130,6 +142,7 @@ body {
 }
 .header-controls .button {
   max-width: 200px;
+  height: 25px; 
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -153,18 +166,39 @@ body {
   align-items: center;
   gap: 5px;
 }
-.button:hover { background-color: #3e8e41; }
+.button:hover { 
+  background-color: #3e8e41; 
+}
 .button:active {
   background-color: #3e8e41;
   box-shadow: 0 5px #666;
   transform: translateY(4px);
 }
 
-/* Dropdown Menu */
-.dropdown-menu {
-  background: rgba(255,255,255,0.1) !important;
+/* Glassmorphic Modal Style */
+.glass-modal {
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(12px);
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
+  border-radius: 12px;
+  animation: modalFadeIn 0.9s ease-out;
+}
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: scale(0.6);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+/* Dropdown Menu (Glassmorphism) */
+.dropdown-menu {
+  background: rgba(255, 255, 255, 0.1) !important;
+  backdrop-filter: blur(12px);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
   box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
   transition: opacity 0.3s ease-in-out, transform 0.2s ease-in-out;
@@ -177,11 +211,11 @@ body {
   transition: background 0.2s ease-in-out;
 }
 .dropdown-menu .dropdown-item:hover {
-  background: rgba(255,255,255,0.2) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
 }
 .dropdown-menu select,
 .dropdown-menu input {
-  background: rgba(255,255,255,0.2) !important;
+  background: rgba(255, 255, 255, 0.2) !important;
   color: white !important;
   border: none;
   padding: 6px;
@@ -191,7 +225,7 @@ body {
 }
 .dropdown-menu select:focus,
 .dropdown-menu input:focus {
-  background: rgba(255,255,255,0.3) !important;
+  background: rgba(255, 255, 255, 0.3) !important;
 }
 .dropdown-menu {
   opacity: 0;
@@ -250,9 +284,9 @@ body {
   left: 50%;
   transform: translateX(-50%);
   width: 60px;
-  background: rgba(255,255,255,0.1);
+  background: rgba(255, 255, 255, 0.1);
   backdrop-filter: blur(10px);
-  border: 2px solid rgba(255,255,255,0.3);
+  border: 2px solid rgba(255, 255, 255, 0.3);
   padding: 10px;
   border-radius: 10px;
   box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
@@ -346,7 +380,10 @@ body {
   color: white;
   font-size: 12px;
 }
-.modal-footer { display: flex; justify-content: right; }
+.modal-footer { 
+  display: flex; 
+  justify-content: flex-end;
+}
 .modal-body {
   padding: 0;
   display: flex;
