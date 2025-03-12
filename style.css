@@ -28,11 +28,6 @@ body {
   min-height: 60px;
 }
 
-#imageGallery {
-  overflow-y: auto;
-  -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */
-}
-
 /* Hidden and Fade Classes */
 .hidden-on-load {
   opacity: 0;
@@ -113,14 +108,6 @@ body {
   font-size: 12px;
 }
 
-.selected-filter-item {
-  display: flex;
-  align-items: center;
-  gap: 8px; /* Adjust the gap value as needed */
-}
-
-
-
 /* Header Controls */
 .header-controls {
   position: sticky;
@@ -133,7 +120,6 @@ body {
   justify-content: center;
   padding: 10px 2px;
   gap: 5px;
-  /* Explicitly set a consistent font-size and button size */
   font-size: 14px;
 }
 @media (max-width: 600px) {
@@ -147,7 +133,6 @@ body {
 }
 .header-controls .button {
   max-width: 200px;
-  height: 25px; 
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -171,8 +156,8 @@ body {
   align-items: center;
   gap: 5px;
 }
-.button:hover { 
-  background-color: #3e8e41; 
+.button:hover {
+  background-color: #3e8e41;
 }
 .button:active {
   background-color: #3e8e41;
@@ -189,14 +174,8 @@ body {
   animation: modalFadeIn 0.9s ease-out;
 }
 @keyframes modalFadeIn {
-  from {
-    opacity: 0;
-    transform: scale(0.6);
-  }
-  to {
-    opacity: 1;
-    transform: scale(1);
-  }
+  from { opacity: 0; transform: scale(0.6); }
+  to { opacity: 1; transform: scale(1); }
 }
 
 /* Dropdown Menu (Glassmorphism) */
@@ -205,7 +184,7 @@ body {
   backdrop-filter: blur(12px);
   border: 2px solid rgba(255, 255, 255, 0.3);
   border-radius: 12px;
-  box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
   transition: opacity 0.3s ease-in-out, transform 0.2s ease-in-out;
 }
 .dropdown-menu .dropdown-item {
@@ -272,8 +251,12 @@ body {
   align-items: center;
   gap: 5px;
 }
-#sizeControlButton i { font-size: 14px; }
-#sizeControlButton:hover { background-color: #3e8e41; }
+#sizeControlButton i {
+  font-size: 14px;
+}
+#sizeControlButton:hover {
+  background-color: #3e8e41;
+}
 @media (max-width: 600px) {
   #sizeControlButton {
     max-width: 150px;
@@ -294,7 +277,7 @@ body {
   border: 2px solid rgba(255, 255, 255, 0.3);
   padding: 10px;
   border-radius: 10px;
-  box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+  box-shadow: 0px 4px 10px rgba(0, 0, 0, 0.2);
   max-height: 0;
   opacity: 0;
   overflow: hidden;
@@ -340,6 +323,9 @@ body {
   margin-bottom: 200px;
   justify-content: center;
   transition: grid-template-columns 0.3s ease-out;
+  overflow-y: auto;                /* Enable vertical scrolling */
+  -webkit-overflow-scrolling: touch; /* Smoother scrolling on iOS */
+  touch-action: pan-y pinch-zoom;    /* Allow vertical scrolling & pinch */
 }
 .col { flex: 1; }
 .aspect-ratio-box {
@@ -359,8 +345,12 @@ body {
   transition: opacity 0.5s ease-in-out, transform 0.2s ease-in-out;
   opacity: 1;
 }
-.aspect-ratio-box:hover img { transform: scale(1.05); }
-.aspect-ratio-box:active img { transform: scale(1.02); }
+.aspect-ratio-box:hover img {
+  transform: scale(1.05);
+}
+.aspect-ratio-box:active img {
+  transform: scale(1.02);
+}
 
 /* Modal Styles */
 .modal-dialog-centered {
@@ -385,8 +375,8 @@ body {
   color: white;
   font-size: 12px;
 }
-.modal-footer { 
-  display: flex; 
+.modal-footer {
+  display: flex;
   justify-content: flex-end;
 }
 .modal-body {
