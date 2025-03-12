@@ -32,7 +32,7 @@ body {
   height: 100%;
   z-index: 9999;
   opacity: 1; /* Initial opacity */
-  transition: opacity 2.5s ease-out;
+  transition: opacity 3s ease-out;
 }
 .splash-screen.fade-out {
   opacity: 0;
