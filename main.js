@@ -528,9 +528,15 @@ if (sizeControlButton && sizeSliderContainer) {
 }
 
 // Listen for slider changes to update grid columns.
+// Define a minimum size constant (in pixels)
+const MIN_IMAGE_SIZE = 30;
+
+// Listen for slider changes to update grid columns.
 if (sizeSlider) {
   sizeSlider.addEventListener("input", () => {
-    const newSize = sizeSlider.value;
+    // Ensure the slider value is not below the minimum
+    const sliderValue = parseInt(sizeSlider.value, 10);
+    const newSize = Math.max(sliderValue, MIN_IMAGE_SIZE);
     galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${newSize}px, 1fr))`;
     clearTimeout(sizeSlider.autoHideTimeout);
     sizeSlider.autoHideTimeout = setTimeout(() => {
@@ -539,6 +545,7 @@ if (sizeSlider) {
   });
 }
 
+
 // Global click listener to hide the slider dropdown if clicking outside.
 document.addEventListener("click", (e) => {
   if (!sizeControlButton.contains(e.target) && !sizeSliderContainer.contains(e.target)) {
@@ -546,41 +553,76 @@ document.addEventListener("click", (e) => {
   }
 });
 
-// --- Pinch-to-Zoom for Modal Image ---
-// Basic implementation for pinch-to-zoom using touch events.
 if (modalImage) {
+  let scale = 1;
+  let lastScale = 1;
+  let startDistance = 0;
+  let translateX = 0;
+  let translateY = 0;
+  let lastX = 0;
+  let lastY = 0;
+  let isPanning = false;
+
+  // Helper: Get distance between two touches
+  function getDistance(touch1, touch2) {
+    const dx = touch1.clientX - touch2.clientX;
+    const dy = touch1.clientY - touch2.clientY;
+    return Math.sqrt(dx * dx + dy * dy);
+  }
+
+  // Helper: Update transform style based on scale and translation.
+  function updateTransform() {
+    modalImage.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
+  }
+
   modalImage.addEventListener("touchstart", (e) => {
     if (e.touches.length === 2) {
-      initialDistance = getDistance(e.touches[0], e.touches[1]);
+      // Start pinch: record initial distance and current scale.
+      startDistance = getDistance(e.touches[0], e.touches[1]);
+      lastScale = scale;
+      // When starting a pinch, reset translation so panning doesn't interfere.
+      translateX = 0;
+      translateY = 0;
+    } else if (e.touches.length === 1 && scale > 1) {
+      // Start panning if the image is zoomed in.
+      isPanning = true;
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
     }
-  });
+  }, { passive: false });
 
   modalImage.addEventListener("touchmove", (e) => {
-    if (e.touches.length === 2 && initialDistance) {
-      const currentDistance = getDistance(e.touches[0], e.touches[1]);
-      const scale = (currentDistance / initialDistance) * initialScale;
-      modalImage.style.transform = `scale(${scale})`;
+    if (e.touches.length === 2) {
+      // Pinch zoom calculation.
+      let currentDistance = getDistance(e.touches[0], e.touches[1]);
+      scale = lastScale * (currentDistance / startDistance);
+      // Optionally enforce min/max scale:
+      scale = Math.max(1, Math.min(scale, 5));
+      updateTransform();
+      e.preventDefault();
+    } else if (e.touches.length === 1 && isPanning) {
+      // Calculate translation delta for panning.
+      let deltaX = e.touches[0].clientX - lastX;
+      let deltaY = e.touches[0].clientY - lastY;
+      translateX += deltaX;
+      translateY += deltaY;
+      lastX = e.touches[0].clientX;
+      lastY = e.touches[0].clientY;
+      updateTransform();
       e.preventDefault();
     }
   }, { passive: false });
 
   modalImage.addEventListener("touchend", (e) => {
     if (e.touches.length < 2) {
-      const transform = window.getComputedStyle(modalImage).transform;
-      if (transform && transform !== "none") {
-        const values = transform.split('(')[1].split(')')[0].split(',');
-        initialScale = parseFloat(values[0]) || 1;
-      }
-      initialDistance = null;
+      // End pinch or pan.
+      isPanning = false;
     }
   }, { passive: true });
 }
 
-function getDistance(touch1, touch2) {
-  const dx = touch1.clientX - touch2.clientX;
-  const dy = touch1.clientY - touch2.clientY;
-  return Math.sqrt(dx * dx + dy * dy);
-}
+
+
 
 // --- Search Input Event Listener ---
 if (searchInput) {
@@ -612,5 +654,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (splash && splash.style.display !== 'none') {
       fadeOutSplash();
     }
-  }, 10000);
+  }, 5000);
 });
