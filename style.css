@@ -210,6 +210,12 @@ body {
   display: none;
 }
 
+#imageGallery img {
+  min-width: 60px; /* Matches the MIN_IMAGE_SIZE */
+
+}
+
+
 /* Image Gallery Grid */
 #imageGallery {
   display: grid;
@@ -348,7 +354,6 @@ body {
 }
 #modalImageContainer, #modalMapContainer {
   transition: width 0.3s ease;
-  border-radius: 12px;
 }
 
 
