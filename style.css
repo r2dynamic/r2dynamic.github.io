@@ -6,6 +6,12 @@ body {
   font-family: Arial, sans-serif;
 }
 
+#modalImage {
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+
+
 /* For WebKit-based browsers (Chrome, Safari, Opera) */
 ::-webkit-scrollbar {
   width: 0px;
