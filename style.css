@@ -1,159 +1,370 @@
-<!DOCTYPE html>
-<html lang="en">
-<head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <meta property="og:title" content="UDOT Cameras">
-  <meta property="og:description" content="Interact with UDOT Cameras in a grid format">
-  <meta property="og:image" content="https://udotcameras.com/Icongridbackground2.png">
-  <meta property="og:url" content="https://udotcameras.com">
-  <!-- Favicon -->
-  <link rel="icon" href="/Icongridbackground2.png" type="image/png">
-  <!-- PWA Manifest & Theme Color -->
-  <link rel="manifest" href="manifest.json">
-  <meta name="theme-color" content="#4C4E52">
-  <!-- External CSS -->
-  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="style.css">
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+/* Base styles */
+body {
+  background-color: #4C4E52;
+  margin: 0;
+  padding: 0;
+  font-family: Arial, sans-serif;
+}
 
-  <title>UDOT Cameras</title>
-</head>
-<body>
-  <!-- Splash Screen with Two Video Options -->
-  <div id="splashScreen" class="splash-screen">
-    <!-- Desktop Splash Video (Landscape) -->
-    <video id="desktopVideo" class="splash-video desktop-video" autoplay muted playsinline preload="auto">
-      <source src="desktop-splash.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
-    <!-- Mobile Splash Video (Portrait) -->
-    <video id="mobileVideo" class="splash-video mobile-video" autoplay muted playsinline preload="auto">
-      <source src="mobile-splash.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
-  </div>
+/* Hide scrollbars */
+::-webkit-scrollbar {
+  width: 0px;
+  background: transparent;
+}
+html {
+  scrollbar-width: none;
+}
+body {
+  -ms-overflow-style: none;
+}
 
-  <!-- Selected Filters Container -->
-  <div id="selectedFilters" class="selected-filters"></div>
-  
-  <!-- Header Controls Container -->
-  <div class="header-controls hidden-on-load">
-    <!-- Camera Count -->
-    <div id="cameraCount" class="camera-count button" aria-live="polite" title="Click to view version history"></div>
-    
-    <!-- Search Dropdown -->
-    <div class="dropdown">
-      <button id="searchDropdownButton" class="dropdown-toggle button" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Search">
-        <i class="fas fa-search"></i>
-      </button>
-      <div class="dropdown-menu glass-dropdown p-3" style="min-width: 250px;" aria-label="Search options">
-        <input type="text" id="searchInput" placeholder="Search by Name" class="form-control glass-dropdown-input" />
-      </div>
-    </div>
-    
-    <!-- City/County Dropdown -->
-    <div class="dropdown">
-      <button id="cityDropdownButton" class="dropdown-toggle button" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="City/County">
-        <i class="fas fa-map-marked-alt"></i>
-      </button>
-      <ul class="dropdown-menu glass-dropdown" id="cityFilterMenu" aria-labelledby="cityDropdownButton">
-        <!-- Options populated dynamically -->
-      </ul>
-    </div>
-    
-    <!-- Region Dropdown -->
-    <div class="dropdown">
-      <button id="regionDropdownButton" class="dropdown-toggle button" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Region">
-        <i class="fas fa-industry"></i>
-      </button>
-      <ul class="dropdown-menu glass-dropdown" id="regionFilterMenu" aria-labelledby="regionDropdownButton">
-        <!-- Options populated dynamically -->
-      </ul>
-    </div>
-    
-    <!-- Curated Routes Dropdown -->
-    <div class="dropdown">
-      <button id="routeFilterButton" class="dropdown-toggle button" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Routes">
-        <i class="fas fa-road"></i>
-      </button>
-      <ul class="dropdown-menu glass-dropdown p-2" id="routeFilterMenu">
-        <li><a class="dropdown-item" href="#" data-value="All">All Routes</a></li>
-      </ul>
-    </div>
+/* Touch & Image */
+#modalImage {
+  touch-action: none;
+  -webkit-touch-callout: none;
+}
+#imageGallery img {
+  min-width: 60px;
+  min-height: 60px;
+}
 
-    <!-- Nearest Camera Button -->
-    <button id="nearestButton" class="button" title="Show Nearest Camera">
-      <i class="fas fa-location-arrow"></i>
-    </button>
+/* Hidden & Fade classes */
+.hidden-on-load {
+  opacity: 0;
+  visibility: hidden;
+}
+.fade-in {
+  opacity: 1;
+  visibility: visible;
+  transition: opacity 1s ease;
+}
+.fade-out {
+  opacity: 0;
+  transition: opacity 1s ease-out;
+}
 
-    <!-- Image Size Slider -->
-    <div id="sizeControlContainer" class="dropdown-control">
-      <div id="sizeControlButton" class="button">
-        <i class="fas fa-compress"></i> <i class="fas fa-expand"></i>
-      </div>
-      <div id="sizeSliderContainer" class="slider-dropdown">
-        <input id="sizeSlider" type="range" min="60" max="380" value="120" step="10" class="vertical-slider">
-      </div>
-    </div>
-    <button id="refreshButton" class="button" title="Refresh Images">
-      <i class="fas fa-sync"></i>
-    </button>
-  </div>
- 
-  <!-- Image Gallery -->
-  <div class="container-fluid ">
-    <div id="imageGallery" class="container-fluid hidden-on-load"></div>
-  </div>
+/* Splash Screen Keyframes */
+@keyframes splashFade {
+  from { opacity: 1; }
+  to { opacity: 0; }
+}
 
-<!-- Modal -->
-<div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
-  <div class="modal-dialog modal-dialog-centered modal-lg draggable-modal">
-    <div class="modal-content glass-modal">
-      <div class="modal-header">
-        <h5 class="modal-title" id="imageModalLabel">Camera Location</h5>
-      </div>
-      <div class="modal-body" id="modalBody" style="display: flex; flex-direction: row;">
-        <div id="modalImageContainer" style="width: 100%;">
-          <img id="modalImage" src="" alt="Camera Image">
-        </div>
-        <!-- The map container will be injected here dynamically -->
-      </div>
-      <div class="modal-footer">
-        <!-- Copy-to-Clipboard Button with Icon -->
-        
+/* Splash Screen */
+.splash-screen {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  z-index: 9999;
+  opacity: 1;
+}
+.splash-screen.fade-out {
+  animation: splashFade 1s forwards;
+}
 
-        <!-- New Map Toggle Button -->
-        <button id="mapButton" type="button" class="button" title="Show Map">Map</button>
-        
-        <!-- Close Button -->
-        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
-      </div>
-    </div>
-  </div>
-</div>
+/* Splash Video Styling */
+.splash-screen video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.desktop-video { display: none; }
+.mobile-video { display: block; }
+@media (min-width: 768px) {
+  .desktop-video { display: block; }
+  .mobile-video { display: none; }
+}
 
- 
-  <!-- External JavaScript Files -->
-  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-  <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
-  
-  <!-- Load our modular JavaScript -->
-  <script type="module" src="main.js"></script>
-  
-  <!-- Service Worker Registration -->
-  <script>
-    if ('serviceWorker' in navigator) {
-      window.addEventListener('load', function() {
-        navigator.serviceWorker.register('sw.js')
-          .then(function(registration) {
-            console.log('Service Worker registered with scope:', registration.scope);
-          })
-          .catch(function(error) {
-            console.log('Service Worker registration failed:', error);
-          });
-      });
-    }
-  </script>
-</body>
-</html>
+/* Selected Filters */
+.selected-filters {
+  background-color: #04AA6D;
+  color: white;
+  padding: 6px 10px;
+  text-align: left;
+  font-size: 14px;
+  border: 3px solid white;
+  border-radius: 8px;
+  box-shadow: 0 6px #999;
+  margin-bottom: 5px;
+  display: none;
+  transition: opacity 0.3s ease;
+  white-space: pre-line;
+  font-weight: bold;
+  position: relative;
+}
+.selected-filters .reset-button {
+  position: absolute;
+  bottom: 5px;
+  right: 5px;
+  background-color: #fff;
+  color: #04AA6D;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 8px;
+  cursor: pointer;
+  font-size: 12px;
+}
+
+/* Header Controls */
+.header-controls {
+  position: sticky;
+  top: 0;
+  z-index: 1000;
+  background-color: #4C4E52;
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  padding: 10px 2px;
+  gap: 5px;
+}
+@media (max-width: 600px) {
+  .header-controls .button {
+    max-width: 150px;
+    box-shadow: 0 4px #999;
+    border-radius: 6px;
+    font-size: 11px;
+    padding: 3px 5px;
+  }
+}
+.header-controls .button {
+  max-width: 200px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
+}
+
+/* Button Styling */
+.button {
+  padding: 6px 10px;
+  font-size: 14px;
+  text-align: center;
+  cursor: pointer;
+  outline: none;
+  color: #fff;
+  background-color: #04AA6D;
+  border: 3px solid white;
+  border-radius: 8px;
+  box-shadow: 0 6px #999;
+  transition: background-color 0.3s, box-shadow 0.3s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+.button:hover { background-color: #3e8e41; }
+.button:active {
+  background-color: #3e8e41;
+  box-shadow: 0 5px #666;
+  transform: translateY(4px);
+}
+
+/* Dropdown Menu */
+.dropdown-menu {
+  background: rgba(255,255,255,0.1) !important;
+  backdrop-filter: blur(12px);
+  border: 2px solid rgba(255,255,255,0.3);
+  border-radius: 12px;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+  transition: opacity 0.3s ease-in-out, transform 0.2s ease-in-out;
+}
+.dropdown-menu .dropdown-item {
+  color: white !important;
+  font-weight: bold;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 0.2s ease-in-out;
+}
+.dropdown-menu .dropdown-item:hover {
+  background: rgba(255,255,255,0.2) !important;
+}
+.dropdown-menu select,
+.dropdown-menu input {
+  background: rgba(255,255,255,0.2) !important;
+  color: white !important;
+  border: none;
+  padding: 6px;
+  border-radius: 6px;
+  outline: none;
+  width: 100%;
+}
+.dropdown-menu select:focus,
+.dropdown-menu input:focus {
+  background: rgba(255,255,255,0.3) !important;
+}
+.dropdown-menu {
+  opacity: 0;
+  transform: translateY(-10px);
+  visibility: hidden;
+}
+.dropdown-menu.show {
+  opacity: 1;
+  transform: translateY(0);
+  visibility: visible;
+}
+.dropdown-menu {
+  max-height: 400px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.dropdown-menu::-webkit-scrollbar {
+  display: none;
+}
+
+/* Image Size Slider */
+#sizeControlContainer {
+  display: inline-block;
+  position: relative;
+}
+#sizeControlButton {
+  background: #04AA6D;
+  color: white;
+  border: 3px solid white;
+  padding: 10px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  border-radius: 8px;
+  box-shadow: 0 6px #999;
+  transition: background-color 0.3s, box-shadow 0.3s, transform 0.1s;
+  display: flex;
+  align-items: center;
+  gap: 5px;
+}
+#sizeControlButton i { font-size: 14px; }
+#sizeControlButton:hover { background-color: #3e8e41; }
+@media (max-width: 600px) {
+  #sizeControlButton {
+    max-width: 150px;
+    box-shadow: 0 4px #999;
+    border-radius: 6px;
+    font-size: 11px;
+    padding: 5.3px 5px;
+  }
+}
+.slider-dropdown {
+  position: absolute;
+  top: 100%;
+  left: 50%;
+  transform: translateX(-50%);
+  width: 60px;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border: 2px solid rgba(255,255,255,0.3);
+  padding: 10px;
+  border-radius: 10px;
+  box-shadow: 0px 4px 10px rgba(0,0,0,0.2);
+  max-height: 0;
+  opacity: 0;
+  overflow: hidden;
+  transition: max-height 0.3s ease-in-out, opacity 0.3s ease-in-out;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.slider-dropdown.active {
+  max-height: 150px;
+  opacity: 1;
+}
+.vertical-slider {
+  writing-mode: bt-lr;
+  -webkit-appearance: slider-vertical;
+  appearance: slider-vertical;
+  height: 120px;
+  width: 8px;
+  background: white;
+  border-radius: 8px;
+  outline: none;
+  transition: opacity 0.3s ease-in-out;
+}
+.vertical-slider::-webkit-slider-thumb {
+  appearance: auto;
+  width: 25px;
+  height: 25px;
+  background: #707070;
+  border-radius: 90%;
+  cursor: pointer;
+  transition: transform 0.4s;
+}
+.vertical-slider::-webkit-slider-thumb:hover {
+  transform: scale(1.2);
+}
+
+/* Image Gallery Grid */
+#imageGallery {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+  gap: 2px;
+  margin-top: 2px;
+  margin-bottom: 200px;
+  justify-content: center;
+  transition: grid-template-columns 0.3s ease-out;
+}
+.col { flex: 1; }
+.aspect-ratio-box {
+  width: 100%;
+  position: relative;
+  padding-bottom: 56.25%;
+  overflow: hidden;
+}
+.aspect-ratio-box img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  transition: opacity 0.5s ease-in-out, transform 0.2s ease-in-out;
+  opacity: 1;
+}
+.aspect-ratio-box:hover img { transform: scale(1.05); }
+.aspect-ratio-box:active img { transform: scale(1.02); }
+
+/* Modal Styles */
+.modal-dialog-centered {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: calc(100% - 1rem);
+}
+.modal-header,
+.modal-footer {
+  padding: 0.5rem;
+  border: none;
+}
+.modal-title {
+  margin: 0 auto;
+  white-space: nowrap;
+  display: inline-block;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  font-size: calc(1vmin + 1vw);
+  text-align: center;
+  color: white;
+  font-size: 12px;
+}
+.modal-footer { display: flex; justify-content: right; }
+.modal-body {
+  padding: 0;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+/* Modal split view containers */
+#modalImageContainer, #modalMapContainer {
+  flex: 1;
+  transition: width 0.3s ease;
+}
+#modalImage {
+  max-width: 100%;
+  max-height: 80vh;
+  margin: 10px;
+  border-radius: 8px;
+  object-fit: contain;
+  display: block;
+  margin-left: auto;
+  margin-right: auto;
+}
