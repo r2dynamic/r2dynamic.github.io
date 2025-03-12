@@ -22,7 +22,7 @@ let selectedRoute = "All";
 // --- Initialize Function ---
 // Loads data immediately.
 function initialize() {
-  // Load the cameras data
+  // Load cameras data
   getCamerasList()
     .then(data => {
       camerasList = data;
@@ -32,9 +32,7 @@ function initialize() {
       updateCityDropdown();
       populateRegionDropdown();
     })
-    .catch(err => {
-      console.error("Error loading cameras:", err);
-    });
+    .catch(err => console.error("Error loading cameras:", err));
 
   // Load curated routes if needed.
   getCuratedRoutes()
@@ -42,13 +40,10 @@ function initialize() {
       curatedRoutes = routes;
       updateRouteOptions();
     })
-    .catch(err => {
-      console.error("Error loading curated routes:", err);
-    });
+    .catch(err => console.error("Error loading curated routes:", err));
 }
 
 // --- Function to Reveal Main Content ---
-// Removes the hidden-on-load class and adds fade-in.
 function revealMainContent() {
   const headerControls = document.querySelector('.header-controls');
   const imageGallery = document.getElementById('imageGallery');
@@ -63,13 +58,13 @@ function revealMainContent() {
 }
 
 // --- Splash Screen Fade-Out ---
-// Adds the fade-out class and waits for the animation to finish.
+// Triggered to fade out the splash screen.
 function fadeOutSplash() {
   const splash = document.getElementById('splashScreen');
   if (splash) {
     // Reveal main content immediately
     revealMainContent();
-    splash.classList.add('fade-out'); // Triggers CSS animation.
+    splash.classList.add('fade-out'); // CSS animation will run
     splash.addEventListener('animationend', () => {
       splash.style.display = 'none';
     });
@@ -98,7 +93,7 @@ const modalBody = document.getElementById("modalBody");
 const modalImageContainer = document.getElementById("modalImageContainer");
 let mapDisplayed = false; // Tracks if the map is shown
 
-// Set up the map toggle functionality in the modal.
+// Set up the map toggle in the modal.
 if (mapButton) {
   mapButton.addEventListener("click", () => {
     if (!mapDisplayed) {
@@ -110,13 +105,13 @@ if (mapButton) {
       }
       const mapContainer = document.createElement("div");
       mapContainer.id = "modalMapContainer";
-      mapContainer.style.flex = "1"; // Equal flex value.
+      mapContainer.style.flex = "1"; // Equal flex value
       const iframe = document.createElement("iframe");
       iframe.width = "100%";
       iframe.height = "100%";
       iframe.frameBorder = "0";
       iframe.style.border = "0";
-      // Satellite view with &t=k.
+      // Use satellite view (&t=k)
       iframe.src = `https://maps.google.com/maps?q=${lat},${lon}&z=15&t=k&output=embed`;
       mapContainer.appendChild(iframe);
       modalBody.appendChild(mapContainer);
@@ -136,7 +131,7 @@ if (mapButton) {
   });
 }
 
-// Close the map automatically when the modal is hidden.
+// Ensure the map closes when the modal is hidden.
 if (imageModalEl) {
   imageModalEl.addEventListener("hidden.bs.modal", () => {
     const mapContainer = document.getElementById("modalMapContainer");
@@ -156,19 +151,16 @@ function debounce(func, delay) {
     debounceTimer = setTimeout(() => func.apply(this, args), delay);
   };
 }
-
 function toRadians(deg) {
   return deg * Math.PI / 180;
 }
-
 function computeDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = toRadians(lat2 - lat1);
   const dLon = toRadians(lon2 - lon1);
-  const a =
-    Math.sin(dLat / 2) ** 2 +
-    Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
-    Math.sin(dLon / 2) ** 2;
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+            Math.sin(dLon / 2) ** 2;
   const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
   return R * c;
 }
@@ -227,7 +219,6 @@ function updateSelectedFilters() {
   }
   filtersEl.style.display = hasFilters ? "block" : "none";
 }
-
 function resetFilters() {
   selectedCity = "";
   selectedRegion = "";
@@ -382,6 +373,7 @@ function showImage(index) {
   const camera = visibleCameras[index];
   modalImage.src = camera.Views[0].Url;
   modalTitle.textContent = camera.Location;
+  // Store location data for the map toggle.
   modalImage.dataset.latitude = camera.Latitude;
   modalImage.dataset.longitude = camera.Longitude;
   const selectedBox = galleryContainer.children[index].querySelector(".aspect-ratio-box");
@@ -514,11 +506,13 @@ document.addEventListener("click", (e) => {
 });
 
 // --- Pinch-to-Zoom for Image Grid ---
+// Allows pinch-to-zoom on the gallery container (adjusts grid image size)
 let initialGridDistance = null;
 let initialGridSize = parseInt(sizeSlider.value, 10) || 120;
-galleryContainer.style.touchAction = "none";
+galleryContainer.style.touchAction = "pan-y pinch-zoom";
 galleryContainer.addEventListener("touchstart", (e) => {
   if (e.touches.length === 2) {
+    // Only prevent default if two fingers are used.
     e.preventDefault();
     initialGridDistance = getDistance(e.touches[0], e.touches[1]);
     initialGridSize = parseInt(sizeSlider.value, 10) || 120;
@@ -559,7 +553,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initialize();
   setupNearestCameraButton();
   setupRefreshButton();
-  // When video starts playing, wait 2500ms then fade out the splash.
+  // Trigger fade-out 2500ms into the 3.5s video.
   const splash = document.getElementById('splashScreen');
   if (splash) {
     const videos = splash.querySelectorAll('video');
