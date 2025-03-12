@@ -28,6 +28,11 @@ body {
   min-height: 60px;
 }
 
+#imageGallery {
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch; /* For smoother scrolling on iOS */
+}
+
 /* Hidden and Fade Classes */
 .hidden-on-load {
   opacity: 0;
