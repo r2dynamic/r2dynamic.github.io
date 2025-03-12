@@ -6,6 +6,7 @@ import { cityFullNames, regionCities } from './cityList.js';
 
 // --- Constants ---
 const DEBOUNCE_DELAY = 300;
+const MIN_IMAGE_SIZE = 60; // Enforced minimum grid image size
 
 // --- Global Variables ---
 let camerasList = [];
@@ -17,8 +18,6 @@ let selectedCity = "";
 let selectedRegion = "";
 let searchQuery = "";
 let selectedRoute = "All";
-
-
 
 // --- Initialize Function ---
 // Loads data immediately.
@@ -64,16 +63,16 @@ function revealMainContent() {
 }
 
 // --- Splash Screen Fade-Out ---
-// Reveals main content immediately, then fades out the splash.
+// Adds the fade-out class and waits for the animation to finish.
 function fadeOutSplash() {
   const splash = document.getElementById('splashScreen');
   if (splash) {
-    // Reveal main content immediately as the splash starts to fade
+    // Reveal main content immediately
     revealMainContent();
-    splash.classList.add('fade-out');
-    setTimeout(() => {
+    splash.classList.add('fade-out'); // Triggers CSS animation.
+    splash.addEventListener('animationend', () => {
       splash.style.display = 'none';
-    }, 2900);
+    });
   }
 }
 
@@ -99,41 +98,33 @@ const modalBody = document.getElementById("modalBody");
 const modalImageContainer = document.getElementById("modalImageContainer");
 let mapDisplayed = false; // Tracks if the map is shown
 
-// Set up the map toggle functionality
+// Set up the map toggle functionality in the modal.
 if (mapButton) {
   mapButton.addEventListener("click", () => {
     if (!mapDisplayed) {
-      // Retrieve lat/lon stored in modalImage's dataset (set in showImage)
       const lat = modalImage.dataset.latitude;
       const lon = modalImage.dataset.longitude;
       if (!lat || !lon) {
         alert("No location data available for this camera.");
         return;
       }
-      // Create a new container for the map using flex styling
       const mapContainer = document.createElement("div");
       mapContainer.id = "modalMapContainer";
-      mapContainer.style.flex = "1"; // Takes equal space
-      // Create the iframe for the embedded Google Map in satellite view
+      mapContainer.style.flex = "1"; // Equal flex value.
       const iframe = document.createElement("iframe");
       iframe.width = "100%";
       iframe.height = "100%";
       iframe.frameBorder = "0";
       iframe.style.border = "0";
-      // Note: Adding &t=k for satellite view
+      // Satellite view with &t=k.
       iframe.src = `https://maps.google.com/maps?q=${lat},${lon}&z=15&t=k&output=embed`;
       mapContainer.appendChild(iframe);
       modalBody.appendChild(mapContainer);
-      
-      // Adjust the modal image container to use flex so both share equal space
       modalImageContainer.style.flex = "1";
-      // Ensure modalBody uses flexbox
       modalBody.style.display = "flex";
-      
       mapButton.textContent = "Hide Map";
       mapDisplayed = true;
     } else {
-      // Remove the map container and restore the image container to full flex
       const mapContainer = document.getElementById("modalMapContainer");
       if (mapContainer) {
         modalBody.removeChild(mapContainer);
@@ -145,15 +136,13 @@ if (mapButton) {
   });
 }
 
-// Close the map automatically when the modal is hidden
+// Close the map automatically when the modal is hidden.
 if (imageModalEl) {
   imageModalEl.addEventListener("hidden.bs.modal", () => {
-    // Remove map if it exists
     const mapContainer = document.getElementById("modalMapContainer");
     if (mapContainer) {
       modalBody.removeChild(mapContainer);
     }
-    // Reset image container to full width (flex still 1)
     modalImageContainer.style.flex = "1";
     mapButton.textContent = "Map";
     mapDisplayed = false;
@@ -189,7 +178,6 @@ function updateSelectedFilters() {
   const filtersEl = document.getElementById("selectedFilters");
   filtersEl.innerHTML = "";
   let hasFilters = false;
-  
   if (selectedCity) {
     const div = document.createElement("div");
     div.classList.add("selected-filter-item");
@@ -206,7 +194,6 @@ function updateSelectedFilters() {
     filtersEl.appendChild(div);
     hasFilters = true;
   }
-  
   if (selectedRegion) {
     const div = document.createElement("div");
     div.classList.add("selected-filter-item");
@@ -219,7 +206,6 @@ function updateSelectedFilters() {
     filtersEl.appendChild(div);
     hasFilters = true;
   }
-  
   if (selectedRoute && selectedRoute !== "All") {
     const div = document.createElement("div");
     div.classList.add("selected-filter-item");
@@ -232,7 +218,6 @@ function updateSelectedFilters() {
     filtersEl.appendChild(div);
     hasFilters = true;
   }
-  
   if (hasFilters) {
     const resetButton = document.createElement("button");
     resetButton.innerHTML = '<i class="fas fa-undo"></i>';
@@ -240,7 +225,6 @@ function updateSelectedFilters() {
     resetButton.addEventListener("click", resetFilters);
     filtersEl.appendChild(resetButton);
   }
-  
   filtersEl.style.display = hasFilters ? "block" : "none";
 }
 
@@ -260,8 +244,6 @@ function updateCityDropdown() {
   const cities = camerasList.map(camera => camera.Location.split(",").pop().trim());
   const uniqueCities = [...new Set(cities.filter(city => city.length <= 4))];
   cityFilterMenu.innerHTML = "";
-  
-  // Default "All" option
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
   defaultA.classList.add("dropdown-item");
@@ -275,7 +257,6 @@ function updateCityDropdown() {
   });
   defaultLi.appendChild(defaultA);
   cityFilterMenu.appendChild(defaultLi);
-  
   let filteredCities = uniqueCities;
   if (selectedRegion && regionCities[selectedRegion]) {
     filteredCities = uniqueCities.filter(city => regionCities[selectedRegion].includes(city));
@@ -300,7 +281,6 @@ function updateCityDropdown() {
 
 function populateRegionDropdown() {
   regionFilterMenu.innerHTML = "";
-  // Default "All Regions" option
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
   defaultA.classList.add("dropdown-item");
@@ -315,7 +295,6 @@ function populateRegionDropdown() {
   });
   defaultLi.appendChild(defaultA);
   regionFilterMenu.appendChild(defaultLi);
-  
   Object.keys(regionCities).forEach(region => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -336,7 +315,6 @@ function populateRegionDropdown() {
 
 function updateRouteOptions() {
   routeFilterMenu.innerHTML = "";
-  // Default "All Routes" option
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
   defaultA.classList.add("dropdown-item");
@@ -350,7 +328,6 @@ function updateRouteOptions() {
   });
   defaultLi.appendChild(defaultA);
   routeFilterMenu.appendChild(defaultLi);
-  
   curatedRoutes.forEach(route => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -405,7 +382,6 @@ function showImage(index) {
   const camera = visibleCameras[index];
   modalImage.src = camera.Views[0].Url;
   modalTitle.textContent = camera.Location;
-  // Store location data for use by the map toggle
   modalImage.dataset.latitude = camera.Latitude;
   modalImage.dataset.longitude = camera.Longitude;
   const selectedBox = galleryContainer.children[index].querySelector(".aspect-ratio-box");
@@ -428,7 +404,6 @@ function filterImages() {
     }
     return matchesCity && matchesRegion && matchesSearch && routeMatches;
   });
-
   if (selectedRoute !== "All") {
     const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
     if (routeObj) {
@@ -439,7 +414,6 @@ function filterImages() {
       });
     }
   }
-
   updateCameraCount();
   renderGallery(visibleCameras);
   currentIndex = 0;
@@ -460,7 +434,6 @@ function setupNearestCameraButton() {
               distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
             }));
             camerasWithDistance.sort((a, b) => a.distance - b.distance);
-            // Show all cameras sorted by distance
             visibleCameras = camerasWithDistance.map(item => item.camera);
             updateCameraCount();
             renderGallery(visibleCameras);
@@ -514,7 +487,6 @@ function setupRefreshButton() {
 }
 
 // --- Image Size Slider ---
-// Toggle the slider dropdown when clicking on the size control button.
 if (sizeControlButton && sizeSliderContainer) {
   sizeControlButton.addEventListener("click", (e) => {
     e.stopPropagation();
@@ -524,110 +496,55 @@ if (sizeControlButton && sizeSliderContainer) {
     }, 3000);
   });
 }
-
-// Define a minimum size constant (e.g., 60px)
-const MIN_IMAGE_SIZE = 60;
-
 if (sizeSlider) {
   sizeSlider.addEventListener("input", () => {
-    // Ensure the slider value is not below the minimum
     const sliderValue = parseInt(sizeSlider.value, 10);
-    const newSize = Math.max(sliderValue, MIN_IMAGE_SIZE); // Prevents values below the min
-
+    const newSize = Math.max(sliderValue, MIN_IMAGE_SIZE);
     galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${newSize}px, 1fr))`;
-
     clearTimeout(sizeSlider.autoHideTimeout);
     sizeSlider.autoHideTimeout = setTimeout(() => {
       sizeSliderContainer.classList.remove("active");
     }, 3000);
   });
 }
-
-
-// Global click listener to hide the slider dropdown if clicking outside.
 document.addEventListener("click", (e) => {
   if (!sizeControlButton.contains(e.target) && !sizeSliderContainer.contains(e.target)) {
     sizeSliderContainer.classList.remove("active");
   }
 });
 
-
-if (modalImage) {
-  // Initialize variables for zoom and pan.
-  let initialDistance = null;
-  let initialScale = 1;
-  let currentScale = 1;
-  let isPanning = false;
-  let startX = 0, startY = 0;
-  let translateX = 0, translateY = 0;
-  let lastTranslateX = 0, lastTranslateY = 0;
-
-  // Ensure the modal image can handle our touch gestures.
-  modalImage.style.touchAction = "none";
-  modalImage.style.transition = "transform 0.1s ease-out";
-
-  // Helper function to update the transform
-  function updateTransform() {
-    modalImage.style.transform = `scale(${currentScale}) translate(${translateX}px, ${translateY}px)`;
+// --- Pinch-to-Zoom for Image Grid ---
+let initialGridDistance = null;
+let initialGridSize = parseInt(sizeSlider.value, 10) || 120;
+galleryContainer.style.touchAction = "none";
+galleryContainer.addEventListener("touchstart", (e) => {
+  if (e.touches.length === 2) {
+    e.preventDefault();
+    initialGridDistance = getDistance(e.touches[0], e.touches[1]);
+    initialGridSize = parseInt(sizeSlider.value, 10) || 120;
   }
-
-  // Helper: Calculate distance between two touch points.
-  function getDistance(touch1, touch2) {
-    const dx = touch1.clientX - touch2.clientX;
-    const dy = touch1.clientY - touch2.clientY;
-    return Math.sqrt(dx * dx + dy * dy);
+}, { passive: false });
+galleryContainer.addEventListener("touchmove", (e) => {
+  if (e.touches.length === 2 && initialGridDistance) {
+    e.preventDefault();
+    const currentGridDistance = getDistance(e.touches[0], e.touches[1]);
+    const scaleFactor = currentGridDistance / initialGridDistance;
+    let newGridSize = Math.round(initialGridSize * scaleFactor);
+    newGridSize = Math.max(MIN_IMAGE_SIZE, Math.min(newGridSize, parseInt(sizeSlider.max, 10) || 380));
+    sizeSlider.value = newGridSize;
+    galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${newGridSize}px, 1fr))`;
   }
-
-  modalImage.addEventListener("touchstart", (e) => {
-    if (e.touches.length === 2) {
-      // Start pinch gesture.
-      e.preventDefault();
-      initialDistance = getDistance(e.touches[0], e.touches[1]);
-      initialScale = currentScale; // Save current scale.
-    } else if (e.touches.length === 1 && currentScale > 1) {
-      // Start panning.
-      isPanning = true;
-      startX = e.touches[0].clientX;
-      startY = e.touches[0].clientY;
-    }
-  }, { passive: false });
-
-  modalImage.addEventListener("touchmove", (e) => {
-    if (e.touches.length === 2 && initialDistance) {
-      e.preventDefault();
-      // Pinch zoom: calculate new scale.
-      const currentDistance = getDistance(e.touches[0], e.touches[1]);
-      let newScale = initialScale * (currentDistance / initialDistance);
-      // Clamp scale between 1 and 5.
-      currentScale = Math.max(1, Math.min(newScale, 5));
-      updateTransform();
-    } else if (e.touches.length === 1 && isPanning) {
-      e.preventDefault();
-      // Calculate pan offset.
-      const deltaX = e.touches[0].clientX - startX;
-      const deltaY = e.touches[0].clientY - startY;
-      translateX = lastTranslateX + deltaX;
-      translateY = lastTranslateY + deltaY;
-      updateTransform();
-    }
-  }, { passive: false });
-
-  modalImage.addEventListener("touchend", (e) => {
-    if (e.touches.length < 2) {
-      // End pinch gesture.
-      initialDistance = null;
-    }
-    if (e.touches.length === 0 && isPanning) {
-      // End panning.
-      isPanning = false;
-      lastTranslateX = translateX;
-      lastTranslateY = translateY;
-    }
-  }, { passive: true });
+}, { passive: false });
+galleryContainer.addEventListener("touchend", (e) => {
+  if (e.touches.length < 2) {
+    initialGridDistance = null;
+  }
+}, { passive: true });
+function getDistance(touch1, touch2) {
+  const dx = touch1.clientX - touch2.clientX;
+  const dy = touch1.clientY - touch2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
 }
-
-
-
 
 // --- Search Input Event Listener ---
 if (searchInput) {
@@ -639,25 +556,24 @@ if (searchInput) {
 
 // --- Main Initialization & Splash Setup ---
 document.addEventListener('DOMContentLoaded', () => {
-  // Initialize data immediately.
   initialize();
   setupNearestCameraButton();
   setupRefreshButton();
-
-  // Set up splash video event: fade out the splash screen (while main content is revealed concurrently).
+  // When video starts playing, wait 2500ms then fade out the splash.
   const splash = document.getElementById('splashScreen');
   if (splash) {
     const videos = splash.querySelectorAll('video');
     videos.forEach(video => {
-      video.addEventListener('ended', fadeOutSplash);
+      video.addEventListener('playing', () => {
+        setTimeout(fadeOutSplash, 2900);
+      });
     });
   }
-  
-  // Fallback if the video never ends.
+  // Fallback if video never ends.
   setTimeout(() => {
     const splash = document.getElementById('splashScreen');
     if (splash && splash.style.display !== 'none') {
       fadeOutSplash();
     }
-  }, 10000);
+  }, 5000);
 });
