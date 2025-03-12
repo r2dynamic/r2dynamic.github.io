@@ -18,9 +18,7 @@ let selectedRegion = "";
 let searchQuery = "";
 let selectedRoute = "All";
 
-// Variables for pinch-to-zoom
-let initialDistance = null;
-let initialScale = 1;
+
 
 // --- Initialize Function ---
 // Loads data immediately.
@@ -553,70 +551,77 @@ document.addEventListener("click", (e) => {
   }
 });
 
-if (modalImage) {
-  let scale = 1;
-  let lastScale = 1;
-  let startDistance = 0;
-  let translateX = 0;
-  let translateY = 0;
-  let lastX = 0;
-  let lastY = 0;
-  let isPanning = false;
 
-  // Helper: Get distance between two touches
+if (modalImage) {
+  // Initialize variables for zoom and pan.
+  let initialDistance = null;
+  let initialScale = 1;
+  let currentScale = 1;
+  let isPanning = false;
+  let startX = 0, startY = 0;
+  let translateX = 0, translateY = 0;
+  let lastTranslateX = 0, lastTranslateY = 0;
+
+  // Ensure the modal image can handle our touch gestures.
+  modalImage.style.touchAction = "none";
+  modalImage.style.transition = "transform 0.1s ease-out";
+
+  // Helper function to update the transform
+  function updateTransform() {
+    modalImage.style.transform = `scale(${currentScale}) translate(${translateX}px, ${translateY}px)`;
+  }
+
+  // Helper: Calculate distance between two touch points.
   function getDistance(touch1, touch2) {
     const dx = touch1.clientX - touch2.clientX;
     const dy = touch1.clientY - touch2.clientY;
     return Math.sqrt(dx * dx + dy * dy);
   }
 
-  // Helper: Update transform style based on scale and translation.
-  function updateTransform() {
-    modalImage.style.transform = `scale(${scale}) translate(${translateX}px, ${translateY}px)`;
-  }
-
   modalImage.addEventListener("touchstart", (e) => {
     if (e.touches.length === 2) {
-      // Start pinch: record initial distance and current scale.
-      startDistance = getDistance(e.touches[0], e.touches[1]);
-      lastScale = scale;
-      // When starting a pinch, reset translation so panning doesn't interfere.
-      translateX = 0;
-      translateY = 0;
-    } else if (e.touches.length === 1 && scale > 1) {
-      // Start panning if the image is zoomed in.
+      // Start pinch gesture.
+      e.preventDefault();
+      initialDistance = getDistance(e.touches[0], e.touches[1]);
+      initialScale = currentScale; // Save current scale.
+    } else if (e.touches.length === 1 && currentScale > 1) {
+      // Start panning.
       isPanning = true;
-      lastX = e.touches[0].clientX;
-      lastY = e.touches[0].clientY;
+      startX = e.touches[0].clientX;
+      startY = e.touches[0].clientY;
     }
   }, { passive: false });
 
   modalImage.addEventListener("touchmove", (e) => {
-    if (e.touches.length === 2) {
-      // Pinch zoom calculation.
-      let currentDistance = getDistance(e.touches[0], e.touches[1]);
-      scale = lastScale * (currentDistance / startDistance);
-      // Optionally enforce min/max scale:
-      scale = Math.max(1, Math.min(scale, 5));
-      updateTransform();
+    if (e.touches.length === 2 && initialDistance) {
       e.preventDefault();
+      // Pinch zoom: calculate new scale.
+      const currentDistance = getDistance(e.touches[0], e.touches[1]);
+      let newScale = initialScale * (currentDistance / initialDistance);
+      // Clamp scale between 1 and 5.
+      currentScale = Math.max(1, Math.min(newScale, 5));
+      updateTransform();
     } else if (e.touches.length === 1 && isPanning) {
-      // Calculate translation delta for panning.
-      let deltaX = e.touches[0].clientX - lastX;
-      let deltaY = e.touches[0].clientY - lastY;
-      translateX += deltaX;
-      translateY += deltaY;
-      lastX = e.touches[0].clientX;
-      lastY = e.touches[0].clientY;
-      updateTransform();
       e.preventDefault();
+      // Calculate pan offset.
+      const deltaX = e.touches[0].clientX - startX;
+      const deltaY = e.touches[0].clientY - startY;
+      translateX = lastTranslateX + deltaX;
+      translateY = lastTranslateY + deltaY;
+      updateTransform();
     }
   }, { passive: false });
 
   modalImage.addEventListener("touchend", (e) => {
     if (e.touches.length < 2) {
-      // End pinch or pan.
+      // End pinch gesture.
+      initialDistance = null;
+    }
+    if (e.touches.length === 0 && isPanning) {
+      // End panning.
       isPanning = false;
+      lastTranslateX = translateX;
+      lastTranslateY = translateY;
     }
   }, { passive: true });
 }
