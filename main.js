@@ -527,17 +527,17 @@ if (sizeControlButton && sizeSliderContainer) {
   });
 }
 
-// Listen for slider changes to update grid columns.
-// Define a minimum size constant (in pixels)
-const MIN_IMAGE_SIZE = 30;
+// Define a minimum size constant (e.g., 60px)
+const MIN_IMAGE_SIZE = 60;
 
-// Listen for slider changes to update grid columns.
 if (sizeSlider) {
   sizeSlider.addEventListener("input", () => {
     // Ensure the slider value is not below the minimum
     const sliderValue = parseInt(sizeSlider.value, 10);
-    const newSize = Math.max(sliderValue, MIN_IMAGE_SIZE);
+    const newSize = Math.max(sliderValue, MIN_IMAGE_SIZE); // Prevents values below the min
+
     galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${newSize}px, 1fr))`;
+
     clearTimeout(sizeSlider.autoHideTimeout);
     sizeSlider.autoHideTimeout = setTimeout(() => {
       sizeSliderContainer.classList.remove("active");
@@ -654,5 +654,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (splash && splash.style.display !== 'none') {
       fadeOutSplash();
     }
-  }, 5000);
+  }, 10000);
 });
