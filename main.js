@@ -75,7 +75,7 @@ function fadeOutSplash() {
     splash.classList.add('fade-out');
     setTimeout(() => {
       splash.style.display = 'none';
-    }, 2100);
+    }, 2500);
   }
 }
 
