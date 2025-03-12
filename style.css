@@ -121,6 +121,7 @@ body {
 @media (max-width: 600px) {
   .header-controls .button {
     max-width: 150px;
+    height: 25px;
     box-shadow: 0 4px #999;
     border-radius: 6px;
     font-size: 11px;
@@ -129,6 +130,7 @@ body {
 }
 .header-controls .button {
   max-width: 200px;
+  height: 25px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
