@@ -98,6 +98,8 @@ const modalBody = document.getElementById("modalBody");
 const modalImageContainer = document.getElementById("modalImageContainer");
 let mapDisplayed = false; // Tracks if the map is shown
 
+galleryContainer.style.touchAction = "pan-y pinch-zoom";
+
 // Set up the map toggle functionality in the modal.
 if (mapButton) {
   mapButton.addEventListener("click", () => {
