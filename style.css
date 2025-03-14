@@ -104,6 +104,12 @@ body {
   font-size: 12px;
 }
 
+.selected-filter-item {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
 /* Header Controls */
 .header-controls {
   position: sticky;
