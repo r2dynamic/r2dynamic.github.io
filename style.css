@@ -24,7 +24,7 @@ body {
   -webkit-touch-callout: none;
 }
 #imageGallery img {
-  min-width: 60px; /* Matches MIN_IMAGE_SIZE */
+  min-width: 80px; /* Matches MIN_IMAGE_SIZE */
   min-height: auto;
 }
 
