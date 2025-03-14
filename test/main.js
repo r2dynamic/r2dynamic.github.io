@@ -48,12 +48,12 @@ function revealMainContent() {
   const headerControls = document.querySelector('.header-controls');
   const imageGallery = document.getElementById('imageGallery');
   if (headerControls) {
-    headerControls.classList.remove('hidden-on-load');
-    headerControls.classList.add('fade-in');
+    headerControls.classList.remove("hidden-on-load");
+    headerControls.classList.add("fade-in");
   }
   if (imageGallery) {
-    imageGallery.classList.remove('hidden-on-load');
-    imageGallery.classList.add('fade-in');
+    imageGallery.classList.remove("hidden-on-load");
+    imageGallery.classList.add("fade-in");
   }
 }
 
@@ -64,8 +64,8 @@ function fadeOutSplash() {
   if (splash) {
     // Reveal main content immediately
     revealMainContent();
-    splash.classList.add('fade-out'); // CSS animation will run
-    splash.addEventListener('animationend', () => {
+    splash.classList.add("fade-out"); // CSS animation will run
+    splash.addEventListener("animationend", () => {
       splash.style.display = 'none';
     });
   }
@@ -479,26 +479,40 @@ function setupRefreshButton() {
 }
 
 // --- Image Size Slider ---
-if (sizeControlButton && sizeSliderContainer) {
-  sizeControlButton.addEventListener("click", (e) => {
-    e.stopPropagation();
-    sizeSliderContainer.classList.toggle("active");
-    setTimeout(() => {
+// Updated slider logic with mouseenter/mouseleave to manage auto-hide
+let autoHideTimer;
+
+sizeControlButton.addEventListener("click", (e) => {
+  e.stopPropagation();
+  sizeSliderContainer.classList.toggle("active");
+  clearTimeout(autoHideTimer);
+  if (sizeSliderContainer.classList.contains("active")) {
+    autoHideTimer = setTimeout(() => {
       sizeSliderContainer.classList.remove("active");
-    }, 3000);
-  });
-}
-if (sizeSlider) {
-  sizeSlider.addEventListener("input", () => {
-    const sliderValue = parseInt(sizeSlider.value, 10);
-    const newSize = Math.max(sliderValue, MIN_IMAGE_SIZE);
-    galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${newSize}px, 1fr))`;
-    clearTimeout(sizeSlider.autoHideTimeout);
-    sizeSlider.autoHideTimeout = setTimeout(() => {
-      sizeSliderContainer.classList.remove("active");
-    }, 3000);
-  });
-}
+    }, 5000); // extended delay so users have more time
+  }
+});
+
+sizeSliderContainer.addEventListener("mouseenter", () => {
+  clearTimeout(autoHideTimer);
+});
+
+sizeSliderContainer.addEventListener("mouseleave", () => {
+  autoHideTimer = setTimeout(() => {
+    sizeSliderContainer.classList.remove("active");
+  }, 3000); // adjust delay as needed
+});
+
+sizeSlider.addEventListener("input", () => {
+  const sliderValue = parseInt(sizeSlider.value, 10);
+  const newSize = Math.max(sliderValue, MIN_IMAGE_SIZE);
+  galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${newSize}px, 1fr))`;
+  clearTimeout(sizeSlider.autoHideTimeout);
+  sizeSlider.autoHideTimeout = setTimeout(() => {
+    sizeSliderContainer.classList.remove("active");
+  }, 3000);
+});
+
 document.addEventListener("click", (e) => {
   if (!sizeControlButton.contains(e.target) && !sizeSliderContainer.contains(e.target)) {
     sizeSliderContainer.classList.remove("active");
