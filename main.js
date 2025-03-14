@@ -6,7 +6,7 @@ import { cityFullNames, regionCities } from './cityList.js';
 
 // --- Constants ---
 const DEBOUNCE_DELAY = 300;
-const MIN_IMAGE_SIZE = 60; // Enforced minimum grid image size
+const MIN_IMAGE_SIZE = 80; // Enforced minimum grid image size
 
 // --- Global Variables ---
 let camerasList = [];
