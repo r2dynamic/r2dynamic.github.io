@@ -117,6 +117,7 @@ body {
 .header-controls {
   position: sticky;
   top: 0;
+  z-index: 1000;
   background-color: #4C4E52;
   display: flex;
   flex-wrap: wrap;
@@ -141,8 +142,6 @@ body {
 .header-controls .button {
   max-width: 200px;
   height: 30px;
-
-
 }
 
 /* Button Styling */
