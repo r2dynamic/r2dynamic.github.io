@@ -90,6 +90,8 @@ body {
   white-space: pre-line;
   font-weight: bold;
   position: relative;
+  width: 100%;
+  box-sizing: border-box;
 }
 .selected-filters .reset-button {
   position: absolute;
@@ -102,6 +104,7 @@ body {
   padding: 4px 8px;
   cursor: pointer;
   font-size: 12px;
+  z-index: 1010;
 }
 
 .selected-filter-item {
@@ -123,6 +126,7 @@ body {
   padding: 10px 2px;
   gap: 5px;
   font-size: 14px;
+  transform: translateZ(0);
 }
 @media (max-width: 600px) {
   .header-controls .button {
