@@ -117,7 +117,6 @@ body {
 .header-controls {
   position: sticky;
   top: 0;
-  z-index: 1000;
   background-color: #4C4E52;
   display: flex;
   flex-wrap: wrap;
@@ -126,6 +125,7 @@ body {
   padding: 10px 2px;
   gap: 5px;
   font-size: 14px;
+  width: 100%;
   transform: translateZ(0);
 }
 @media (max-width: 600px) {
@@ -140,11 +140,9 @@ body {
 }
 .header-controls .button {
   max-width: 200px;
-  height: 25px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-  flex-shrink: 1;
+  height: 30px;
+
+
 }
 
 /* Button Styling */
