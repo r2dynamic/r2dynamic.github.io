@@ -170,6 +170,7 @@ function updateSelectedFilters() {
   const filtersEl = document.getElementById("selectedFilters");
   filtersEl.innerHTML = "";
   let hasFilters = false;
+
   if (selectedCity) {
     const div = document.createElement("div");
     div.classList.add("selected-filter-item");
@@ -186,6 +187,7 @@ function updateSelectedFilters() {
     filtersEl.appendChild(div);
     hasFilters = true;
   }
+
   if (selectedRegion) {
     const div = document.createElement("div");
     div.classList.add("selected-filter-item");
@@ -198,6 +200,7 @@ function updateSelectedFilters() {
     filtersEl.appendChild(div);
     hasFilters = true;
   }
+
   if (selectedRoute && selectedRoute !== "All") {
     const div = document.createElement("div");
     div.classList.add("selected-filter-item");
@@ -210,6 +213,21 @@ function updateSelectedFilters() {
     filtersEl.appendChild(div);
     hasFilters = true;
   }
+
+  // Add search query as a filter if it's non-empty.
+  if (searchQuery && searchQuery.trim().length > 0) {
+    const div = document.createElement("div");
+    div.classList.add("selected-filter-item");
+    const icon = document.createElement("i");
+    icon.className = "fas fa-search";
+    const span = document.createElement("span");
+    span.textContent = "Name: " + searchQuery;
+    div.appendChild(icon);
+    div.appendChild(span);
+    filtersEl.appendChild(div);
+    hasFilters = true;
+  }
+
   if (hasFilters) {
     const resetButton = document.createElement("button");
     resetButton.innerHTML = '<i class="fas fa-undo"></i>';
@@ -219,6 +237,7 @@ function updateSelectedFilters() {
   }
   filtersEl.style.display = hasFilters ? "block" : "none";
 }
+
 function resetFilters() {
   selectedCity = "";
   selectedRegion = "";
