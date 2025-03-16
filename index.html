@@ -35,21 +35,23 @@
   </div>
 
   <!-- Selected Filters Container -->
-  <div id="selectedFilters" class="selected-filters"></div>
-  
+  <div id="selectedFilters" class="selected-filters">
+    <span class="filter-text">City/County: XYZ</span>
+    <button class="reset-button"><i class="fas fa-undo"></i></button>
+  </div>  
   <!-- Header Controls Container -->
   <div class="header-controls hidden-on-load">
     <!-- Camera Count -->
     <div id="cameraCount" class="camera-count button" aria-live="polite" title="Click to view version history"></div>
     
-    <!-- Search Dropdown -->
+    <!-- Region Dropdown -->
     <div class="dropdown">
-      <button id="searchDropdownButton" class="dropdown-toggle button" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Search">
-        <i class="fas fa-search"></i>
+      <button id="regionDropdownButton" class="dropdown-toggle button" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Region">
+        <i class="fas fa-industry"></i>
       </button>
-      <div class="dropdown-menu glass-dropdown p-3" style="min-width: 250px;" aria-label="Search options">
-        <input type="text" id="searchInput" placeholder="Search by Name" class="form-control glass-dropdown-input" />
-      </div>
+      <ul class="dropdown-menu glass-dropdown" id="regionFilterMenu" aria-labelledby="regionDropdownButton">
+        <!-- Options populated dynamically -->
+      </ul>
     </div>
     
     <!-- City/County Dropdown -->
@@ -62,15 +64,7 @@
       </ul>
     </div>
     
-    <!-- Region Dropdown -->
-    <div class="dropdown">
-      <button id="regionDropdownButton" class="dropdown-toggle button" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Region">
-        <i class="fas fa-industry"></i>
-      </button>
-      <ul class="dropdown-menu glass-dropdown" id="regionFilterMenu" aria-labelledby="regionDropdownButton">
-        <!-- Options populated dynamically -->
-      </ul>
-    </div>
+
     
     <!-- Curated Routes Dropdown -->
     <div class="dropdown">
@@ -81,6 +75,16 @@
         <li><a class="dropdown-item" href="#" data-value="All">All Routes</a></li>
       </ul>
     </div>
+
+        <!-- Search Dropdown -->
+        <div class="dropdown">
+          <button id="searchDropdownButton" class="dropdown-toggle button" type="button" data-bs-toggle="dropdown" aria-expanded="false" title="Search">
+            <i class="fas fa-search"></i>
+          </button>
+          <div class="dropdown-menu glass-dropdown p-3" style="min-width: 250px;" aria-label="Search options">
+            <input type="text" id="searchInput" placeholder="Search by Name" class="form-control glass-dropdown-input" />
+          </div>
+        </div>
 
     <!-- Nearest Camera Button -->
     <button id="nearestButton" class="button" title="Show Nearest Camera">
@@ -93,7 +97,7 @@
         <i class="fas fa-compress"></i> <i class="fas fa-expand"></i>
       </div>
       <div id="sizeSliderContainer" class="slider-dropdown">
-        <input id="sizeSlider" type="range" min="80" max="380" value="180" step="5" class="vertical-slider">
+        <input id="sizeSlider" type="range" min="80" max="380" value="180" step="2" class="vertical-slider">
       </div>
     </div>
     <button id="refreshButton" class="button" title="Refresh Images">
