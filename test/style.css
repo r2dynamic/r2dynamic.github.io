@@ -107,6 +107,7 @@ body {
   z-index: 1010;
 }
 
+/* Selected Filter Item */
 .selected-filter-item {
   display: flex;
   align-items: center;
@@ -127,12 +128,34 @@ body {
   gap: 5px;
   font-size: 14px;
   width: 100%;
+  box-sizing: border-box;
+  /* Removed any overflow setting so children can extend beyond */
   transform: translateZ(0);
 }
-
+@media (max-width: 600px) {
+  .header-controls {
+    justify-content: space-between;
+  }
+  .header-controls .button {
+    flex: 1;
+    margin: 0 2px;
+    max-width: 120px;
+    height: 30px;
+    align-items: center;
+    justify-content: center;
+    box-shadow: 0 4px #999;
+    border-radius: 6px;
+    font-size: 11px;
+    padding: 3px 5px;
+  }
+}
 .header-controls .button {
   max-width: 200px;
   height: 30px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  flex-shrink: 1;
 }
 
 /* Button Styling */
@@ -172,8 +195,18 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 
+/* Dropdown Container */
+.dropdown {
+  position: relative; /* Create a stacking context for the dropdown-menu */
+  z-index: 1001;
+}
+
 /* Dropdown Menu (Glassmorphism) */
 .dropdown-menu {
+  position: absolute;
+  top: 100%;
+  left: 0;
+  z-index: 2000; /* High z-index so it sits above the image gallery */
   background: rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: blur(12px);
   border: 2px solid rgba(255, 255, 255, 0.3);
@@ -307,40 +340,36 @@ body {
 /* Image Gallery Grid */
 #imageGallery {
   display: grid;
-  grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); /* initial value */
+  grid-template-columns: repeat(auto-fit, minmax(80px, 1fr));
   gap: 2px;
   margin-top: 2px;
   margin-bottom: 200px;
   justify-content: center;
-
   transition: grid-template-columns 0.3s ease-out;
-  /* Removed fixed height properties to let the grid collapse to its content */
   overflow-y: auto;
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y pinch-zoom;
+  position: relative;
+  z-index: 1; /* Ensure the gallery stays behind header controls */
 }
 
-
-    .col { flex: 1; }
-    .aspect-ratio-box {
-      width: 100%;
-      position: relative;
-      padding-bottom: 56.25%; /* 16:9 ratio */
-      overflow: hidden;
-    }
-    .aspect-ratio-box img {
-      position: absolute;
-      top: 0;
-      left: 0;
-      width: 100%;
-      height: 100%;
-      object-fit: cover;
-      border-radius: 6px;
-      transition: transform 0.2s ease-in-out;
-    }
-
-
-
+.col { flex: 1; }
+.aspect-ratio-box {
+  width: 100%;
+  position: relative;
+  padding-bottom: 56.25%; /* 16:9 ratio */
+  overflow: hidden;
+}
+.aspect-ratio-box img {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 6px;
+  transition: transform 0.2s ease-in-out;
+}
 
 /* Modal Styles */
 .modal-dialog-centered {
@@ -375,7 +404,6 @@ body {
   justify-content: center;
   align-items: center;
 }
-/* Modal split view containers */
 #modalImageContainer, #modalMapContainer {
   flex: 1;
   transition: width 0.3s ease;
