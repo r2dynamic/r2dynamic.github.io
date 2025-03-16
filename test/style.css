@@ -92,7 +92,7 @@ body {
   position: relative;
   /* Instead of width: 100%; use a max-width and center it */
   max-width: 500px;      /* Adjust as needed */
-  margin: 10px auto;     /* Centers the container horizontally */
+  margin: 5px 5px;     /* Centers the container horizontally */
   box-sizing: border-box;
 }
 
