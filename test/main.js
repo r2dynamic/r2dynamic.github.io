@@ -48,12 +48,12 @@ function revealMainContent() {
   const headerControls = document.querySelector('.header-controls');
   const imageGallery = document.getElementById('imageGallery');
   if (headerControls) {
-    headerControls.classList.remove("hidden-on-load");
-    headerControls.classList.add("fade-in");
+    headerControls.classList.remove('hidden-on-load');
+    headerControls.classList.add('fade-in');
   }
   if (imageGallery) {
-    imageGallery.classList.remove("hidden-on-load");
-    imageGallery.classList.add("fade-in");
+    imageGallery.classList.remove('hidden-on-load');
+    imageGallery.classList.add('fade-in');
   }
 }
 
@@ -64,8 +64,8 @@ function fadeOutSplash() {
   if (splash) {
     // Reveal main content immediately
     revealMainContent();
-    splash.classList.add("fade-out"); // CSS animation will run
-    splash.addEventListener("animationend", () => {
+    splash.classList.add('fade-out'); // CSS animation will run
+    splash.addEventListener('animationend', () => {
       splash.style.display = 'none';
     });
   }
@@ -170,6 +170,7 @@ function updateSelectedFilters() {
   const filtersEl = document.getElementById("selectedFilters");
   filtersEl.innerHTML = "";
   let hasFilters = false;
+
   if (selectedCity) {
     const div = document.createElement("div");
     div.classList.add("selected-filter-item");
@@ -186,6 +187,7 @@ function updateSelectedFilters() {
     filtersEl.appendChild(div);
     hasFilters = true;
   }
+
   if (selectedRegion) {
     const div = document.createElement("div");
     div.classList.add("selected-filter-item");
@@ -198,6 +200,7 @@ function updateSelectedFilters() {
     filtersEl.appendChild(div);
     hasFilters = true;
   }
+
   if (selectedRoute && selectedRoute !== "All") {
     const div = document.createElement("div");
     div.classList.add("selected-filter-item");
@@ -210,6 +213,21 @@ function updateSelectedFilters() {
     filtersEl.appendChild(div);
     hasFilters = true;
   }
+
+  // Add search query as a filter if it's non-empty.
+  if (searchQuery && searchQuery.trim().length > 0) {
+    const div = document.createElement("div");
+    div.classList.add("selected-filter-item");
+    const icon = document.createElement("i");
+    icon.className = "fas fa-search";
+    const span = document.createElement("span");
+    span.textContent = "Name: " + searchQuery;
+    div.appendChild(icon);
+    div.appendChild(span);
+    filtersEl.appendChild(div);
+    hasFilters = true;
+  }
+
   if (hasFilters) {
     const resetButton = document.createElement("button");
     resetButton.innerHTML = '<i class="fas fa-undo"></i>';
@@ -219,6 +237,7 @@ function updateSelectedFilters() {
   }
   filtersEl.style.display = hasFilters ? "block" : "none";
 }
+
 function resetFilters() {
   selectedCity = "";
   selectedRegion = "";
@@ -479,40 +498,26 @@ function setupRefreshButton() {
 }
 
 // --- Image Size Slider ---
-// Updated slider logic with mouseenter/mouseleave to manage auto-hide
-let autoHideTimer;
-
-sizeControlButton.addEventListener("click", (e) => {
-  e.stopPropagation();
-  sizeSliderContainer.classList.toggle("active");
-  clearTimeout(autoHideTimer);
-  if (sizeSliderContainer.classList.contains("active")) {
-    autoHideTimer = setTimeout(() => {
+if (sizeControlButton && sizeSliderContainer) {
+  sizeControlButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+    sizeSliderContainer.classList.toggle("active");
+    setTimeout(() => {
       sizeSliderContainer.classList.remove("active");
-    }, 5000); // extended delay so users have more time
-  }
-});
-
-sizeSliderContainer.addEventListener("mouseenter", () => {
-  clearTimeout(autoHideTimer);
-});
-
-sizeSliderContainer.addEventListener("mouseleave", () => {
-  autoHideTimer = setTimeout(() => {
-    sizeSliderContainer.classList.remove("active");
-  }, 3000); // adjust delay as needed
-});
-
-sizeSlider.addEventListener("input", () => {
-  const sliderValue = parseInt(sizeSlider.value, 10);
-  const newSize = Math.max(sliderValue, MIN_IMAGE_SIZE);
-  galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${newSize}px, 1fr))`;
-  clearTimeout(sizeSlider.autoHideTimeout);
-  sizeSlider.autoHideTimeout = setTimeout(() => {
-    sizeSliderContainer.classList.remove("active");
-  }, 3000);
-});
-
+    }, 3000);
+  });
+}
+if (sizeSlider) {
+  sizeSlider.addEventListener("input", () => {
+    const sliderValue = parseInt(sizeSlider.value, 10);
+    const newSize = Math.max(sliderValue, MIN_IMAGE_SIZE);
+    galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${newSize}px, 1fr))`;
+    clearTimeout(sizeSlider.autoHideTimeout);
+    sizeSlider.autoHideTimeout = setTimeout(() => {
+      sizeSliderContainer.classList.remove("active");
+    }, 3000);
+  });
+}
 document.addEventListener("click", (e) => {
   if (!sizeControlButton.contains(e.target) && !sizeSliderContainer.contains(e.target)) {
     sizeSliderContainer.classList.remove("active");
