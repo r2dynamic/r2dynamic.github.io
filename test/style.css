@@ -90,9 +90,12 @@ body {
   white-space: pre-line;
   font-weight: bold;
   position: relative;
-  width: 100%;
+  /* Instead of width: 100%; use a max-width and center it */
+  max-width: 500px;      /* Adjust as needed */
+  margin: 10px auto;     /* Centers the container horizontally */
   box-sizing: border-box;
 }
+
 .selected-filters .reset-button {
   position: absolute;
   bottom: 5px;
@@ -129,17 +132,13 @@ body {
   font-size: 14px;
   width: 100%;
   box-sizing: border-box;
-  /* Removed any overflow setting so children can extend beyond */
   transform: translateZ(0);
 }
 @media (max-width: 600px) {
-  .header-controls {
-    justify-content: space-between;
-  }
   .header-controls .button {
     flex: 1;
     margin: 0 2px;
-    max-width: 120px;
+    max-width: auto;
     height: 30px;
     align-items: center;
     justify-content: center;
@@ -150,7 +149,7 @@ body {
   }
 }
 .header-controls .button {
-  max-width: 200px;
+  max-width: auto;
   height: 30px;
   white-space: nowrap;
   overflow: hidden;
@@ -337,8 +336,10 @@ body {
   transform: scale(1.2);
 }
 
-/* Image Gallery Grid */
 #imageGallery {
+  width: 100vw;
+  margin-left: calc(-50vw + 50%);
+  padding: 0;
   display: grid;
   grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
   gap: 2px;
@@ -350,8 +351,10 @@ body {
   -webkit-overflow-scrolling: touch;
   touch-action: pan-y pinch-zoom;
   position: relative;
-  z-index: 1; /* Ensure the gallery stays behind header controls */
+  z-index: 1;
 }
+
+
 
 .col { flex: 1; }
 .aspect-ratio-box {
