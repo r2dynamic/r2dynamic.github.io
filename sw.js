@@ -9,6 +9,8 @@ const FILES_TO_CACHE = [
   '/manifest.json',
   '/camIcon1.png',
   '/Icongridbackground2.png',
+  '/desktop-splash.mp4',
+  '/mobile-splash.mp4',
   '/cameraData.js',
   '/offline.html',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
