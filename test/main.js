@@ -245,7 +245,12 @@ function resetFilters() {
   selectedRoute = "All";
   searchInput.value = "";
   updateCityDropdown();
-  filterImages();
+  // If location permission is allowed, revert to the location-based view.
+  if (localStorage.getItem('locationAllowed') === 'true') {
+    autoSortByLocation();
+  } else {
+    filterImages();
+  }
   updateSelectedFilters();
 }
 
@@ -496,7 +501,11 @@ function autoSortByLocation() {
 function setupRefreshButton() {
   if (refreshButton) {
     refreshButton.addEventListener("click", () => {
-      renderGallery(visibleCameras);
+      if (localStorage.getItem('locationAllowed') === 'true') {
+        autoSortByLocation();
+      } else {
+        renderGallery(visibleCameras);
+      }
     });
   }
 }
