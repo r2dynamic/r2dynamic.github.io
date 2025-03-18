@@ -572,7 +572,17 @@ document.addEventListener('DOMContentLoaded', () => {
   initialize();
   setupNearestCameraButton();
   setupRefreshButton();
-  // Trigger fade-out 2500ms into the 3.5s video.
+
+  // Check for geolocation permission and auto-sort if already granted.
+  if (navigator.permissions) {
+    navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+      if (result.state === 'granted') {
+        autoSortByLocation();
+      }
+    });
+  }
+
+  // Trigger fade-out 2500ms into the video.
   const splash = document.getElementById('splashScreen');
   if (splash) {
     const videos = splash.querySelectorAll('video');
