@@ -245,7 +245,7 @@ function resetFilters() {
   selectedRoute = "All";
   searchInput.value = "";
   updateCityDropdown();
-  // For reset, if location permission is allowed, revert to the location-based view.
+  // If location permission is allowed, revert to the location-based view.
   if (localStorage.getItem('locationAllowed') === 'true') {
     autoSortByLocation();
   } else {
@@ -498,11 +498,14 @@ function autoSortByLocation() {
 }
 
 // --- Refresh Button Feature ---
-// Simply refreshes the current grid view.
 function setupRefreshButton() {
   if (refreshButton) {
     refreshButton.addEventListener("click", () => {
-      renderGallery(visibleCameras);
+      if (localStorage.getItem('locationAllowed') === 'true') {
+        autoSortByLocation();
+      } else {
+        renderGallery(visibleCameras);
+      }
     });
   }
 }
