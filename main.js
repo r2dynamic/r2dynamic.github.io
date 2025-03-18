@@ -245,7 +245,12 @@ function resetFilters() {
   selectedRoute = "All";
   searchInput.value = "";
   updateCityDropdown();
-  filterImages();
+  // For reset, if location permission is allowed, revert to the location-based view.
+  if (localStorage.getItem('locationAllowed') === 'true') {
+    autoSortByLocation();
+  } else {
+    filterImages();
+  }
   updateSelectedFilters();
 }
 
@@ -493,6 +498,7 @@ function autoSortByLocation() {
 }
 
 // --- Refresh Button Feature ---
+// Simply refreshes the current grid view.
 function setupRefreshButton() {
   if (refreshButton) {
     refreshButton.addEventListener("click", () => {
