@@ -3,7 +3,7 @@ const OFFLINE_URL = 'offline.html';
 const FILES_TO_CACHE = [
   '/',
   '/index.html',
-  '/style.css',
+  '/stylev1.css',
   '/main.js',
   '/cameras.json',
   '/manifest.json',
