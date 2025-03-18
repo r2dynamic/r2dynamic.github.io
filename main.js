@@ -438,6 +438,8 @@ function setupNearestCameraButton() {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
+            // Store flag when location is successfully retrieved.
+            localStorage.setItem('locationAllowed', 'true');
             const userLat = position.coords.latitude;
             const userLng = position.coords.longitude;
             const camerasWithDistance = camerasList.map(camera => ({
@@ -468,6 +470,8 @@ function autoSortByLocation() {
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
+        // Store flag when location is successfully retrieved.
+        localStorage.setItem('locationAllowed', 'true');
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
         const camerasWithDistance = camerasList.map(camera => ({
@@ -572,7 +576,19 @@ document.addEventListener('DOMContentLoaded', () => {
   initialize();
   setupNearestCameraButton();
   setupRefreshButton();
-  // Trigger fade-out 2500ms into the 3.5s video.
+
+  // Check the stored flag for location permission (for iOS) or use Permissions API.
+  if (localStorage.getItem('locationAllowed') === 'true') {
+    autoSortByLocation();
+  } else if (navigator.permissions) {
+    navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+      if (result.state === 'granted') {
+        autoSortByLocation();
+      }
+    });
+  }
+
+  // Trigger fade-out 2500ms into the video.
   const splash = document.getElementById('splashScreen');
   if (splash) {
     const videos = splash.querySelectorAll('video');
