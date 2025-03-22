@@ -501,12 +501,13 @@ function autoSortByLocation() {
 function setupRefreshButton() {
   if (refreshButton) {
     refreshButton.addEventListener("click", () => {
+      // Simply update the src attribute for each image in the current gallery
       const images = galleryContainer.querySelectorAll("img");
       images.forEach(img => {
-        // Use a data attribute to store the original URL if not already set
+        // Save the original URL if not already saved
         const originalUrl = img.getAttribute("data-original-src") || img.src;
         img.setAttribute("data-original-src", originalUrl);
-        // Append a timestamp query parameter to force a refresh
+        // Append a timestamp query parameter to force the browser to re-fetch the image
         const separator = originalUrl.includes('?') ? '&' : '?';
         img.src = originalUrl + separator + "refresh=" + Date.now();
       });
