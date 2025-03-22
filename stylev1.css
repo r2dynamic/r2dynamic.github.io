@@ -421,3 +421,14 @@ body {
   margin-left: auto;
   margin-right: auto;
 }
+
+.modal-title {
+  font-weight: bold !important;
+  color: white;
+}
+
+#mobileAppText,
+#updateInfoText,
+#aboutAppText {
+  color: white;
+}
