@@ -1,5 +1,5 @@
 // main.js
-// Main module that imports data fetching functions, constants, and handles UI and events
+// Main module thats imports data fetching functions, constants, and handles UI and events
 
 import { getCamerasList, getCuratedRoutes } from './cameraData.js';
 import { cityFullNames, regionCities } from './cityList.js';
