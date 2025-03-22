@@ -245,7 +245,12 @@ function resetFilters() {
   selectedRoute = "All";
   searchInput.value = "";
   updateCityDropdown();
-  filterImages();
+  // If location permission is allowed, revert to the location-based view.
+  if (localStorage.getItem('locationAllowed') === 'true') {
+    autoSortByLocation();
+  } else {
+    filterImages();
+  }
   updateSelectedFilters();
 }
 
@@ -495,11 +500,39 @@ function autoSortByLocation() {
 // --- Refresh Button Feature ---
 function setupRefreshButton() {
   if (refreshButton) {
-    refreshButton.addEventListener("click", () => {
-      renderGallery(visibleCameras);
+    refreshButton.addEventListener("click", (event) => {
+      event.preventDefault(); // Prevent any default behavior
+      // Loop through all currently displayed images and refresh their src attribute
+      const images = galleryContainer.querySelectorAll("img");
+      images.forEach(img => {
+        // Get or set the original URL to avoid stacking refresh parameters
+        let originalUrl = img.getAttribute("data-original-src");
+        if (!originalUrl) {
+          originalUrl = img.src;
+          img.setAttribute("data-original-src", originalUrl);
+        }
+        // Remove any existing refresh parameter to keep the URL clean
+        originalUrl = originalUrl.split("&refresh=")[0].split("?refresh=")[0];
+        // Append a timestamp as a query parameter to force a refresh
+        const separator = originalUrl.includes('?') ? '&' : '?';
+        img.src = originalUrl + separator + "refresh=" + Date.now();
+      });
     });
   }
 }
+
+// Link dropdown items to modals
+document.querySelectorAll('[data-modal]').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.preventDefault();
+    const modalId = item.getAttribute('data-modal');
+    const modal = new bootstrap.Modal(document.getElementById(modalId));
+    modal.show();
+  });
+});
+
+
+
 
 // --- Image Size Slider ---
 if (sizeControlButton && sizeSliderContainer) {
@@ -594,7 +627,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const videos = splash.querySelectorAll('video');
     videos.forEach(video => {
       video.addEventListener('playing', () => {
-        setTimeout(fadeOutSplash, 2500);
+        setTimeout(fadeOutSplash, 2200);
       });
     });
   }
