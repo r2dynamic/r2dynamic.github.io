@@ -500,20 +500,28 @@ function autoSortByLocation() {
 // --- Refresh Button Feature ---
 function setupRefreshButton() {
   if (refreshButton) {
-    refreshButton.addEventListener("click", () => {
-      // Simply update the src attribute for each image in the current gallery
+    refreshButton.addEventListener("click", (event) => {
+      event.preventDefault(); // Prevent any default behavior
+      // Loop through all currently displayed images and refresh their src attribute
       const images = galleryContainer.querySelectorAll("img");
       images.forEach(img => {
-        // Save the original URL if not already saved
-        const originalUrl = img.getAttribute("data-original-src") || img.src;
-        img.setAttribute("data-original-src", originalUrl);
-        // Append a timestamp query parameter to force the browser to re-fetch the image
+        // Get or set the original URL to avoid stacking refresh parameters
+        let originalUrl = img.getAttribute("data-original-src");
+        if (!originalUrl) {
+          originalUrl = img.src;
+          img.setAttribute("data-original-src", originalUrl);
+        }
+        // Remove any existing refresh parameter to keep the URL clean
+        originalUrl = originalUrl.split("&refresh=")[0].split("?refresh=")[0];
+        // Append a timestamp as a query parameter to force a refresh
         const separator = originalUrl.includes('?') ? '&' : '?';
         img.src = originalUrl + separator + "refresh=" + Date.now();
       });
     });
   }
 }
+
+
 
 
 
@@ -610,7 +618,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const videos = splash.querySelectorAll('video');
     videos.forEach(video => {
       video.addEventListener('playing', () => {
-        setTimeout(fadeOutSplash, 2500);
+        setTimeout(fadeOutSplash, 2200);
       });
     });
   }
