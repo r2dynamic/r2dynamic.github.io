@@ -521,6 +521,15 @@ function setupRefreshButton() {
   }
 }
 
+// Link dropdown items to modals
+document.querySelectorAll('[data-modal]').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.preventDefault();
+    const modalId = item.getAttribute('data-modal');
+    const modal = new bootstrap.Modal(document.getElementById(modalId));
+    modal.show();
+  });
+});
 
 
 
