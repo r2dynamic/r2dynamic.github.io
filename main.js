@@ -343,13 +343,14 @@ function updateRouteOptions() {
   });
   defaultLi.appendChild(defaultA);
   routeFilterMenu.appendChild(defaultLi);
+
   curatedRoutes.forEach(route => {
     const li = document.createElement("li");
     const a = document.createElement("a");
     a.classList.add("dropdown-item");
     a.href = "#";
     a.setAttribute("data-value", route.name);
-    a.textContent = route.name;
+    a.textContent = route.displayName || route.name;
     a.addEventListener("click", (e) => {
       e.preventDefault();
       selectedRoute = route.name;
@@ -411,25 +412,35 @@ function filterImages() {
     const matchesCity = !selectedCity || city === selectedCity;
     const matchesRegion = !selectedRegion || (regionCities[selectedRegion] && regionCities[selectedRegion].includes(city));
     const matchesSearch = camera.Location.toLowerCase().includes(searchQuery.toLowerCase());
+
     let routeMatches = true;
     if (selectedRoute !== "All") {
       const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
       if (routeObj) {
-        routeMatches = routeObj.locations.includes(camera.Location);
+        const routeRegex = new RegExp(`\\b${selectedRoute.replace(" ", "[\\s-]+")}\\b`, "i");
+        const location = camera.Location || "";
+        const beforeAt = (location.split("@")[0] || "").trim();
+        const hasRoute = routeRegex.test(beforeAt);
+        const mp = extractMilepost(location);
+        const inRange = (
+          (!routeObj.mpMin || (mp !== null && mp >= routeObj.mpMin)) &&
+          (!routeObj.mpMax || (mp !== null && mp <= routeObj.mpMax))
+        );
+        routeMatches = hasRoute && inRange;
       }
     }
+
     return matchesCity && matchesRegion && matchesSearch && routeMatches;
   });
+
   if (selectedRoute !== "All") {
-    const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
-    if (routeObj) {
-      visibleCameras.sort((a, b) => {
-        const indexA = routeObj.locations.indexOf(a.Location);
-        const indexB = routeObj.locations.indexOf(b.Location);
-        return indexA - indexB;
-      });
-    }
+    visibleCameras.sort((a, b) => {
+      const aMP = extractMilepost(a.Location);
+      const bMP = extractMilepost(b.Location);
+      return (aMP ?? Infinity) - (bMP ?? Infinity);
+    });
   }
+
   updateCameraCount();
   renderGallery(visibleCameras);
   currentIndex = 0;
@@ -639,3 +650,9 @@ document.addEventListener('DOMContentLoaded', () => {
     }
   }, 5000);
 });
+
+
+function extractMilepost(locationStr) {
+  const match = locationStr.match(/(?:MP|Milepost)\s*([\d.]+)/i);
+  return match ? parseFloat(match[1]) : null;
+}
