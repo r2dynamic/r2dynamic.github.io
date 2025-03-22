@@ -501,14 +501,24 @@ function autoSortByLocation() {
 function setupRefreshButton() {
   if (refreshButton) {
     refreshButton.addEventListener("click", () => {
-      if (localStorage.getItem('locationAllowed') === 'true') {
-        autoSortByLocation();
-      } else {
-        renderGallery(visibleCameras);
-      }
+      const images = galleryContainer.querySelectorAll("img");
+      images.forEach(img => {
+        // Store the original URL if not already stored
+        const originalUrl = img.getAttribute("data-original-src") || img.src;
+        img.setAttribute("data-original-src", originalUrl);
+        // Append a query parameter to force a refresh
+        let newUrl;
+        if (originalUrl.includes('?')) {
+          newUrl = originalUrl + "&refresh=" + Date.now();
+        } else {
+          newUrl = originalUrl + "?refresh=" + Date.now();
+        }
+        img.src = newUrl;
+      });
     });
   }
 }
+
 
 // --- Image Size Slider ---
 if (sizeControlButton && sizeSliderContainer) {
