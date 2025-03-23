@@ -159,8 +159,8 @@ function isCameraOnRoute(camera, routeObj) {
   if (!routeObj || !routeObj.name) return false;
 
   const location = camera.Location || "";
-  const pattern = routeObj.name.replace(/[-\s]/g, "[-\\s]*"); // allow flexible match
-  const regex = new RegExp(`${pattern}`, "i"); // remove word boundaries for broader match
+  const pattern = routeObj.name.replace(/[-\s]/g, "[-\\s]*"); // match with flexible space/hyphen
+  const regex = new RegExp(`${pattern}`, "i");
 
   if (!regex.test(location)) return false;
 
@@ -173,6 +173,93 @@ function isCameraOnRoute(camera, routeObj) {
   }
 
   return true;
+}
+
+
+
+function updateCityAndRegionDropdowns() {
+  let routeObj = selectedRoute !== "All"
+    ? curatedRoutes.find(route => route.displayName === selectedRoute)
+    : null;
+
+  let filteredCameras = routeObj
+    ? camerasList.filter(cam => isCameraOnRoute(cam, routeObj))
+    : camerasList;
+
+  const citySet = new Set();
+  filteredCameras.forEach(cam => {
+    const location = cam.Location || "";
+    const city = location.split(",").pop().trim();
+    if (city) citySet.add(city);
+  });
+
+  cityFilterMenu.innerHTML = "";
+  const allCityOption = document.createElement("li");
+  const allCityLink = document.createElement("a");
+  allCityLink.classList.add("dropdown-item");
+  allCityLink.href = "#";
+  allCityLink.setAttribute("data-value", "");
+  allCityLink.textContent = "All Cities";
+  allCityLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    selectedCity = "";
+    filterImages();
+  });
+  allCityOption.appendChild(allCityLink);
+  cityFilterMenu.appendChild(allCityOption);
+
+  Array.from(citySet).sort().forEach(city => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.classList.add("dropdown-item");
+    a.href = "#";
+    a.setAttribute("data-value", city);
+    a.textContent = cityFullNames[city] || city;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      selectedCity = city;
+      filterImages();
+    });
+    li.appendChild(a);
+    cityFilterMenu.appendChild(li);
+  });
+
+  const regionSet = new Set();
+  Object.entries(regionCities).forEach(([regionName, cityCodes]) => {
+    const hasCity = cityCodes.some(code => citySet.has(code));
+    if (hasCity) regionSet.add(regionName);
+  });
+
+  regionFilterMenu.innerHTML = "";
+  const allRegionOption = document.createElement("li");
+  const allRegionLink = document.createElement("a");
+  allRegionLink.classList.add("dropdown-item");
+  allRegionLink.href = "#";
+  allRegionLink.setAttribute("data-value", "");
+  allRegionLink.textContent = "All Regions";
+  allRegionLink.addEventListener("click", (e) => {
+    e.preventDefault();
+    selectedRegion = "";
+    filterImages();
+  });
+  allRegionOption.appendChild(allRegionLink);
+  regionFilterMenu.appendChild(allRegionOption);
+
+  Array.from(regionSet).sort().forEach(region => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.classList.add("dropdown-item");
+    a.href = "#";
+    a.setAttribute("data-value", region);
+    a.textContent = region;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      selectedRegion = region;
+      filterImages();
+    });
+    li.appendChild(a);
+    regionFilterMenu.appendChild(li);
+  });
 }
 
 
@@ -350,6 +437,7 @@ function populateRegionDropdown() {
   });
 }
 
+
 function updateRouteOptions() {
   routeFilterMenu.innerHTML = "";
   const defaultLi = document.createElement("li");
@@ -361,11 +449,12 @@ function updateRouteOptions() {
   defaultA.addEventListener("click", (e) => {
     e.preventDefault();
     selectedRoute = "All";
+    updateCityAndRegionDropdowns();
     filterImages();
   });
   defaultLi.appendChild(defaultA);
   routeFilterMenu.appendChild(defaultLi);
-  
+
   curatedRoutes.forEach(route => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -376,6 +465,7 @@ function updateRouteOptions() {
     a.addEventListener("click", (e) => {
       e.preventDefault();
       selectedRoute = route.displayName;
+      updateCityAndRegionDropdowns();
       filterImages();
     });
     li.appendChild(a);
@@ -429,6 +519,7 @@ function showImage(index) {
 }
 
 // --- Filtering ---
+
 function filterImages() {
   const routeObj = selectedRoute !== "All"
     ? curatedRoutes.find(route => route.displayName === selectedRoute)
@@ -437,12 +528,10 @@ function filterImages() {
   visibleCameras = camerasList.filter(camera => {
     const location = camera.Location || "";
     const city = location.split(",").pop().trim();
-
     const matchesCity = !selectedCity || city === selectedCity;
     const matchesRegion = !selectedRegion || (regionCities[selectedRegion] && regionCities[selectedRegion].includes(city));
     const matchesSearch = searchQuery.trim().length === 0 || location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRoute = !routeObj || isCameraOnRoute(camera, routeObj);
-
     return matchesCity && matchesRegion && matchesSearch && matchesRoute;
   });
 
@@ -655,7 +744,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const videos = splash.querySelectorAll('video');
     videos.forEach(video => {
       video.addEventListener('playing', () => {
-        setTimeout(fadeOutSplash, 2350);
+        setTimeout(fadeOutSplash, 2300);
       });
     });
   }
