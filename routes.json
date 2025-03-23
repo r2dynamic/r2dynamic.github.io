@@ -39,12 +39,18 @@
   },
   {
     "name": "I-15",
-    "displayName": "SF to AF",
-    "mpMin": 258,
+    "displayName": "I-15 (SF to AF)",
+    "mpMin": 257,
     "mpMax": 277
+  },
+    {
+    "name": "I-15",
+    "displayName": "I-15 (AF to Lehi)",
+    "mpMin": 277,
+    "mpMax": 284
   },
   {
     "name": "I-15",
-    "displayName": "I-15 Corridor"
+    "displayName": "I-15 (Statewide)"
   }
 ]
