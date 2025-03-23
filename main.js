@@ -159,107 +159,23 @@ function isCameraOnRoute(camera, routeObj) {
   if (!routeObj || !routeObj.name) return false;
 
   const location = camera.Location || "";
-  const pattern = routeObj.name.replace(/[-\s]/g, "[-\\s]*"); // match with flexible space/hyphen
+  const parts = location.split("@");
+  const routeSegment = parts.length > 1 ? parts[0].trim() : location;
+
+  const pattern = routeObj.name.replace(/[-\s]/g, "[-\\s]*");
   const regex = new RegExp(`${pattern}`, "i");
 
-  if (!regex.test(location)) return false;
+  if (!regex.test(routeSegment)) return false;
 
   const mpMatch = location.match(/(?:MP|Milepost)\s*([\d.]+)/i);
-  const milepost = mpMatch ? parseFloat(mpMatch[1]) : null;
+  if (!mpMatch) return false;
 
-  if (milepost !== null) {
-    if (routeObj.mpMin !== undefined && milepost < routeObj.mpMin) return false;
-    if (routeObj.mpMax !== undefined && milepost > routeObj.mpMax) return false;
-  }
+  const milepost = parseFloat(mpMatch[1]);
+
+  if (routeObj.mpMin !== undefined && milepost < routeObj.mpMin) return false;
+  if (routeObj.mpMax !== undefined && milepost > routeObj.mpMax) return false;
 
   return true;
-}
-
-
-
-function updateCityAndRegionDropdowns() {
-  let routeObj = selectedRoute !== "All"
-    ? curatedRoutes.find(route => route.displayName === selectedRoute)
-    : null;
-
-  let filteredCameras = routeObj
-    ? camerasList.filter(cam => isCameraOnRoute(cam, routeObj))
-    : camerasList;
-
-  const citySet = new Set();
-  filteredCameras.forEach(cam => {
-    const location = cam.Location || "";
-    const city = location.split(",").pop().trim();
-    if (city) citySet.add(city);
-  });
-
-  cityFilterMenu.innerHTML = "";
-  const allCityOption = document.createElement("li");
-  const allCityLink = document.createElement("a");
-  allCityLink.classList.add("dropdown-item");
-  allCityLink.href = "#";
-  allCityLink.setAttribute("data-value", "");
-  allCityLink.textContent = "All Cities";
-  allCityLink.addEventListener("click", (e) => {
-    e.preventDefault();
-    selectedCity = "";
-    filterImages();
-  });
-  allCityOption.appendChild(allCityLink);
-  cityFilterMenu.appendChild(allCityOption);
-
-  Array.from(citySet).sort().forEach(city => {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.classList.add("dropdown-item");
-    a.href = "#";
-    a.setAttribute("data-value", city);
-    a.textContent = cityFullNames[city] || city;
-    a.addEventListener("click", (e) => {
-      e.preventDefault();
-      selectedCity = city;
-      filterImages();
-    });
-    li.appendChild(a);
-    cityFilterMenu.appendChild(li);
-  });
-
-  const regionSet = new Set();
-  Object.entries(regionCities).forEach(([regionName, cityCodes]) => {
-    const hasCity = cityCodes.some(code => citySet.has(code));
-    if (hasCity) regionSet.add(regionName);
-  });
-
-  regionFilterMenu.innerHTML = "";
-  const allRegionOption = document.createElement("li");
-  const allRegionLink = document.createElement("a");
-  allRegionLink.classList.add("dropdown-item");
-  allRegionLink.href = "#";
-  allRegionLink.setAttribute("data-value", "");
-  allRegionLink.textContent = "All Regions";
-  allRegionLink.addEventListener("click", (e) => {
-    e.preventDefault();
-    selectedRegion = "";
-    filterImages();
-  });
-  allRegionOption.appendChild(allRegionLink);
-  regionFilterMenu.appendChild(allRegionOption);
-
-  Array.from(regionSet).sort().forEach(region => {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.classList.add("dropdown-item");
-    a.href = "#";
-    a.setAttribute("data-value", region);
-    a.textContent = region;
-    a.addEventListener("click", (e) => {
-      e.preventDefault();
-      selectedRegion = region;
-      filterImages();
-    });
-    li.appendChild(a);
-    regionFilterMenu.appendChild(li);
-  });
 }
 
 
@@ -275,7 +191,40 @@ function computeDistance(lat1, lon1, lat2, lon2) {
 }
 
 // --- Selected Filters Display & Reset ---
+
 function updateSelectedFilters() {
+  const filtersContainer = document.getElementById("selectedFilters");
+  filtersContainer.innerHTML = "";
+
+  if (selectedRegion) {
+    const span = document.createElement("span");
+    span.className = "badge bg-secondary me-2";
+    span.textContent = `Region: ${selectedRegion}`;
+    filtersContainer.appendChild(span);
+  }
+
+  if (selectedCity) {
+    const span = document.createElement("span");
+    span.className = "badge bg-secondary me-2";
+    span.textContent = `City: ${selectedCity}`;
+    filtersContainer.appendChild(span);
+  }
+
+  if (selectedRoute !== "All") {
+    const span = document.createElement("span");
+    span.className = "badge bg-secondary me-2";
+    span.textContent = `Route: ${selectedRoute}`;
+    filtersContainer.appendChild(span);
+  }
+
+  if (searchQuery) {
+    const span = document.createElement("span");
+    span.className = "badge bg-secondary me-2";
+    span.textContent = `Search: ${searchQuery}`;
+    filtersContainer.appendChild(span);
+  }
+}
+ {
   const filtersEl = document.getElementById("selectedFilters");
   filtersEl.innerHTML = "";
   let hasFilters = false;
@@ -449,12 +398,11 @@ function updateRouteOptions() {
   defaultA.addEventListener("click", (e) => {
     e.preventDefault();
     selectedRoute = "All";
-    updateCityAndRegionDropdowns();
     filterImages();
   });
   defaultLi.appendChild(defaultA);
   routeFilterMenu.appendChild(defaultLi);
-
+  
   curatedRoutes.forEach(route => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -465,14 +413,43 @@ function updateRouteOptions() {
     a.addEventListener("click", (e) => {
       e.preventDefault();
       selectedRoute = route.displayName;
-      updateCityAndRegionDropdowns();
       filterImages();
     });
     li.appendChild(a);
     routeFilterMenu.appendChild(li);
   });
 }
-
+ {
+  routeFilterMenu.innerHTML = "";
+  const defaultLi = document.createElement("li");
+  const defaultA = document.createElement("a");
+  defaultA.classList.add("dropdown-item");
+  defaultA.href = "#";
+  defaultA.setAttribute("data-value", "All");
+  defaultA.textContent = "All Routes";
+  defaultA.addEventListener("click", (e) => {
+    e.preventDefault();
+    selectedRoute = "All";
+    filterImages();
+  });
+  defaultLi.appendChild(defaultA);
+  routeFilterMenu.appendChild(defaultLi);
+  curatedRoutes.forEach(route => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.classList.add("dropdown-item");
+    a.href = "#";
+    a.setAttribute("data-value", route.name);
+    a.textContent = route.name;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      selectedRoute = route.name;
+      filterImages();
+    });
+    li.appendChild(a);
+    routeFilterMenu.appendChild(li);
+  });
+}
 
 function renderGallery(cameras) {
   galleryContainer.innerHTML = "";
@@ -528,10 +505,12 @@ function filterImages() {
   visibleCameras = camerasList.filter(camera => {
     const location = camera.Location || "";
     const city = location.split(",").pop().trim();
+
     const matchesCity = !selectedCity || city === selectedCity;
     const matchesRegion = !selectedRegion || (regionCities[selectedRegion] && regionCities[selectedRegion].includes(city));
     const matchesSearch = searchQuery.trim().length === 0 || location.toLowerCase().includes(searchQuery.toLowerCase());
     const matchesRoute = !routeObj || isCameraOnRoute(camera, routeObj);
+
     return matchesCity && matchesRegion && matchesSearch && matchesRoute;
   });
 
@@ -550,8 +529,36 @@ function filterImages() {
   currentIndex = 0;
   updateSelectedFilters();
 }
-
-
+ {
+  visibleCameras = camerasList.filter(camera => {
+    const city = camera.Location.split(",").pop().trim();
+    const matchesCity = !selectedCity || city === selectedCity;
+    const matchesRegion = !selectedRegion || (regionCities[selectedRegion] && regionCities[selectedRegion].includes(city));
+    const matchesSearch = camera.Location.toLowerCase().includes(searchQuery.toLowerCase());
+    let routeMatches = true;
+    if (selectedRoute !== "All") {
+      const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
+      if (routeObj) {
+        routeMatches = routeObj.locations.includes(camera.Location);
+      }
+    }
+    return matchesCity && matchesRegion && matchesSearch && routeMatches;
+  });
+  if (selectedRoute !== "All") {
+    const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
+    if (routeObj) {
+      visibleCameras.sort((a, b) => {
+        const indexA = routeObj.locations.indexOf(a.Location);
+        const indexB = routeObj.locations.indexOf(b.Location);
+        return indexA - indexB;
+      });
+    }
+  }
+  updateCameraCount();
+  renderGallery(visibleCameras);
+  currentIndex = 0;
+  updateSelectedFilters();
+}
 
 // --- Nearest Cameras Feature (all cameras sorted by distance) ---
 function setupNearestCameraButton() {
