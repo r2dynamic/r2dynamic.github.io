@@ -154,6 +154,28 @@ function debounce(func, delay) {
 function toRadians(deg) {
   return deg * Math.PI / 180;
 }
+
+function isCameraOnRoute(camera, routeObj) {
+  if (!routeObj || !routeObj.name) return false;
+
+  const location = camera.Location || "";
+  const pattern = routeObj.name.replace(/[-\s]/g, "[-\\s]*"); // allow flexible match
+  const regex = new RegExp(`${pattern}`, "i"); // remove word boundaries for broader match
+
+  if (!regex.test(location)) return false;
+
+  const mpMatch = location.match(/(?:MP|Milepost)\s*([\d.]+)/i);
+  const milepost = mpMatch ? parseFloat(mpMatch[1]) : null;
+
+  if (milepost !== null) {
+    if (routeObj.mpMin !== undefined && milepost < routeObj.mpMin) return false;
+    if (routeObj.mpMax !== undefined && milepost > routeObj.mpMax) return false;
+  }
+
+  return true;
+}
+
+
 function computeDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = toRadians(lat2 - lat1);
@@ -343,23 +365,24 @@ function updateRouteOptions() {
   });
   defaultLi.appendChild(defaultA);
   routeFilterMenu.appendChild(defaultLi);
-
+  
   curatedRoutes.forEach(route => {
     const li = document.createElement("li");
     const a = document.createElement("a");
     a.classList.add("dropdown-item");
     a.href = "#";
-    a.setAttribute("data-value", route.name);
-    a.textContent = route.displayName || route.name;
+    a.setAttribute("data-value", route.displayName);
+    a.textContent = route.displayName;
     a.addEventListener("click", (e) => {
       e.preventDefault();
-      selectedRoute = route.name;
+      selectedRoute = route.displayName;
       filterImages();
     });
     li.appendChild(a);
     routeFilterMenu.appendChild(li);
   });
 }
+
 
 function renderGallery(cameras) {
   galleryContainer.innerHTML = "";
@@ -407,37 +430,29 @@ function showImage(index) {
 
 // --- Filtering ---
 function filterImages() {
+  const routeObj = selectedRoute !== "All"
+    ? curatedRoutes.find(route => route.displayName === selectedRoute)
+    : null;
+
   visibleCameras = camerasList.filter(camera => {
-    const city = camera.Location.split(",").pop().trim();
+    const location = camera.Location || "";
+    const city = location.split(",").pop().trim();
+
     const matchesCity = !selectedCity || city === selectedCity;
     const matchesRegion = !selectedRegion || (regionCities[selectedRegion] && regionCities[selectedRegion].includes(city));
-    const matchesSearch = camera.Location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesSearch = searchQuery.trim().length === 0 || location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRoute = !routeObj || isCameraOnRoute(camera, routeObj);
 
-    let routeMatches = true;
-    if (selectedRoute !== "All") {
-      const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
-      if (routeObj) {
-        const routeRegex = new RegExp(`\\b${selectedRoute.replace(" ", "[\\s-]+")}\\b`, "i");
-        const location = camera.Location || "";
-        const beforeAt = (location.split("@")[0] || "").trim();
-        const hasRoute = routeRegex.test(beforeAt);
-        const mp = extractMilepost(location);
-        const inRange = (
-          (!routeObj.mpMin || (mp !== null && mp >= routeObj.mpMin)) &&
-          (!routeObj.mpMax || (mp !== null && mp <= routeObj.mpMax))
-        );
-        routeMatches = hasRoute && inRange;
-      }
-    }
-
-    return matchesCity && matchesRegion && matchesSearch && routeMatches;
+    return matchesCity && matchesRegion && matchesSearch && matchesRoute;
   });
 
-  if (selectedRoute !== "All") {
+  if (routeObj) {
     visibleCameras.sort((a, b) => {
-      const aMP = extractMilepost(a.Location);
-      const bMP = extractMilepost(b.Location);
-      return (aMP ?? Infinity) - (bMP ?? Infinity);
+      const extractMP = str => {
+        const match = str.match(/(?:MP|Milepost)\s*([\d.]+)/i);
+        return match ? parseFloat(match[1]) : Infinity;
+      };
+      return extractMP(a.Location) - extractMP(b.Location);
     });
   }
 
@@ -446,6 +461,8 @@ function filterImages() {
   currentIndex = 0;
   updateSelectedFilters();
 }
+
+
 
 // --- Nearest Cameras Feature (all cameras sorted by distance) ---
 function setupNearestCameraButton() {
@@ -638,7 +655,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const videos = splash.querySelectorAll('video');
     videos.forEach(video => {
       video.addEventListener('playing', () => {
-        setTimeout(fadeOutSplash, 2200);
+        setTimeout(fadeOutSplash, 2350);
       });
     });
   }
@@ -648,11 +665,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (splash && splash.style.display !== 'none') {
       fadeOutSplash();
     }
-  }, 5000);
+  }, 4500);
 });
-
-
-function extractMilepost(locationStr) {
-  const match = locationStr.match(/(?:MP|Milepost)\s*([\d.]+)/i);
-  return match ? parseFloat(match[1]) : null;
-}
