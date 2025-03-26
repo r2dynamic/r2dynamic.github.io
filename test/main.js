@@ -8,6 +8,28 @@ import { cityFullNames, regionCities } from './cityList.js';
 const DEBOUNCE_DELAY = 300;
 const MIN_IMAGE_SIZE = 80; // Enforced minimum grid image size
 
+
+function updateModalMapDropdown(lat, lon) {
+  const mapDropdown = document.getElementById("mapDropdownWrapper");
+  if (!mapDropdown) return;
+
+  const googleMapsUrl = `https://www.google.com/maps?q=${lat},${lon}`;
+  const fiberMapUrl = `https://www.arcgis.com/home/webmap/viewer.html?url=https://maps.udot.utah.gov/central/rest/services/TOC/TMD_Device_Locations/FeatureServer&mapOnly=true&find=${lat},${lon}`;
+
+  mapDropdown.innerHTML = `
+    <div class="dropdown">
+      <button class="btn btn-outline-secondary dropdown-toggle" type="button" id="modalMapDropdownBtn" data-bs-toggle="dropdown" aria-expanded="false">
+        Map
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="modalMapDropdownBtn">
+        <li><a class="dropdown-item" href="${googleMapsUrl}" target="_blank">Google Maps</a></li>
+        <li><a class="dropdown-item" href="${fiberMapUrl}" target="_blank">Fiber Map</a></li>
+      </ul>
+    </div>
+  `;
+}
+
+
 // --- Global Variables ---
 let camerasList = [];
 let curatedRoutes = [];
@@ -491,6 +513,7 @@ function showImage(index) {
   // Store location data for the map toggle.
   modalImage.dataset.latitude = camera.Latitude;
   modalImage.dataset.longitude = camera.Longitude;
+  updateModalMapDropdown(camera.Latitude, camera.Longitude);
   const selectedBox = galleryContainer.children[index].querySelector(".aspect-ratio-box");
   if (selectedBox) selectedBox.classList.add("selected");
 }
