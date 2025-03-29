@@ -1,3 +1,765 @@
-import{getCamerasList as _0x1,getCuratedRoutes as _0x2}from"./cameraData.js";import{cityFullNames as _0x3,regionCities as _0x4}from"./cityList.js";const _0xa=300,_0xb=80;let _0xc=[],_0xd=[],_0xe=[],_0xf=0,_0x10, _0x11="", _0x12="", _0x13="", _0x14="All";function _0x15(){_0x1().then(_0x16=>{_0xc=_0x16;_0xe=_0xc.slice();_0x17(_0xe);_0x18();_0x19();_0x1A();}).catch(_0x1B=>console.error("Error loading cameras:",_0x1B)),_0x2().then(_0x1C=>{_0xd=_0x1C;_0x1D();}).catch(_0x1E=>console.error("Error loading curated routes:",_0x1E));}function _0x15F(){const _0x20=document.querySelector(".header-controls"),_0x21=document.getElementById("imageGallery");_0x20&&( _0x20.classList.remove("hidden-on-load"),_0x20.classList.add("fade-in")),_0x21&&( _0x21.classList.remove("hidden-on-load"),_0x21.classList.add("fade-in"));}function _0x22(){const _0x23=document.getElementById("splashScreen");if(_0x23){_0x15F();_0x23.classList.add("fade-out"),_0x23.addEventListener("animationend",()=>{_0x23.style.display="none";});}}const _0x24=document.getElementById("imageGallery"),_0x25=document.getElementById("imageModal"),_0x26=_0x25.querySelector("img"),_0x27=document.querySelector(".modal-title"),_0x28=document.getElementById("cameraCount"),_0x29=document.getElementById("searchInput"),_0x2A=document.getElementById("cityFilterMenu"),_0x2B=document.getElementById("regionFilterMenu"),_0x2C=document.getElementById("routeFilterMenu"),_0x2D=document.getElementById("nearestButton"),_0x2E=document.getElementById("refreshButton"),_0x2F=document.getElementById("sizeSlider"),_0x30=document.getElementById("sizeControlButton"),_0x31=document.getElementById("sizeSliderContainer");const _0x32=document.getElementById("mapButton"),_0x33=document.getElementById("modalBody"),_0x34=document.getElementById("modalImageContainer");let _0x35=!1;if(_0x32){_0x32.addEventListener("click",()=>{if(!_0x35){const _0x36=_0x26.dataset.latitude,_0x37=_0x26.dataset.longitude; if(!_0x36||!_0x37){alert("No location data available for this camera.");return;}const _0x38=document.createElement("div");_0x38.id="modalMapContainer",_0x38.style.flex="1";const _0x39=document.createElement("iframe");_0x39.width="100%",_0x39.height="100%",_0x39.frameBorder="0",_0x39.style.border="0",_0x39.src=`https://maps.google.com/maps?q=${_0x36},${_0x37}&z=15&t=k&output=embed`,_0x38.appendChild(_0x39),_0x33.appendChild(_0x38),_0x34.style.flex="1",_0x33.style.display="flex",_0x32.textContent="Hide Map",_0x35=!0}else{const _0x3A=document.getElementById("modalMapContainer");_0x3A&&_0x33.removeChild(_0x3A),_0x34.style.flex="1",_0x32.textContent="Map",_0x35=!1}}));}if(_0x25){_0x25.addEventListener("hidden.bs.modal",()=>{const _0x3B=document.getElementById("modalMapContainer");_0x3B&&_0x33.removeChild(_0x3B),_0x34.style.flex="1",_0x32.textContent="Map",_0x35=!1});}function _0x3C(_0x3D,_0x3E){return function(..._0x3F){clearTimeout(_0x10),_0x10=setTimeout(()=>_0x3D.apply(this,_0x3F),_0xa);};}function _0x40(_0x41){return _0x41*Math.PI/180;}function _0x42(_0x43,_0x44){if(!(_0x43&&_0x44))return!1;const _0x45=_0x43.Location||"",_0x46=_0x45.split("@"),_0x47=_0x46.length>1?_0x46[0].trim():_0x45,_0x48=_0x43.Views[0].Url||"",_0x49=new RegExp(_0x48.replace(/[-\s]/g,"[-\\s]*"),"i");if(!_0x49.test(_0x47))return!1;const _0x4A=_0x45.match(/(?:MP|Milepost)\s*([\d.]+)/i);if(!_0x4A)return!1;const _0x4B=parseFloat(_0x4A[1]);return _0x43.mpMin!==undefined&&_0x4B<_0x43.mpMin? !1: _0x43.mpMax!==undefined&&_0x4B>_0x43.mpMax? !1: !0;}function _0x4C(_0x4D,_0x4E,_0x4F,_0x50){const _0x51=6371,_0x52=_0x40(_0x4F-_0x4D),_0x53=_0x40(_0x50-_0x4E),_0x54=Math.sin(_0x52/2)**2+Math.cos(_0x40(_0x4D))*Math.cos(_0x40(_0x4F))*Math.sin(_0x53/2)**2,_0x55=2*Math.atan2(Math.sqrt(_0x54),Math.sqrt(1-_0x54));return _0x51*_0x55;}function _0x17(_0x56){_0x24.innerHTML="";_0x56.forEach((_0x57,_0x58)=>{const _0x59=document.createElement("div");_0x59.classList.add("col");const _0x5A=document.createElement("div");_0x5A.classList.add("aspect-ratio-box");const _0x5B=document.createElement("a");_0x5B.href="#",_0x5B.setAttribute("data-bs-toggle","modal"),_0x5B.setAttribute("data-bs-target","#imageModal"),_0x5B.addEventListener("click",e=>{e.preventDefault(),_0x4D(_0x58);});const _0x5C=document.createElement("img");_0x5C.setAttribute("loading","lazy"),_0x5C.src=_0x57.Views[0].Url,_0x5C.alt=`Camera at ${_0x57.Location}`,_0x5B.appendChild(_0x5C),_0x5A.appendChild(_0x5B),_0x59.appendChild(_0x5A),_0x24.appendChild(_0x59);});}function _0x18(){_0x28.innerHTML=`${_0xe.length}`;}function _0x4D(_0x5D){const _0x5E=document.querySelector(".aspect-ratio-box.selected");_0x5E&&_0x5E.classList.remove("selected"),_0xf=_0x5D;const _0x5F=_0xe[_0x5D];_0x26.src=_0x5F.Views[0].Url,_0x27.textContent=_0x5F.Location,_0x26.dataset.latitude=_0x5F.Latitude,_0x26.dataset.longitude=_0x5F.Longitude;const _0x60=_0x24.children[_0x5D].querySelector(".aspect-ratio-box");_0x60&&_0x60.classList.add("selected");}document.addEventListener("DOMContentLoaded",()=>{_0x15(),setupNearestCameraButton(),setupRefreshButton(),localStorage.getItem("locationAllowed")==="true"?autoSortByLocation():navigator.permissions&&navigator.permissions.query({name:"geolocation"}).then(_0x61=>{_0x61.state==="granted"&&autoSortByLocation();});const _0x62=document.getElementById("splashScreen");if(_0x62){const _0x63=_0x62.querySelectorAll("video");_0x63.forEach(_0x64=>{_0x64.addEventListener("playing",()=>{setTimeout(_0x22,2300);});});}setTimeout(()=>{_0x62&&_0x62.style.display!=="none"&&_0x22();},4500);}),_0x29&&_0x29.addEventListener("input",_0x3C(e=>{searchQuery=e.target.value,filterImages();}));
+// main.js
+// Main module thats imports data fetching functions, constants, and handles UI and events
 
-})();
+import { getCamerasList, getCuratedRoutes } from './cameraData.js';
+import { cityFullNames, regionCities } from './cityList.js';
+
+// --- Constants ---
+const DEBOUNCE_DELAY = 300;
+const MIN_IMAGE_SIZE = 80; // Enforced minimum grid image size
+
+// --- Global Variables ---
+let camerasList = [];
+let curatedRoutes = [];
+let visibleCameras = [];
+let currentIndex = 0;
+let debounceTimer;
+let selectedCity = "";
+let selectedRegion = "";
+let searchQuery = "";
+let selectedRoute = "All";
+
+// --- Initialize Function ---
+// Loads data immediately.
+function initialize() {
+  // Load cameras data
+  getCamerasList()
+    .then(data => {
+      camerasList = data;
+      visibleCameras = camerasList.slice();
+      renderGallery(visibleCameras);
+      updateCameraCount();
+      updateCityDropdown();
+      populateRegionDropdown();
+    })
+    .catch(err => console.error("Error loading cameras:", err));
+
+  // Load curated routes if needed.
+  getCuratedRoutes()
+    .then(routes => {
+      curatedRoutes = routes;
+      updateRouteOptions();
+    })
+    .catch(err => console.error("Error loading curated routes:", err));
+}
+
+// --- Function to Reveal Main Content ---
+function revealMainContent() {
+  const headerControls = document.querySelector('.header-controls');
+  const imageGallery = document.getElementById('imageGallery');
+  if (headerControls) {
+    headerControls.classList.remove('hidden-on-load');
+    headerControls.classList.add('fade-in');
+  }
+  if (imageGallery) {
+    imageGallery.classList.remove('hidden-on-load');
+    imageGallery.classList.add('fade-in');
+  }
+}
+
+// --- Splash Screen Fade-Out ---
+// Triggered to fade out the splash screen.
+function fadeOutSplash() {
+  const splash = document.getElementById('splashScreen');
+  if (splash) {
+    // Reveal main content immediately
+    revealMainContent();
+    splash.classList.add('fade-out'); // CSS animation will run
+    splash.addEventListener('animationend', () => {
+      splash.style.display = 'none';
+    });
+  }
+}
+
+// --- DOM Elements ---
+const galleryContainer = document.getElementById("imageGallery");
+const imageModalEl = document.getElementById("imageModal");
+const modalImage = imageModalEl.querySelector("img");
+const modalTitle = document.querySelector(".modal-title");
+const cameraCountElement = document.getElementById("cameraCount");
+const searchInput = document.getElementById("searchInput");
+const cityFilterMenu = document.getElementById("cityFilterMenu");
+const regionFilterMenu = document.getElementById("regionFilterMenu");
+const routeFilterMenu = document.getElementById("routeFilterMenu");
+const nearestButton = document.getElementById("nearestButton");
+const refreshButton = document.getElementById("refreshButton");
+const sizeSlider = document.getElementById("sizeSlider");
+const sizeControlButton = document.getElementById("sizeControlButton");
+const sizeSliderContainer = document.getElementById("sizeSliderContainer");
+
+// --- Modal Map Toggle Elements ---
+const mapButton = document.getElementById("mapButton");
+const modalBody = document.getElementById("modalBody");
+const modalImageContainer = document.getElementById("modalImageContainer");
+let mapDisplayed = false; // Tracks if the map is shown
+
+// Set up the map toggle in the modal.
+if (mapButton) {
+  mapButton.addEventListener("click", () => {
+    if (!mapDisplayed) {
+      const lat = modalImage.dataset.latitude;
+      const lon = modalImage.dataset.longitude;
+      if (!lat || !lon) {
+        alert("No location data available for this camera.");
+        return;
+      }
+      const mapContainer = document.createElement("div");
+      mapContainer.id = "modalMapContainer";
+      mapContainer.style.flex = "1"; // Equal flex value
+      const iframe = document.createElement("iframe");
+      iframe.width = "100%";
+      iframe.height = "100%";
+      iframe.frameBorder = "0";
+      iframe.style.border = "0";
+      // Use satellite view (&t=k)
+      iframe.src = `https://maps.google.com/maps?q=${lat},${lon}&z=15&t=k&output=embed`;
+      mapContainer.appendChild(iframe);
+      modalBody.appendChild(mapContainer);
+      modalImageContainer.style.flex = "1";
+      modalBody.style.display = "flex";
+      mapButton.textContent = "Hide Map";
+      mapDisplayed = true;
+    } else {
+      const mapContainer = document.getElementById("modalMapContainer");
+      if (mapContainer) {
+        modalBody.removeChild(mapContainer);
+      }
+      modalImageContainer.style.flex = "1";
+      mapButton.textContent = "Map";
+      mapDisplayed = false;
+    }
+  });
+}
+
+// Ensure the map closes when the modal is hidden.
+if (imageModalEl) {
+  imageModalEl.addEventListener("hidden.bs.modal", () => {
+    const mapContainer = document.getElementById("modalMapContainer");
+    if (mapContainer) {
+      modalBody.removeChild(mapContainer);
+    }
+    modalImageContainer.style.flex = "1";
+    mapButton.textContent = "Map";
+    mapDisplayed = false;
+  });
+}
+
+// --- Utility Functions ---
+function debounce(func, delay) {
+  return function (...args) {
+    clearTimeout(debounceTimer);
+    debounceTimer = setTimeout(() => func.apply(this, args), delay);
+  };
+}
+function toRadians(deg) {
+  return deg * Math.PI / 180;
+}
+
+function isCameraOnRoute(camera, routeObj) {
+  if (!routeObj || !routeObj.name) return false;
+
+  const location = camera.Location || "";
+  const parts = location.split("@");
+  const routeSegment = parts.length > 1 ? parts[0].trim() : location;
+
+  const pattern = routeObj.name.replace(/[-\s]/g, "[-\\s]*");
+  const regex = new RegExp(`${pattern}`, "i");
+
+  if (!regex.test(routeSegment)) return false;
+
+  const mpMatch = location.match(/(?:MP|Milepost)\s*([\d.]+)/i);
+  if (!mpMatch) return false;
+
+  const milepost = parseFloat(mpMatch[1]);
+
+  if (routeObj.mpMin !== undefined && milepost < routeObj.mpMin) return false;
+  if (routeObj.mpMax !== undefined && milepost > routeObj.mpMax) return false;
+
+  return true;
+}
+
+
+function computeDistance(lat1, lon1, lat2, lon2) {
+  const R = 6371;
+  const dLat = toRadians(lat2 - lat1);
+  const dLon = toRadians(lon2 - lon1);
+  const a = Math.sin(dLat / 2) ** 2 +
+            Math.cos(toRadians(lat1)) * Math.cos(toRadians(lat2)) *
+            Math.sin(dLon / 2) ** 2;
+  const c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1 - a));
+  return R * c;
+}
+
+// --- Selected Filters Display & Reset ---
+
+function updateSelectedFilters() {
+  const filtersContainer = document.getElementById("selectedFilters");
+  filtersContainer.innerHTML = "";
+
+  if (selectedRegion) {
+    const span = document.createElement("span");
+    span.className = "badge bg-secondary me-2";
+    span.textContent = `Region: ${selectedRegion}`;
+    filtersContainer.appendChild(span);
+  }
+
+  if (selectedCity) {
+    const span = document.createElement("span");
+    span.className = "badge bg-secondary me-2";
+    span.textContent = `City: ${selectedCity}`;
+    filtersContainer.appendChild(span);
+  }
+
+  if (selectedRoute !== "All") {
+    const span = document.createElement("span");
+    span.className = "badge bg-secondary me-2";
+    span.textContent = `Route: ${selectedRoute}`;
+    filtersContainer.appendChild(span);
+  }
+
+  if (searchQuery) {
+    const span = document.createElement("span");
+    span.className = "badge bg-secondary me-2";
+    span.textContent = `Search: ${searchQuery}`;
+    filtersContainer.appendChild(span);
+  }
+}
+ {
+  const filtersEl = document.getElementById("selectedFilters");
+  filtersEl.innerHTML = "";
+  let hasFilters = false;
+
+  if (selectedCity) {
+    const div = document.createElement("div");
+    div.classList.add("selected-filter-item");
+    const icon = document.createElement("i");
+    icon.className = "fas fa-map-marked-alt";
+    const span = document.createElement("span");
+    let cityText = "City/County: " + selectedCity;
+    if (cityFullNames[selectedCity]) {
+      cityText += " (" + cityFullNames[selectedCity] + ")";
+    }
+    span.textContent = cityText;
+    div.appendChild(icon);
+    div.appendChild(span);
+    filtersEl.appendChild(div);
+    hasFilters = true;
+  }
+
+  if (selectedRegion) {
+    const div = document.createElement("div");
+    div.classList.add("selected-filter-item");
+    const icon = document.createElement("i");
+    icon.className = "fas fa-industry";
+    const span = document.createElement("span");
+    span.textContent = "Region: " + selectedRegion;
+    div.appendChild(icon);
+    div.appendChild(span);
+    filtersEl.appendChild(div);
+    hasFilters = true;
+  }
+
+  if (selectedRoute && selectedRoute !== "All") {
+    const div = document.createElement("div");
+    div.classList.add("selected-filter-item");
+    const icon = document.createElement("i");
+    icon.className = "fas fa-road";
+    const span = document.createElement("span");
+    span.textContent = "Route: " + selectedRoute;
+    div.appendChild(icon);
+    div.appendChild(span);
+    filtersEl.appendChild(div);
+    hasFilters = true;
+  }
+
+  // Add search query as a filter if it's non-empty.
+  if (searchQuery && searchQuery.trim().length > 0) {
+    const div = document.createElement("div");
+    div.classList.add("selected-filter-item");
+    const icon = document.createElement("i");
+    icon.className = "fas fa-search";
+    const span = document.createElement("span");
+    span.textContent = "Name: " + searchQuery;
+    div.appendChild(icon);
+    div.appendChild(span);
+    filtersEl.appendChild(div);
+    hasFilters = true;
+  }
+
+  if (hasFilters) {
+    const resetButton = document.createElement("button");
+    resetButton.innerHTML = '<i class="fas fa-undo"></i>';
+    resetButton.classList.add("reset-button");
+    resetButton.addEventListener("click", resetFilters);
+    filtersEl.appendChild(resetButton);
+  }
+  filtersEl.style.display = hasFilters ? "block" : "none";
+}
+
+function resetFilters() {
+  selectedCity = "";
+  selectedRegion = "";
+  searchQuery = "";
+  selectedRoute = "All";
+  searchInput.value = "";
+  updateCityDropdown();
+  // If location permission is allowed, revert to the location-based view.
+  if (localStorage.getItem('locationAllowed') === 'true') {
+    autoSortByLocation();
+  } else {
+    filterImages();
+  }
+  updateSelectedFilters();
+}
+
+// --- Dropdown & Gallery Setup ---
+function updateCityDropdown() {
+  const cities = camerasList.map(camera => camera.Location.split(",").pop().trim());
+  const uniqueCities = [...new Set(cities.filter(city => city.length <= 4))];
+  cityFilterMenu.innerHTML = "";
+  const defaultLi = document.createElement("li");
+  const defaultA = document.createElement("a");
+  defaultA.classList.add("dropdown-item");
+  defaultA.href = "#";
+  defaultA.setAttribute("data-value", "");
+  defaultA.textContent = "All";
+  defaultA.addEventListener("click", (e) => {
+    e.preventDefault();
+    selectedCity = "";
+    filterImages();
+  });
+  defaultLi.appendChild(defaultA);
+  cityFilterMenu.appendChild(defaultLi);
+  let filteredCities = uniqueCities;
+  if (selectedRegion && regionCities[selectedRegion]) {
+    filteredCities = uniqueCities.filter(city => regionCities[selectedRegion].includes(city));
+  }
+  filteredCities.sort().forEach(city => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.classList.add("dropdown-item");
+    a.href = "#";
+    a.setAttribute("data-value", city);
+    const fullName = cityFullNames[city] || "";
+    a.textContent = fullName ? `${city} (${fullName})` : city;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      selectedCity = city;
+      filterImages();
+    });
+    li.appendChild(a);
+    cityFilterMenu.appendChild(li);
+  });
+}
+
+function populateRegionDropdown() {
+  regionFilterMenu.innerHTML = "";
+  const defaultLi = document.createElement("li");
+  const defaultA = document.createElement("a");
+  defaultA.classList.add("dropdown-item");
+  defaultA.href = "#";
+  defaultA.setAttribute("data-value", "");
+  defaultA.textContent = "All Regions";
+  defaultA.addEventListener("click", (e) => {
+    e.preventDefault();
+    selectedRegion = "";
+    updateCityDropdown();
+    filterImages();
+  });
+  defaultLi.appendChild(defaultA);
+  regionFilterMenu.appendChild(defaultLi);
+  Object.keys(regionCities).forEach(region => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.classList.add("dropdown-item");
+    a.href = "#";
+    a.setAttribute("data-value", region);
+    a.textContent = region;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      selectedRegion = region;
+      updateCityDropdown();
+      filterImages();
+    });
+    li.appendChild(a);
+    regionFilterMenu.appendChild(li);
+  });
+}
+
+
+function updateRouteOptions() {
+  routeFilterMenu.innerHTML = "";
+  const defaultLi = document.createElement("li");
+  const defaultA = document.createElement("a");
+  defaultA.classList.add("dropdown-item");
+  defaultA.href = "#";
+  defaultA.setAttribute("data-value", "All");
+  defaultA.textContent = "All Routes";
+  defaultA.addEventListener("click", (e) => {
+    e.preventDefault();
+    selectedRoute = "All";
+    filterImages();
+  });
+  defaultLi.appendChild(defaultA);
+  routeFilterMenu.appendChild(defaultLi);
+  
+  curatedRoutes.forEach(route => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.classList.add("dropdown-item");
+    a.href = "#";
+    a.setAttribute("data-value", route.displayName);
+    a.textContent = route.displayName;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      selectedRoute = route.displayName;
+      filterImages();
+    });
+    li.appendChild(a);
+    routeFilterMenu.appendChild(li);
+  });
+}
+ {
+  routeFilterMenu.innerHTML = "";
+  const defaultLi = document.createElement("li");
+  const defaultA = document.createElement("a");
+  defaultA.classList.add("dropdown-item");
+  defaultA.href = "#";
+  defaultA.setAttribute("data-value", "All");
+  defaultA.textContent = "All Routes";
+  defaultA.addEventListener("click", (e) => {
+    e.preventDefault();
+    selectedRoute = "All";
+    filterImages();
+  });
+  defaultLi.appendChild(defaultA);
+  routeFilterMenu.appendChild(defaultLi);
+  curatedRoutes.forEach(route => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.classList.add("dropdown-item");
+    a.href = "#";
+    a.setAttribute("data-value", route.name);
+    a.textContent = route.name;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      selectedRoute = route.name;
+      filterImages();
+    });
+    li.appendChild(a);
+    routeFilterMenu.appendChild(li);
+  });
+}
+
+function renderGallery(cameras) {
+  galleryContainer.innerHTML = "";
+  cameras.forEach((camera, index) => {
+    const col = document.createElement("div");
+    col.classList.add("col");
+    const aspectBox = document.createElement("div");
+    aspectBox.classList.add("aspect-ratio-box");
+    const anchor = document.createElement("a");
+    anchor.href = "#";
+    anchor.setAttribute("data-bs-toggle", "modal");
+    anchor.setAttribute("data-bs-target", "#imageModal");
+    anchor.addEventListener("click", (e) => {
+      e.preventDefault();
+      showImage(index);
+    });
+    const image = document.createElement("img");
+    image.setAttribute("loading", "lazy");
+    image.src = camera.Views[0].Url;
+    image.alt = `Camera at ${camera.Location}`;
+    anchor.appendChild(image);
+    aspectBox.appendChild(anchor);
+    col.appendChild(aspectBox);
+    galleryContainer.appendChild(col);
+  });
+}
+
+function updateCameraCount() {
+  cameraCountElement.innerHTML = `${visibleCameras.length}`;
+}
+
+function showImage(index) {
+  const prevSelected = document.querySelector(".aspect-ratio-box.selected");
+  if (prevSelected) prevSelected.classList.remove("selected");
+  currentIndex = index;
+  const camera = visibleCameras[index];
+  modalImage.src = camera.Views[0].Url;
+  modalTitle.textContent = camera.Location;
+  // Store location data for the map toggle.
+  modalImage.dataset.latitude = camera.Latitude;
+  modalImage.dataset.longitude = camera.Longitude;
+  const selectedBox = galleryContainer.children[index].querySelector(".aspect-ratio-box");
+  if (selectedBox) selectedBox.classList.add("selected");
+}
+
+// --- Filtering ---
+
+function filterImages() {
+  const routeObj = selectedRoute !== "All"
+    ? curatedRoutes.find(route => route.displayName === selectedRoute)
+    : null;
+
+  visibleCameras = camerasList.filter(camera => {
+    const location = camera.Location || "";
+    const city = location.split(",").pop().trim();
+
+    const matchesCity = !selectedCity || city === selectedCity;
+    const matchesRegion = !selectedRegion || (regionCities[selectedRegion] && regionCities[selectedRegion].includes(city));
+    const matchesSearch = searchQuery.trim().length === 0 || location.toLowerCase().includes(searchQuery.toLowerCase());
+    const matchesRoute = !routeObj || isCameraOnRoute(camera, routeObj);
+
+    return matchesCity && matchesRegion && matchesSearch && matchesRoute;
+  });
+
+  if (routeObj) {
+    visibleCameras.sort((a, b) => {
+      const extractMP = str => {
+        const match = str.match(/(?:MP|Milepost)\s*([\d.]+)/i);
+        return match ? parseFloat(match[1]) : Infinity;
+      };
+      return extractMP(a.Location) - extractMP(b.Location);
+    });
+  }
+
+  updateCameraCount();
+  renderGallery(visibleCameras);
+  currentIndex = 0;
+  updateSelectedFilters();
+}
+ {
+  visibleCameras = camerasList.filter(camera => {
+    const city = camera.Location.split(",").pop().trim();
+    const matchesCity = !selectedCity || city === selectedCity;
+    const matchesRegion = !selectedRegion || (regionCities[selectedRegion] && regionCities[selectedRegion].includes(city));
+    const matchesSearch = camera.Location.toLowerCase().includes(searchQuery.toLowerCase());
+    let routeMatches = true;
+    if (selectedRoute !== "All") {
+      const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
+      if (routeObj) {
+        routeMatches = routeObj.locations.includes(camera.Location);
+      }
+    }
+    return matchesCity && matchesRegion && matchesSearch && routeMatches;
+  });
+  if (selectedRoute !== "All") {
+    const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
+    if (routeObj) {
+      visibleCameras.sort((a, b) => {
+        const indexA = routeObj.locations.indexOf(a.Location);
+        const indexB = routeObj.locations.indexOf(b.Location);
+        return indexA - indexB;
+      });
+    }
+  }
+  updateCameraCount();
+  renderGallery(visibleCameras);
+  currentIndex = 0;
+  updateSelectedFilters();
+}
+
+// --- Nearest Cameras Feature (all cameras sorted by distance) ---
+function setupNearestCameraButton() {
+  if (nearestButton) {
+    nearestButton.addEventListener("click", () => {
+      if ("geolocation" in navigator) {
+        navigator.geolocation.getCurrentPosition(
+          (position) => {
+            // Store flag when location is successfully retrieved.
+            localStorage.setItem('locationAllowed', 'true');
+            const userLat = position.coords.latitude;
+            const userLng = position.coords.longitude;
+            const camerasWithDistance = camerasList.map(camera => ({
+              camera,
+              distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
+            }));
+            camerasWithDistance.sort((a, b) => a.distance - b.distance);
+            visibleCameras = camerasWithDistance.map(item => item.camera);
+            updateCameraCount();
+            renderGallery(visibleCameras);
+            currentIndex = 0;
+            showImage(0);
+            updateSelectedFilters();
+          },
+          (error) => {
+            alert("Error getting your location: " + error.message);
+          }
+        );
+      } else {
+        alert("Geolocation is not supported by your browser.");
+      }
+    });
+  }
+}
+
+// --- Auto-Sort Full Grid by Location on Load ---
+function autoSortByLocation() {
+  if ("geolocation" in navigator) {
+    navigator.geolocation.getCurrentPosition(
+      (position) => {
+        // Store flag when location is successfully retrieved.
+        localStorage.setItem('locationAllowed', 'true');
+        const userLat = position.coords.latitude;
+        const userLng = position.coords.longitude;
+        const camerasWithDistance = camerasList.map(camera => ({
+          camera,
+          distance: computeDistance(userLat, userLng, camera.Latitude, camera.Longitude)
+        }));
+        camerasWithDistance.sort((a, b) => a.distance - b.distance);
+        visibleCameras = camerasWithDistance.map(item => item.camera);
+        updateCameraCount();
+        renderGallery(visibleCameras);
+        currentIndex = 0;
+        updateSelectedFilters();
+      },
+      (error) => {
+        console.error("Location not granted or error:", error);
+      }
+    );
+  }
+}
+
+// --- Refresh Button Feature ---
+function setupRefreshButton() {
+  if (refreshButton) {
+    refreshButton.addEventListener("click", (event) => {
+      event.preventDefault(); // Prevent any default behavior
+      // Loop through all currently displayed images and refresh their src attribute
+      const images = galleryContainer.querySelectorAll("img");
+      images.forEach(img => {
+        // Get or set the original URL to avoid stacking refresh parameters
+        let originalUrl = img.getAttribute("data-original-src");
+        if (!originalUrl) {
+          originalUrl = img.src;
+          img.setAttribute("data-original-src", originalUrl);
+        }
+        // Remove any existing refresh parameter to keep the URL clean
+        originalUrl = originalUrl.split("&refresh=")[0].split("?refresh=")[0];
+        // Append a timestamp as a query parameter to force a refresh
+        const separator = originalUrl.includes('?') ? '&' : '?';
+        img.src = originalUrl + separator + "refresh=" + Date.now();
+      });
+    });
+  }
+}
+
+// Link dropdown items to modals
+document.querySelectorAll('[data-modal]').forEach(item => {
+  item.addEventListener('click', (e) => {
+    e.preventDefault();
+    const modalId = item.getAttribute('data-modal');
+    const modal = new bootstrap.Modal(document.getElementById(modalId));
+    modal.show();
+  });
+});
+
+
+
+
+// --- Image Size Slider ---
+if (sizeControlButton && sizeSliderContainer) {
+  sizeControlButton.addEventListener("click", (e) => {
+    e.stopPropagation();
+    sizeSliderContainer.classList.toggle("active");
+    setTimeout(() => {
+      sizeSliderContainer.classList.remove("active");
+    }, 3000);
+  });
+}
+if (sizeSlider) {
+  sizeSlider.addEventListener("input", () => {
+    const sliderValue = parseInt(sizeSlider.value, 10);
+    const newSize = Math.max(sliderValue, MIN_IMAGE_SIZE);
+    galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${newSize}px, 1fr))`;
+    clearTimeout(sizeSlider.autoHideTimeout);
+    sizeSlider.autoHideTimeout = setTimeout(() => {
+      sizeSliderContainer.classList.remove("active");
+    }, 3000);
+  });
+}
+document.addEventListener("click", (e) => {
+  if (!sizeControlButton.contains(e.target) && !sizeSliderContainer.contains(e.target)) {
+    sizeSliderContainer.classList.remove("active");
+  }
+});
+
+// --- Pinch-to-Zoom for Image Grid ---
+// Allows pinch-to-zoom on the gallery container (adjusts grid image size)
+let initialGridDistance = null;
+let initialGridSize = parseInt(sizeSlider.value, 10) || 120;
+galleryContainer.style.touchAction = "pan-y pinch-zoom";
+galleryContainer.addEventListener("touchstart", (e) => {
+  if (e.touches.length === 2) {
+    // Only prevent default if two fingers are used.
+    e.preventDefault();
+    initialGridDistance = getDistance(e.touches[0], e.touches[1]);
+    initialGridSize = parseInt(sizeSlider.value, 10) || 120;
+  }
+}, { passive: false });
+galleryContainer.addEventListener("touchmove", (e) => {
+  if (e.touches.length === 2 && initialGridDistance) {
+    e.preventDefault();
+    const currentGridDistance = getDistance(e.touches[0], e.touches[1]);
+    const scaleFactor = currentGridDistance / initialGridDistance;
+    let newGridSize = Math.round(initialGridSize * scaleFactor);
+    newGridSize = Math.max(MIN_IMAGE_SIZE, Math.min(newGridSize, parseInt(sizeSlider.max, 10) || 380));
+    sizeSlider.value = newGridSize;
+    galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${newGridSize}px, 1fr))`;
+  }
+}, { passive: false });
+galleryContainer.addEventListener("touchend", (e) => {
+  if (e.touches.length < 2) {
+    initialGridDistance = null;
+  }
+}, { passive: true });
+function getDistance(touch1, touch2) {
+  const dx = touch1.clientX - touch2.clientX;
+  const dy = touch1.clientY - touch2.clientY;
+  return Math.sqrt(dx * dx + dy * dy);
+}
+
+// --- Search Input Event Listener ---
+if (searchInput) {
+  searchInput.addEventListener("input", debounce((e) => {
+    searchQuery = e.target.value;
+    filterImages();
+  }, DEBOUNCE_DELAY));
+}
+
+// --- Main Initialization & Splash Setup ---
+document.addEventListener('DOMContentLoaded', () => {
+  initialize();
+  setupNearestCameraButton();
+  setupRefreshButton();
+
+  // Check the stored flag for location permission (for iOS) or use Permissions API.
+  if (localStorage.getItem('locationAllowed') === 'true') {
+    autoSortByLocation();
+  } else if (navigator.permissions) {
+    navigator.permissions.query({ name: 'geolocation' }).then((result) => {
+      if (result.state === 'granted') {
+        autoSortByLocation();
+      }
+    });
+  }
+
+  // Trigger fade-out 2500ms into the video.
+  const splash = document.getElementById('splashScreen');
+  if (splash) {
+    const videos = splash.querySelectorAll('video');
+    videos.forEach(video => {
+      video.addEventListener('playing', () => {
+        setTimeout(fadeOutSplash, 2300);
+      });
+    });
+  }
+  // Fallback if video never ends.
+  setTimeout(() => {
+    const splash = document.getElementById('splashScreen');
+    if (splash && splash.style.display !== 'none') {
+      fadeOutSplash();
+    }
+  }, 4500);
+});
