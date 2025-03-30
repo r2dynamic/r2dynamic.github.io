@@ -27,10 +27,30 @@ function initialize() {
     .then(data => {
       camerasList = data;
       visibleCameras = camerasList.slice();
-      renderGallery(visibleCameras);
       updateCameraCount();
       updateCityDropdown();
       populateRegionDropdown();
+
+      // Auto-sort gallery by location if permission was previously granted
+      if (localStorage.getItem('locationAllowed') === 'true') {
+        autoSortByLocation();
+      } else if (navigator.permissions) {
+        navigator.permissions.query({ name: 'geolocation' })
+          .then((result) => {
+            if (result.state === 'granted') {
+              localStorage.setItem('locationAllowed', 'true');
+              autoSortByLocation();
+            } else {
+              renderGallery(visibleCameras);
+            }
+          })
+          .catch(err => {
+            console.error('Permissions API error:', err);
+            renderGallery(visibleCameras);
+          });
+      } else {
+         renderGallery(visibleCameras);
+      }
     })
     .catch(err => console.error("Error loading cameras:", err));
 
@@ -481,7 +501,8 @@ function setupNearestCameraButton() {
   }
 }
 
-// --- Auto-Sort Full Grid by Location on Load ---
+// --- Auto-Sort Full Grid by Location ---
+// Assumes camerasList is already loaded.
 function autoSortByLocation() {
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
@@ -502,6 +523,7 @@ function autoSortByLocation() {
       },
       (error) => {
         console.error("Location not granted or error:", error);
+        renderGallery(visibleCameras);
       }
     );
   }
@@ -611,20 +633,6 @@ document.addEventListener('DOMContentLoaded', () => {
   setupNearestCameraButton();
   setupRefreshButton();
   
-  // Auto-sort gallery by location on load if permission was previously granted.
-  if (localStorage.getItem('locationAllowed') === 'true') {
-    autoSortByLocation();
-  } else if (navigator.permissions) {
-    navigator.permissions.query({ name: 'geolocation' })
-      .then((result) => {
-        if (result.state === 'granted') {
-          localStorage.setItem('locationAllowed', 'true');
-          autoSortByLocation();
-        }
-      })
-      .catch(err => console.error('Permissions API error:', err));
-  }
-  
   const splash = document.getElementById('splashScreen');
   if (splash) {
     const videos = splash.querySelectorAll('video');
@@ -638,5 +646,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (splash && splash.style.display !== 'none') {
       fadeOutSplash();
     }
-  }, 4000);
+  }, 4300);
 });
