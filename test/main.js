@@ -27,10 +27,32 @@ function initialize() {
     .then(data => {
       camerasList = data;
       visibleCameras = camerasList.slice();
-      renderGallery(visibleCameras);
       updateCameraCount();
       updateCityDropdown();
       populateRegionDropdown();
+
+      // If URL parameters exist, apply them. Otherwise, auto-sort if location is allowed.
+      if (window.location.search) {
+        applyFiltersFromURL();
+      } else if (localStorage.getItem('locationAllowed') === 'true') {
+        autoSortByLocation();
+      } else if (navigator.permissions) {
+        navigator.permissions.query({ name: 'geolocation' })
+          .then((result) => {
+            if (result.state === 'granted') {
+              localStorage.setItem('locationAllowed', 'true');
+              autoSortByLocation();
+            } else {
+              renderGallery(visibleCameras);
+            }
+          })
+          .catch(err => {
+            console.error('Permissions API error:', err);
+            renderGallery(visibleCameras);
+          });
+      } else {
+         renderGallery(visibleCameras);
+      }
     })
     .catch(err => console.error("Error loading cameras:", err));
 
@@ -67,6 +89,43 @@ function fadeOutSplash() {
       splash.style.display = 'none';
     });
   }
+}
+
+// --- URL Parameter Functions ---
+// Updates the URL parameters based on current filter values.
+function updateURLParameters() {
+  const params = new URLSearchParams();
+  if (selectedCity) params.set("city", selectedCity);
+  if (selectedRegion) params.set("region", selectedRegion);
+  if (selectedRoute && selectedRoute !== "All") params.set("route", selectedRoute);
+  if (searchQuery) params.set("search", searchQuery);
+
+  const newUrl = window.location.pathname + '?' + params.toString();
+  window.history.replaceState({}, '', newUrl);
+}
+
+// Reads the URL parameters and applies them to the filter variables.
+function applyFiltersFromURL() {
+  const params = new URLSearchParams(window.location.search);
+  if (params.has("city")) {
+    selectedCity = params.get("city");
+  }
+  if (params.has("region")) {
+    selectedRegion = params.get("region");
+  }
+  if (params.has("route")) {
+    selectedRoute = params.get("route");
+  }
+  if (params.has("search")) {
+    searchQuery = params.get("search");
+    if (searchInput) {
+      searchInput.value = searchQuery;
+    }
+  }
+  updateCityDropdown();
+  populateRegionDropdown();
+  updateRouteOptions();
+  filterImages();
 }
 
 // --- DOM Elements ---
@@ -225,7 +284,9 @@ function resetFilters() {
   selectedRegion = "";
   searchQuery = "";
   selectedRoute = "All";
-  searchInput.value = "";
+  if (searchInput) {
+    searchInput.value = "";
+  }
   updateCityDropdown();
   if (localStorage.getItem('locationAllowed') === 'true') {
     autoSortByLocation();
@@ -446,6 +507,9 @@ function filterImages() {
   renderGallery(visibleCameras);
   currentIndex = 0;
   updateSelectedFilters();
+
+  // Update the URL parameters to reflect current filters
+  updateURLParameters();
 }
 
 // --- Nearest Cameras Feature ---
@@ -469,6 +533,7 @@ function setupNearestCameraButton() {
             currentIndex = 0;
             showImage(0);
             updateSelectedFilters();
+            updateURLParameters();
           },
           (error) => {
             alert("Error getting your location: " + error.message);
@@ -481,7 +546,8 @@ function setupNearestCameraButton() {
   }
 }
 
-// --- Auto-Sort Full Grid by Location on Load ---
+// --- Auto-Sort Full Grid by Location ---
+// Assumes camerasList is already loaded.
 function autoSortByLocation() {
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
@@ -499,9 +565,11 @@ function autoSortByLocation() {
         renderGallery(visibleCameras);
         currentIndex = 0;
         updateSelectedFilters();
+        updateURLParameters();
       },
       (error) => {
         console.error("Location not granted or error:", error);
+        renderGallery(visibleCameras);
       }
     );
   }
@@ -610,15 +678,7 @@ document.addEventListener('DOMContentLoaded', () => {
   initialize();
   setupNearestCameraButton();
   setupRefreshButton();
-  if (localStorage.getItem('locationAllowed') === 'true') {
-    autoSortByLocation();
-  } else if (navigator.permissions) {
-    navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-      if (result.state === 'granted') {
-        autoSortByLocation();
-      }
-    });
-  }
+  
   const splash = document.getElementById('splashScreen');
   if (splash) {
     const videos = splash.querySelectorAll('video');
@@ -629,7 +689,6 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   setTimeout(() => {
-    const splash = document.getElementById('splashScreen');
     if (splash && splash.style.display !== 'none') {
       fadeOutSplash();
     }
