@@ -432,3 +432,19 @@ body {
 #aboutAppText {
   color: white;
 }
+.update-list {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+}
+
+.update-list .update-header {
+  font-size: 1.2rem;  /* Larger text */
+  font-weight: bold;
+  margin: 0.5rem;
+}
+
+.update-list li {
+  font-size: .75rem;
+  margin: 0.25rem;
+}
