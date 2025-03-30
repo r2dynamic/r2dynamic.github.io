@@ -128,6 +128,30 @@ function applyFiltersFromURL() {
   filterImages();
 }
 
+// --- Copy URL to Clipboard Function ---
+// Copies the current URL (with parameters) to the clipboard.
+function copyURLToClipboard() {
+  const url = window.location.href;
+  if (navigator.clipboard && navigator.clipboard.writeText) {
+    navigator.clipboard.writeText(url)
+      .then(() => {
+        alert("URL copied to clipboard!");
+      })
+      .catch(err => {
+        console.error("Failed to copy URL:", err);
+      });
+  } else {
+    // Fallback method for older browsers.
+    const input = document.createElement("input");
+    input.value = url;
+    document.body.appendChild(input);
+    input.select();
+    document.execCommand("copy");
+    document.body.removeChild(input);
+    alert("URL copied to clipboard!");
+  }
+}
+
 // --- DOM Elements ---
 const galleryContainer = document.getElementById("imageGallery");
 const imageModalEl = document.getElementById("imageModal");
@@ -240,44 +264,77 @@ function computeDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// --- Selected Filters Display & Reset ---
 function updateSelectedFilters() {
   const filtersContainer = document.getElementById("selectedFilters");
   filtersContainer.innerHTML = "";
+  
+  // Create container for filter items (left side)
+  const badgesContainer = document.createElement("div");
+  badgesContainer.className = "badges";
+  
   if (selectedRegion) {
-    const span = document.createElement("span");
-    span.className = "badge bg-secondary me-2";
-    span.textContent = `Region: ${selectedRegion}`;
-    filtersContainer.appendChild(span);
+    const regionDiv = document.createElement("div");
+    regionDiv.className = "filter-item";
+    // Use the same icon as in your header controls for region
+    regionDiv.innerHTML = '<i class="fas fa-industry"></i> Region: ' + selectedRegion;
+    badgesContainer.appendChild(regionDiv);
   }
   if (selectedCity) {
-    const span = document.createElement("span");
-    span.className = "badge bg-secondary me-2";
-    span.textContent = `City: ${selectedCity}`;
-    filtersContainer.appendChild(span);
+    const cityDiv = document.createElement("div");
+    cityDiv.className = "filter-item";
+    // Use the same icon as in your header controls for city/county
+    cityDiv.innerHTML = '<i class="fas fa-map-marked-alt"></i> City: ' + selectedCity;
+    badgesContainer.appendChild(cityDiv);
   }
-  if (selectedRoute !== "All") {
-    const span = document.createElement("span");
-    span.className = "badge bg-secondary me-2";
-    span.textContent = `Route: ${selectedRoute}`;
-    filtersContainer.appendChild(span);
+  if (selectedRoute && selectedRoute !== "All") {
+    const routeDiv = document.createElement("div");
+    routeDiv.className = "filter-item";
+    // Use the same icon as in your header controls for route
+    routeDiv.innerHTML = '<i class="fas fa-road"></i> Route: ' + selectedRoute;
+    badgesContainer.appendChild(routeDiv);
   }
   if (searchQuery) {
-    const span = document.createElement("span");
-    span.className = "badge bg-secondary me-2";
-    span.textContent = `Search: ${searchQuery}`;
-    filtersContainer.appendChild(span);
+    const searchDiv = document.createElement("div");
+    searchDiv.className = "filter-item";
+    // Use the same icon as in your header controls for search
+    searchDiv.innerHTML = '<i class="fas fa-search"></i> Search: ' + searchQuery;
+    badgesContainer.appendChild(searchDiv);
   }
+  
+  filtersContainer.appendChild(badgesContainer);
+  
   const hasFilters = selectedRegion || selectedCity || (selectedRoute && selectedRoute !== "All") || searchQuery;
   if (hasFilters) {
+    // Create container for action buttons on the right
+    const buttonContainer = document.createElement("div");
+    buttonContainer.className = "action-buttons";
+    
+    // Reset button
     const resetButton = document.createElement("button");
     resetButton.innerHTML = '<i class="fas fa-undo"></i>';
+    resetButton.title = "Reset Filters";
     resetButton.classList.add("reset-button");
     resetButton.addEventListener("click", resetFilters);
-    filtersContainer.appendChild(resetButton);
+    buttonContainer.appendChild(resetButton);
+    
+    // Copy URL button
+    const copyButton = document.createElement("button");
+    copyButton.innerHTML = '<i class="fas fa-link"></i>';
+    copyButton.title = "Copy Link";
+    copyButton.classList.add("reset-button");
+    copyButton.addEventListener("click", (e) => {
+      e.preventDefault();
+      copyURLToClipboard();
+    });
+    buttonContainer.appendChild(copyButton);
+    
+    filtersContainer.appendChild(buttonContainer);
   }
-  filtersContainer.style.display = hasFilters ? "block" : "none";
+  
+  filtersContainer.style.display = hasFilters ? "flex" : "none";
 }
+
+
 
 function resetFilters() {
   selectedCity = "";
@@ -508,7 +565,7 @@ function filterImages() {
   currentIndex = 0;
   updateSelectedFilters();
 
-  // Update the URL parameters to reflect current filters
+  // Update URL parameters to reflect current filter settings.
   updateURLParameters();
 }
 
@@ -692,5 +749,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (splash && splash.style.display !== 'none') {
       fadeOutSplash();
     }
-  }, 4300);
+  }, 4500);
 });
