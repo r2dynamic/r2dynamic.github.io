@@ -610,15 +610,21 @@ document.addEventListener('DOMContentLoaded', () => {
   initialize();
   setupNearestCameraButton();
   setupRefreshButton();
+  
+  // Auto-sort gallery by location on load if permission was previously granted.
   if (localStorage.getItem('locationAllowed') === 'true') {
     autoSortByLocation();
   } else if (navigator.permissions) {
-    navigator.permissions.query({ name: 'geolocation' }).then((result) => {
-      if (result.state === 'granted') {
-        autoSortByLocation();
-      }
-    });
+    navigator.permissions.query({ name: 'geolocation' })
+      .then((result) => {
+        if (result.state === 'granted') {
+          localStorage.setItem('locationAllowed', 'true');
+          autoSortByLocation();
+        }
+      })
+      .catch(err => console.error('Permissions API error:', err));
   }
+  
   const splash = document.getElementById('splashScreen');
   if (splash) {
     const videos = splash.querySelectorAll('video');
@@ -629,9 +635,8 @@ document.addEventListener('DOMContentLoaded', () => {
     });
   }
   setTimeout(() => {
-    const splash = document.getElementById('splashScreen');
     if (splash && splash.style.display !== 'none') {
       fadeOutSplash();
     }
-  }, 4500);
+  }, 4000);
 });
