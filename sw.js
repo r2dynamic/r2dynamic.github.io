@@ -4,7 +4,7 @@ const FILES_TO_CACHE = [
   '/',
   '/index.html',
   '/stylev5.css',
-  '/main.js',
+  '/mainv1.js',
   '/manifest.json',
   '/mobile-splash.mp4',
   '/offline.html',
