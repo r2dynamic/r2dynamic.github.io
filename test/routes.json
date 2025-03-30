@@ -26,6 +26,13 @@
     "displayName": "Little Cottonwood Cyn"
   },
   {
+    "displayName": "TOC to Grantsville",
+    "routes": [
+      { "name": "SR-201", "mpMin": 0, "mpMax": 14, "sortOrder": "desc" },
+      { "name": "I-80", "mpMin": 83, "mpMax": 101, "sortOrder": "desc" }
+    ]
+  },  
+  {
     "name": "US-189",
     "displayName": "Provo Cyn",
     "mpMin": 7,
@@ -53,4 +60,5 @@
     "name": "I-15",
     "displayName": "I-15 (Statewide)"
   }
+  
 ]
