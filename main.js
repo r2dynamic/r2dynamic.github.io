@@ -1,5 +1,5 @@
 // main.js
-// Main module thats imports data fetching functions, constants, and handles UI and events
+// Main module that imports data fetching functions, constants, and handles UI and events
 
 import { getCamerasList, getCuratedRoutes } from './cameraData.js';
 import { cityFullNames, regionCities } from './cityList.js';
@@ -34,7 +34,7 @@ function initialize() {
     })
     .catch(err => console.error("Error loading cameras:", err));
 
-  // Load curated routes if needed.
+  // Load curated routes.
   getCuratedRoutes()
     .then(routes => {
       curatedRoutes = routes;
@@ -58,13 +58,11 @@ function revealMainContent() {
 }
 
 // --- Splash Screen Fade-Out ---
-// Triggered to fade out the splash screen.
 function fadeOutSplash() {
   const splash = document.getElementById('splashScreen');
   if (splash) {
-    // Reveal main content immediately
     revealMainContent();
-    splash.classList.add('fade-out'); // CSS animation will run
+    splash.classList.add('fade-out');
     splash.addEventListener('animationend', () => {
       splash.style.display = 'none';
     });
@@ -91,9 +89,8 @@ const sizeSliderContainer = document.getElementById("sizeSliderContainer");
 const mapButton = document.getElementById("mapButton");
 const modalBody = document.getElementById("modalBody");
 const modalImageContainer = document.getElementById("modalImageContainer");
-let mapDisplayed = false; // Tracks if the map is shown
+let mapDisplayed = false;
 
-// Set up the map toggle in the modal.
 if (mapButton) {
   mapButton.addEventListener("click", () => {
     if (!mapDisplayed) {
@@ -105,13 +102,12 @@ if (mapButton) {
       }
       const mapContainer = document.createElement("div");
       mapContainer.id = "modalMapContainer";
-      mapContainer.style.flex = "1"; // Equal flex value
+      mapContainer.style.flex = "1";
       const iframe = document.createElement("iframe");
       iframe.width = "100%";
       iframe.height = "100%";
       iframe.frameBorder = "0";
       iframe.style.border = "0";
-      // Use satellite view (&t=k)
       iframe.src = `https://maps.google.com/maps?q=${lat},${lon}&z=15&t=k&output=embed`;
       mapContainer.appendChild(iframe);
       modalBody.appendChild(mapContainer);
@@ -131,7 +127,6 @@ if (mapButton) {
   });
 }
 
-// Ensure the map closes when the modal is hidden.
 if (imageModalEl) {
   imageModalEl.addEventListener("hidden.bs.modal", () => {
     const mapContainer = document.getElementById("modalMapContainer");
@@ -155,30 +150,26 @@ function toRadians(deg) {
   return deg * Math.PI / 180;
 }
 
+// --- Updated Route Matching Helper ---
+// Checks only the portion before "@" for matching.
+// Also supports multi-route options (with a "routes" array).
 function isCameraOnRoute(camera, routeObj) {
   if (!routeObj || !routeObj.name) return false;
-
   const location = camera.Location || "";
   const parts = location.split("@");
   const routeSegment = parts.length > 1 ? parts[0].trim() : location;
-
   const pattern = routeObj.name.replace(/[-\s]/g, "[-\\s]*");
   const regex = new RegExp(`${pattern}`, "i");
-
   if (!regex.test(routeSegment)) return false;
-
   const mpMatch = location.match(/(?:MP|Milepost)\s*([\d.]+)/i);
   if (!mpMatch) return false;
-
   const milepost = parseFloat(mpMatch[1]);
-
   if (routeObj.mpMin !== undefined && milepost < routeObj.mpMin) return false;
   if (routeObj.mpMax !== undefined && milepost > routeObj.mpMax) return false;
-
   return true;
 }
 
-
+// --- computeDistance ---
 function computeDistance(lat1, lon1, lat2, lon2) {
   const R = 6371;
   const dLat = toRadians(lat2 - lat1);
@@ -191,109 +182,42 @@ function computeDistance(lat1, lon1, lat2, lon2) {
 }
 
 // --- Selected Filters Display & Reset ---
-
 function updateSelectedFilters() {
   const filtersContainer = document.getElementById("selectedFilters");
   filtersContainer.innerHTML = "";
-
   if (selectedRegion) {
     const span = document.createElement("span");
     span.className = "badge bg-secondary me-2";
     span.textContent = `Region: ${selectedRegion}`;
     filtersContainer.appendChild(span);
   }
-
   if (selectedCity) {
     const span = document.createElement("span");
     span.className = "badge bg-secondary me-2";
     span.textContent = `City: ${selectedCity}`;
     filtersContainer.appendChild(span);
   }
-
   if (selectedRoute !== "All") {
     const span = document.createElement("span");
     span.className = "badge bg-secondary me-2";
     span.textContent = `Route: ${selectedRoute}`;
     filtersContainer.appendChild(span);
   }
-
   if (searchQuery) {
     const span = document.createElement("span");
     span.className = "badge bg-secondary me-2";
     span.textContent = `Search: ${searchQuery}`;
     filtersContainer.appendChild(span);
   }
-}
- {
-  const filtersEl = document.getElementById("selectedFilters");
-  filtersEl.innerHTML = "";
-  let hasFilters = false;
-
-  if (selectedCity) {
-    const div = document.createElement("div");
-    div.classList.add("selected-filter-item");
-    const icon = document.createElement("i");
-    icon.className = "fas fa-map-marked-alt";
-    const span = document.createElement("span");
-    let cityText = "City/County: " + selectedCity;
-    if (cityFullNames[selectedCity]) {
-      cityText += " (" + cityFullNames[selectedCity] + ")";
-    }
-    span.textContent = cityText;
-    div.appendChild(icon);
-    div.appendChild(span);
-    filtersEl.appendChild(div);
-    hasFilters = true;
-  }
-
-  if (selectedRegion) {
-    const div = document.createElement("div");
-    div.classList.add("selected-filter-item");
-    const icon = document.createElement("i");
-    icon.className = "fas fa-industry";
-    const span = document.createElement("span");
-    span.textContent = "Region: " + selectedRegion;
-    div.appendChild(icon);
-    div.appendChild(span);
-    filtersEl.appendChild(div);
-    hasFilters = true;
-  }
-
-  if (selectedRoute && selectedRoute !== "All") {
-    const div = document.createElement("div");
-    div.classList.add("selected-filter-item");
-    const icon = document.createElement("i");
-    icon.className = "fas fa-road";
-    const span = document.createElement("span");
-    span.textContent = "Route: " + selectedRoute;
-    div.appendChild(icon);
-    div.appendChild(span);
-    filtersEl.appendChild(div);
-    hasFilters = true;
-  }
-
-  // Add search query as a filter if it's non-empty.
-  if (searchQuery && searchQuery.trim().length > 0) {
-    const div = document.createElement("div");
-    div.classList.add("selected-filter-item");
-    const icon = document.createElement("i");
-    icon.className = "fas fa-search";
-    const span = document.createElement("span");
-    span.textContent = "Name: " + searchQuery;
-    div.appendChild(icon);
-    div.appendChild(span);
-    filtersEl.appendChild(div);
-    hasFilters = true;
-  }
-
+  const hasFilters = selectedRegion || selectedCity || (selectedRoute && selectedRoute !== "All") || searchQuery;
   if (hasFilters) {
     const resetButton = document.createElement("button");
     resetButton.innerHTML = '<i class="fas fa-undo"></i>';
     resetButton.classList.add("reset-button");
     resetButton.addEventListener("click", resetFilters);
-    filtersEl.appendChild(resetButton);
+    filtersContainer.appendChild(resetButton);
   }
-  filtersEl.style.display = hasFilters ? "block" : "none";
+  filtersContainer.style.display = hasFilters ? "block" : "none";
 }
 
 function resetFilters() {
@@ -303,7 +227,6 @@ function resetFilters() {
   selectedRoute = "All";
   searchInput.value = "";
   updateCityDropdown();
-  // If location permission is allowed, revert to the location-based view.
   if (localStorage.getItem('locationAllowed') === 'true') {
     autoSortByLocation();
   } else {
@@ -386,7 +309,6 @@ function populateRegionDropdown() {
   });
 }
 
-
 function updateRouteOptions() {
   routeFilterMenu.innerHTML = "";
   const defaultLi = document.createElement("li");
@@ -408,42 +330,12 @@ function updateRouteOptions() {
     const a = document.createElement("a");
     a.classList.add("dropdown-item");
     a.href = "#";
-    a.setAttribute("data-value", route.displayName);
-    a.textContent = route.displayName;
+    const routeLabel = route.displayName || route.name;
+    a.setAttribute("data-value", routeLabel);
+    a.textContent = routeLabel;
     a.addEventListener("click", (e) => {
       e.preventDefault();
-      selectedRoute = route.displayName;
-      filterImages();
-    });
-    li.appendChild(a);
-    routeFilterMenu.appendChild(li);
-  });
-}
- {
-  routeFilterMenu.innerHTML = "";
-  const defaultLi = document.createElement("li");
-  const defaultA = document.createElement("a");
-  defaultA.classList.add("dropdown-item");
-  defaultA.href = "#";
-  defaultA.setAttribute("data-value", "All");
-  defaultA.textContent = "All Routes";
-  defaultA.addEventListener("click", (e) => {
-    e.preventDefault();
-    selectedRoute = "All";
-    filterImages();
-  });
-  defaultLi.appendChild(defaultA);
-  routeFilterMenu.appendChild(defaultLi);
-  curatedRoutes.forEach(route => {
-    const li = document.createElement("li");
-    const a = document.createElement("a");
-    a.classList.add("dropdown-item");
-    a.href = "#";
-    a.setAttribute("data-value", route.name);
-    a.textContent = route.name;
-    a.addEventListener("click", (e) => {
-      e.preventDefault();
-      selectedRoute = route.name;
+      selectedRoute = routeLabel;
       filterImages();
     });
     li.appendChild(a);
@@ -488,7 +380,6 @@ function showImage(index) {
   const camera = visibleCameras[index];
   modalImage.src = camera.Views[0].Url;
   modalTitle.textContent = camera.Location;
-  // Store location data for the map toggle.
   modalImage.dataset.latitude = camera.Latitude;
   modalImage.dataset.longitude = camera.Longitude;
   const selectedBox = galleryContainer.children[index].querySelector(".aspect-ratio-box");
@@ -496,78 +387,74 @@ function showImage(index) {
 }
 
 // --- Filtering ---
-
 function filterImages() {
   const routeObj = selectedRoute !== "All"
-    ? curatedRoutes.find(route => route.displayName === selectedRoute)
+    ? curatedRoutes.find(route => (route.displayName || route.name) === selectedRoute)
     : null;
 
   visibleCameras = camerasList.filter(camera => {
     const location = camera.Location || "";
     const city = location.split(",").pop().trim();
-
     const matchesCity = !selectedCity || city === selectedCity;
     const matchesRegion = !selectedRegion || (regionCities[selectedRegion] && regionCities[selectedRegion].includes(city));
     const matchesSearch = searchQuery.trim().length === 0 || location.toLowerCase().includes(searchQuery.toLowerCase());
-    const matchesRoute = !routeObj || isCameraOnRoute(camera, routeObj);
-
+    let matchesRoute = true;
+    if (routeObj) {
+      if (routeObj.routes && Array.isArray(routeObj.routes)) {
+        matchesRoute = routeObj.routes.some(subRoute => isCameraOnRoute(camera, subRoute));
+      } else {
+        matchesRoute = isCameraOnRoute(camera, routeObj);
+      }
+    }
     return matchesCity && matchesRegion && matchesSearch && matchesRoute;
   });
 
   if (routeObj) {
-    visibleCameras.sort((a, b) => {
-      const extractMP = str => {
-        const match = str.match(/(?:MP|Milepost)\s*([\d.]+)/i);
-        return match ? parseFloat(match[1]) : Infinity;
-      };
-      return extractMP(a.Location) - extractMP(b.Location);
-    });
-  }
-
-  updateCameraCount();
-  renderGallery(visibleCameras);
-  currentIndex = 0;
-  updateSelectedFilters();
-}
- {
-  visibleCameras = camerasList.filter(camera => {
-    const city = camera.Location.split(",").pop().trim();
-    const matchesCity = !selectedCity || city === selectedCity;
-    const matchesRegion = !selectedRegion || (regionCities[selectedRegion] && regionCities[selectedRegion].includes(city));
-    const matchesSearch = camera.Location.toLowerCase().includes(searchQuery.toLowerCase());
-    let routeMatches = true;
-    if (selectedRoute !== "All") {
-      const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
-      if (routeObj) {
-        routeMatches = routeObj.locations.includes(camera.Location);
-      }
-    }
-    return matchesCity && matchesRegion && matchesSearch && routeMatches;
-  });
-  if (selectedRoute !== "All") {
-    const routeObj = curatedRoutes.find(route => route.name === selectedRoute);
-    if (routeObj) {
+    if (routeObj.routes && Array.isArray(routeObj.routes)) {
+      let sortedCameras = [];
+      // Process each sub-route in order
+      routeObj.routes.forEach(subRoute => {
+        let group = visibleCameras.filter(camera => isCameraOnRoute(camera, subRoute));
+        group.sort((a, b) => {
+          const extractMP = camera => {
+            const match = camera.Location.match(/(?:MP|Milepost)\s*([\d.]+)/i);
+            return match ? parseFloat(match[1]) : Infinity;
+          };
+          const order = subRoute.sortOrder || "asc";
+          return order === "desc"
+            ? extractMP(b) - extractMP(a)
+            : extractMP(a) - extractMP(b);
+        });
+        sortedCameras = sortedCameras.concat(group);
+      });
+      visibleCameras = sortedCameras;
+    } else {
       visibleCameras.sort((a, b) => {
-        const indexA = routeObj.locations.indexOf(a.Location);
-        const indexB = routeObj.locations.indexOf(b.Location);
-        return indexA - indexB;
+        const extractMP = camera => {
+          const match = camera.Location.match(/(?:MP|Milepost)\s*([\d.]+)/i);
+          return match ? parseFloat(match[1]) : Infinity;
+        };
+        const order = routeObj.sortOrder || "asc";
+        return order === "desc"
+          ? extractMP(b) - extractMP(a)
+          : extractMP(a) - extractMP(b);
       });
     }
   }
+
   updateCameraCount();
   renderGallery(visibleCameras);
   currentIndex = 0;
   updateSelectedFilters();
 }
 
-// --- Nearest Cameras Feature (all cameras sorted by distance) ---
+// --- Nearest Cameras Feature ---
 function setupNearestCameraButton() {
   if (nearestButton) {
     nearestButton.addEventListener("click", () => {
       if ("geolocation" in navigator) {
         navigator.geolocation.getCurrentPosition(
           (position) => {
-            // Store flag when location is successfully retrieved.
             localStorage.setItem('locationAllowed', 'true');
             const userLat = position.coords.latitude;
             const userLng = position.coords.longitude;
@@ -599,7 +486,6 @@ function autoSortByLocation() {
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
       (position) => {
-        // Store flag when location is successfully retrieved.
         localStorage.setItem('locationAllowed', 'true');
         const userLat = position.coords.latitude;
         const userLng = position.coords.longitude;
@@ -625,19 +511,15 @@ function autoSortByLocation() {
 function setupRefreshButton() {
   if (refreshButton) {
     refreshButton.addEventListener("click", (event) => {
-      event.preventDefault(); // Prevent any default behavior
-      // Loop through all currently displayed images and refresh their src attribute
+      event.preventDefault();
       const images = galleryContainer.querySelectorAll("img");
       images.forEach(img => {
-        // Get or set the original URL to avoid stacking refresh parameters
         let originalUrl = img.getAttribute("data-original-src");
         if (!originalUrl) {
           originalUrl = img.src;
           img.setAttribute("data-original-src", originalUrl);
         }
-        // Remove any existing refresh parameter to keep the URL clean
         originalUrl = originalUrl.split("&refresh=")[0].split("?refresh=")[0];
-        // Append a timestamp as a query parameter to force a refresh
         const separator = originalUrl.includes('?') ? '&' : '?';
         img.src = originalUrl + separator + "refresh=" + Date.now();
       });
@@ -654,9 +536,6 @@ document.querySelectorAll('[data-modal]').forEach(item => {
     modal.show();
   });
 });
-
-
-
 
 // --- Image Size Slider ---
 if (sizeControlButton && sizeSliderContainer) {
@@ -686,13 +565,11 @@ document.addEventListener("click", (e) => {
 });
 
 // --- Pinch-to-Zoom for Image Grid ---
-// Allows pinch-to-zoom on the gallery container (adjusts grid image size)
 let initialGridDistance = null;
 let initialGridSize = parseInt(sizeSlider.value, 10) || 120;
 galleryContainer.style.touchAction = "pan-y pinch-zoom";
 galleryContainer.addEventListener("touchstart", (e) => {
   if (e.touches.length === 2) {
-    // Only prevent default if two fingers are used.
     e.preventDefault();
     initialGridDistance = getDistance(e.touches[0], e.touches[1]);
     initialGridSize = parseInt(sizeSlider.value, 10) || 120;
@@ -733,8 +610,6 @@ document.addEventListener('DOMContentLoaded', () => {
   initialize();
   setupNearestCameraButton();
   setupRefreshButton();
-
-  // Check the stored flag for location permission (for iOS) or use Permissions API.
   if (localStorage.getItem('locationAllowed') === 'true') {
     autoSortByLocation();
   } else if (navigator.permissions) {
@@ -744,8 +619,6 @@ document.addEventListener('DOMContentLoaded', () => {
       }
     });
   }
-
-  // Trigger fade-out 2500ms into the video.
   const splash = document.getElementById('splashScreen');
   if (splash) {
     const videos = splash.querySelectorAll('video');
@@ -755,7 +628,6 @@ document.addEventListener('DOMContentLoaded', () => {
       });
     });
   }
-  // Fallback if video never ends.
   setTimeout(() => {
     const splash = document.getElementById('splashScreen');
     if (splash && splash.style.display !== 'none') {
