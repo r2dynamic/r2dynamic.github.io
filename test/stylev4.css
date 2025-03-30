@@ -74,41 +74,65 @@ body {
   .mobile-video { display: none; }
 }
 
-/* Selected Filters Container */
+
+
+/* Selected Filters Container as a flex container */
 .selected-filters {
   background-color: #04AA6D;
-  color: white;
   padding: 6px 10px;
-  text-align: left;
   font-size: 14px;
   border: 3px solid white;
   border-radius: 8px;
   box-shadow: 0 6px #999;
   margin-bottom: 5px;
-  display: none;
-  transition: opacity 0.3s ease;
-  white-space: pre-line;
-  font-weight: bold;
-  position: relative;
-  /* Instead of width: 100%; use a max-width and center it */
-  max-width: 500px;      /* Adjust as needed */
-  margin: 5px auto;     /* Centers the container horizontally */
-  box-sizing: border-box;
+  display: flex;
+  align-items: center;
+  gap: 10px;
 }
 
-.selected-filters .reset-button {
-  position: absolute;
-  bottom: 5px;
-  right: 5px;
-  background-color: #fff;
-  color: #04AA6D;
-  border: none;
-  border-radius: 4px;
-  padding: 4px 8px;
-  cursor: pointer;
-  font-size: 12px;
-  z-index: 1010;
+/* Container for filter items (badges) on the left as a vertical list */
+.selected-filters .badges {
+  display: flex;
+  flex-direction: column;
+  gap: 5px;
 }
+
+/* Styling for each filter item */
+.selected-filters .filter-item {
+  color: white;
+  font-weight: bold;
+  background: none;
+  border: none;
+}
+
+/* Add some space after the icon */
+.selected-filters .filter-item i {
+  margin-right: 8px;
+}
+
+/* Container for action buttons on the right */
+.selected-filters .action-buttons {
+  margin-left: auto;
+  display: flex;
+  gap: 5px;
+}
+
+/* Style for both reset and copy link buttons */
+.reset-button {
+  background-color: #04AA6D;
+  border: 3px solid white;
+  border-radius: 8px;
+  color: white;
+  padding: 6px 10px;
+  font-size: 14px;
+  cursor: pointer;
+  transition: background-color 0.3s;
+}
+
+.reset-button:hover {
+  background-color: #3e8e41;
+}
+
 
 /* Selected Filter Item */
 .selected-filter-item {
