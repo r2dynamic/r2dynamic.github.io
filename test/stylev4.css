@@ -60,8 +60,6 @@ body {
 .splash-screen.fade-out {
   animation: splashFade 1s forwards;
 }
-
-/* Splash Video Styling */
 .splash-screen video {
   width: 100%;
   height: 100%;
@@ -74,50 +72,52 @@ body {
   .mobile-video { display: none; }
 }
 
-
-
-/* Selected Filters Container as a flex container */
+/* Selected Filters Container */
 .selected-filters {
   background-color: #04AA6D;
+  color: white;
   padding: 6px 10px;
   font-size: 14px;
   border: 3px solid white;
   border-radius: 8px;
   box-shadow: 0 6px #999;
   margin-bottom: 5px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
+  /* Initially hidden until a filter is selected */
+  display: none;
+  transition: opacity 0.3s ease;
+  white-space: pre-line;
+  font-weight: bold;
+  max-width: 500px;
+  margin: 5px auto;
+  box-sizing: border-box;
 }
 
-/* Container for filter items (badges) on the left as a vertical list */
+/* Left container for filter items (vertical list) */
 .selected-filters .badges {
   display: flex;
   flex-direction: column;
   gap: 5px;
 }
-
-/* Styling for each filter item */
 .selected-filters .filter-item {
   color: white;
   font-weight: bold;
   background: none;
   border: none;
+  display: flex;
+  align-items: center;
 }
-
-/* Add some space after the icon */
 .selected-filters .filter-item i {
-  margin-right: 8px;
+  margin-right: 15px; /* Increased gap between icon and text */
 }
 
-/* Container for action buttons on the right */
+/* Right container for action buttons */
 .selected-filters .action-buttons {
   margin-left: auto;
   display: flex;
   gap: 5px;
+  align-items: center;
+  height: 40px;  /* Fixed height to avoid stretching */
 }
-
-/* Style for both reset and copy link buttons */
 .reset-button {
   background-color: #04AA6D;
   border: 3px solid white;
@@ -128,17 +128,8 @@ body {
   cursor: pointer;
   transition: background-color 0.3s;
 }
-
 .reset-button:hover {
   background-color: #3e8e41;
-}
-
-
-/* Selected Filter Item */
-.selected-filter-item {
-  display: flex;
-  align-items: center;
-  gap: 10px;
 }
 
 /* Header Controls */
@@ -181,7 +172,7 @@ body {
   flex-shrink: 1;
 }
 
-/* Button Styling */
+/* General Button Styling */
 .button {
   padding: 6px 10px;
   font-size: 14px;
@@ -218,18 +209,16 @@ body {
   to { opacity: 1; transform: scale(1); }
 }
 
-/* Dropdown Container */
+/* Dropdown */
 .dropdown {
-  position: relative; /* Create a stacking context for the dropdown-menu */
+  position: relative;
   z-index: 1001;
 }
-
-/* Dropdown Menu (Glassmorphism) */
 .dropdown-menu {
   position: absolute;
   top: 100%;
   left: 0;
-  z-index: 2000; /* High z-index so it sits above the image gallery */
+  z-index: 2000;
   background: rgba(255, 255, 255, 0.1) !important;
   backdrop-filter: blur(12px);
   border: 2px solid rgba(255, 255, 255, 0.3);
@@ -360,6 +349,7 @@ body {
   transform: scale(1.2);
 }
 
+/* Image Gallery */
 #imageGallery {
   width: 100vw;
   margin-left: calc(-50vw + 50%);
@@ -377,9 +367,6 @@ body {
   position: relative;
   z-index: 1;
 }
-
-
-
 .col { flex: 1; }
 .aspect-ratio-box {
   width: 100%;
@@ -445,12 +432,10 @@ body {
   margin-left: auto;
   margin-right: auto;
 }
-
 .modal-title {
   font-weight: bold !important;
   color: white;
 }
-
 #mobileAppText,
 #updateInfoText,
 #aboutAppText {
@@ -461,14 +446,12 @@ body {
   padding: 0;
   margin: 0;
 }
-
 .update-list .update-header {
   font-size: 1.2rem;  /* Larger text */
   font-weight: bold;
   margin: 0.5rem;
 }
-
 .update-list li {
-  font-size: .75rem;
+  font-size: 0.75rem;
   margin: 0.25rem;
 }
