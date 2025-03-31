@@ -20,9 +20,7 @@ let searchQuery = "";
 let selectedRoute = "All";
 
 // --- Initialize Function ---
-// Loads data immediately.
 function initialize() {
-  // Load cameras data
   getCamerasList()
     .then(data => {
       camerasList = data;
@@ -31,7 +29,6 @@ function initialize() {
       updateCityDropdown();
       populateRegionDropdown();
 
-      // If URL parameters exist, apply them. Otherwise, auto-sort if location is allowed.
       if (window.location.search) {
         applyFiltersFromURL();
       } else if (localStorage.getItem('locationAllowed') === 'true') {
@@ -56,7 +53,6 @@ function initialize() {
     })
     .catch(err => console.error("Error loading cameras:", err));
 
-  // Load curated routes.
   getCuratedRoutes()
     .then(routes => {
       curatedRoutes = routes;
@@ -65,7 +61,6 @@ function initialize() {
     .catch(err => console.error("Error loading curated routes:", err));
 }
 
-// --- Function to Reveal Main Content ---
 function revealMainContent() {
   const headerControls = document.querySelector('.header-controls');
   const imageGallery = document.getElementById('imageGallery');
@@ -79,7 +74,6 @@ function revealMainContent() {
   }
 }
 
-// --- Splash Screen Fade-Out ---
 function fadeOutSplash() {
   const splash = document.getElementById('splashScreen');
   if (splash) {
@@ -92,19 +86,16 @@ function fadeOutSplash() {
 }
 
 // --- URL Parameter Functions ---
-// Updates the URL parameters based on current filter values.
 function updateURLParameters() {
   const params = new URLSearchParams();
   if (selectedCity) params.set("city", selectedCity);
   if (selectedRegion) params.set("region", selectedRegion);
   if (selectedRoute && selectedRoute !== "All") params.set("route", selectedRoute);
   if (searchQuery) params.set("search", searchQuery);
-
   const newUrl = window.location.pathname + '?' + params.toString();
   window.history.replaceState({}, '', newUrl);
 }
 
-// Reads the URL parameters and applies them to the filter variables.
 function applyFiltersFromURL() {
   const params = new URLSearchParams(window.location.search);
   if (params.has("city")) {
@@ -129,7 +120,6 @@ function applyFiltersFromURL() {
 }
 
 // --- Copy URL to Clipboard Function ---
-// Copies the current URL (with parameters) to the clipboard.
 function copyURLToClipboard() {
   const url = window.location.href;
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -141,7 +131,6 @@ function copyURLToClipboard() {
         console.error("Failed to copy URL:", err);
       });
   } else {
-    // Fallback method for older browsers.
     const input = document.createElement("input");
     input.value = url;
     document.body.appendChild(input);
@@ -233,9 +222,7 @@ function toRadians(deg) {
   return deg * Math.PI / 180;
 }
 
-// --- Updated Route Matching Helper ---
-// Checks only the portion before "@" for matching.
-// Also supports multi-route options (with a "routes" array).
+// --- Route Matching Helper ---
 function isCameraOnRoute(camera, routeObj) {
   if (!routeObj || !routeObj.name) return false;
   const location = camera.Location || "";
@@ -264,39 +251,36 @@ function computeDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+// --- Selected Filters Display & Reset ---
 function updateSelectedFilters() {
   const filtersContainer = document.getElementById("selectedFilters");
   filtersContainer.innerHTML = "";
   
-  // Create container for filter items (left side)
+  // Left container: filter items (vertical list)
   const badgesContainer = document.createElement("div");
   badgesContainer.className = "badges";
   
   if (selectedRegion) {
     const regionDiv = document.createElement("div");
     regionDiv.className = "filter-item";
-    // Use the same icon as in your header controls for region
     regionDiv.innerHTML = '<i class="fas fa-industry"></i> Region: ' + selectedRegion;
     badgesContainer.appendChild(regionDiv);
   }
   if (selectedCity) {
     const cityDiv = document.createElement("div");
     cityDiv.className = "filter-item";
-    // Use the same icon as in your header controls for city/county
     cityDiv.innerHTML = '<i class="fas fa-map-marked-alt"></i> City: ' + selectedCity;
     badgesContainer.appendChild(cityDiv);
   }
   if (selectedRoute && selectedRoute !== "All") {
     const routeDiv = document.createElement("div");
     routeDiv.className = "filter-item";
-    // Use the same icon as in your header controls for route
     routeDiv.innerHTML = '<i class="fas fa-road"></i> Route: ' + selectedRoute;
     badgesContainer.appendChild(routeDiv);
   }
   if (searchQuery) {
     const searchDiv = document.createElement("div");
     searchDiv.className = "filter-item";
-    // Use the same icon as in your header controls for search
     searchDiv.innerHTML = '<i class="fas fa-search"></i> Search: ' + searchQuery;
     badgesContainer.appendChild(searchDiv);
   }
@@ -305,11 +289,10 @@ function updateSelectedFilters() {
   
   const hasFilters = selectedRegion || selectedCity || (selectedRoute && selectedRoute !== "All") || searchQuery;
   if (hasFilters) {
-    // Create container for action buttons on the right
+    // Right container: action buttons
     const buttonContainer = document.createElement("div");
     buttonContainer.className = "action-buttons";
     
-    // Reset button
     const resetButton = document.createElement("button");
     resetButton.innerHTML = '<i class="fas fa-undo"></i>';
     resetButton.title = "Reset Filters";
@@ -317,7 +300,6 @@ function updateSelectedFilters() {
     resetButton.addEventListener("click", resetFilters);
     buttonContainer.appendChild(resetButton);
     
-    // Copy URL button
     const copyButton = document.createElement("button");
     copyButton.innerHTML = '<i class="fas fa-link"></i>';
     copyButton.title = "Copy Link";
@@ -333,8 +315,6 @@ function updateSelectedFilters() {
   
   filtersContainer.style.display = hasFilters ? "flex" : "none";
 }
-
-
 
 function resetFilters() {
   selectedCity = "";
@@ -385,9 +365,10 @@ function updateCityDropdown() {
     a.textContent = fullName ? `${city} (${fullName})` : city;
     a.addEventListener("click", (e) => {
       e.preventDefault();
-      selectedCity = city;
+      selectedCity = a.textContent; // Use the full text
       filterImages();
     });
+    
     li.appendChild(a);
     cityFilterMenu.appendChild(li);
   });
@@ -530,7 +511,6 @@ function filterImages() {
   if (routeObj) {
     if (routeObj.routes && Array.isArray(routeObj.routes)) {
       let sortedCameras = [];
-      // Process each sub-route in order
       routeObj.routes.forEach(subRoute => {
         let group = visibleCameras.filter(camera => isCameraOnRoute(camera, subRoute));
         group.sort((a, b) => {
@@ -564,8 +544,6 @@ function filterImages() {
   renderGallery(visibleCameras);
   currentIndex = 0;
   updateSelectedFilters();
-
-  // Update URL parameters to reflect current filter settings.
   updateURLParameters();
 }
 
@@ -604,7 +582,6 @@ function setupNearestCameraButton() {
 }
 
 // --- Auto-Sort Full Grid by Location ---
-// Assumes camerasList is already loaded.
 function autoSortByLocation() {
   if ("geolocation" in navigator) {
     navigator.geolocation.getCurrentPosition(
