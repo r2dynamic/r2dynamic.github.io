@@ -14,13 +14,15 @@ let curatedRoutes = [];
 let visibleCameras = [];
 let currentIndex = 0;
 let debounceTimer;
-let selectedCity = "";
+let selectedCity = "";    // will hold the abbreviation (e.g., "BE")
 let selectedRegion = "";
 let searchQuery = "";
 let selectedRoute = "All";
 
 // --- Initialize Function ---
+// Loads data immediately.
 function initialize() {
+  // Load cameras data
   getCamerasList()
     .then(data => {
       camerasList = data;
@@ -29,6 +31,7 @@ function initialize() {
       updateCityDropdown();
       populateRegionDropdown();
 
+      // If URL parameters exist, apply them. Otherwise, auto-sort if location is allowed.
       if (window.location.search) {
         applyFiltersFromURL();
       } else if (localStorage.getItem('locationAllowed') === 'true') {
@@ -53,6 +56,7 @@ function initialize() {
     })
     .catch(err => console.error("Error loading cameras:", err));
 
+  // Load curated routes.
   getCuratedRoutes()
     .then(routes => {
       curatedRoutes = routes;
@@ -61,6 +65,7 @@ function initialize() {
     .catch(err => console.error("Error loading curated routes:", err));
 }
 
+// --- Function to Reveal Main Content ---
 function revealMainContent() {
   const headerControls = document.querySelector('.header-controls');
   const imageGallery = document.getElementById('imageGallery');
@@ -74,6 +79,7 @@ function revealMainContent() {
   }
 }
 
+// --- Splash Screen Fade-Out ---
 function fadeOutSplash() {
   const splash = document.getElementById('splashScreen');
   if (splash) {
@@ -86,16 +92,19 @@ function fadeOutSplash() {
 }
 
 // --- URL Parameter Functions ---
+// Updates the URL parameters based on current filter values.
 function updateURLParameters() {
   const params = new URLSearchParams();
   if (selectedCity) params.set("city", selectedCity);
   if (selectedRegion) params.set("region", selectedRegion);
   if (selectedRoute && selectedRoute !== "All") params.set("route", selectedRoute);
   if (searchQuery) params.set("search", searchQuery);
+
   const newUrl = window.location.pathname + '?' + params.toString();
   window.history.replaceState({}, '', newUrl);
 }
 
+// Reads the URL parameters and applies them to the filter variables.
 function applyFiltersFromURL() {
   const params = new URLSearchParams(window.location.search);
   if (params.has("city")) {
@@ -120,6 +129,7 @@ function applyFiltersFromURL() {
 }
 
 // --- Copy URL to Clipboard Function ---
+// Copies the current URL (with parameters) to the clipboard.
 function copyURLToClipboard() {
   const url = window.location.href;
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -269,7 +279,9 @@ function updateSelectedFilters() {
   if (selectedCity) {
     const cityDiv = document.createElement("div");
     cityDiv.className = "filter-item";
-    cityDiv.innerHTML = '<i class="fas fa-map-marked-alt"></i> City: ' + selectedCity;
+    // Display full text using cityFullNames mapping
+    const fullText = cityFullNames[selectedCity] ? `${selectedCity} (${cityFullNames[selectedCity]})` : selectedCity;
+    cityDiv.innerHTML = '<i class="fas fa-map-marked-alt"></i> City: ' + fullText;
     badgesContainer.appendChild(cityDiv);
   }
   if (selectedRoute && selectedRoute !== "All") {
@@ -335,8 +347,13 @@ function resetFilters() {
 
 // --- Dropdown & Gallery Setup ---
 function updateCityDropdown() {
-  const cities = camerasList.map(camera => camera.Location.split(",").pop().trim());
-  const uniqueCities = [...new Set(cities.filter(city => city.length <= 4))];
+  // Extract city abbreviation from camera.Location using split and trim.
+  const cities = camerasList.map(camera => {
+    let parts = camera.Location.split(",");
+    return parts[parts.length - 1].trim();
+  });
+  // Use all city abbreviations (remove the length filter so full info is available)
+  const uniqueCities = [...new Set(cities)];
   cityFilterMenu.innerHTML = "";
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
@@ -351,28 +368,39 @@ function updateCityDropdown() {
   });
   defaultLi.appendChild(defaultA);
   cityFilterMenu.appendChild(defaultLi);
+  
   let filteredCities = uniqueCities;
   if (selectedRegion && regionCities[selectedRegion]) {
     filteredCities = uniqueCities.filter(city => regionCities[selectedRegion].includes(city));
   }
-  filteredCities.sort().forEach(city => {
+  
+  filteredCities.sort((a, b) => {
+    const aFormatted = cityFullNames[a] ? 0 : 1;
+    const bFormatted = cityFullNames[b] ? 0 : 1;
+    if (aFormatted === bFormatted) {
+      return a.localeCompare(b);
+    }
+    return aFormatted - bFormatted;
+  }).forEach(city => {
     const li = document.createElement("li");
     const a = document.createElement("a");
     a.classList.add("dropdown-item");
     a.href = "#";
+    // Store the abbreviation in data-value
     a.setAttribute("data-value", city);
+    // Display full text if available
     const fullName = cityFullNames[city] || "";
     a.textContent = fullName ? `${city} (${fullName})` : city;
     a.addEventListener("click", (e) => {
       e.preventDefault();
-      selectedCity = a.textContent; // Use the full text
+      selectedCity = city; // store abbreviation only
       filterImages();
     });
-    
     li.appendChild(a);
     cityFilterMenu.appendChild(li);
   });
 }
+
 
 function populateRegionDropdown() {
   regionFilterMenu.innerHTML = "";
@@ -726,5 +754,5 @@ document.addEventListener('DOMContentLoaded', () => {
     if (splash && splash.style.display !== 'none') {
       fadeOutSplash();
     }
-  }, 4500);
+  }, 4300);
 });
