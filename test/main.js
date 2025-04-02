@@ -238,8 +238,9 @@ function isCameraOnRoute(camera, routeObj) {
   const location = camera.Location || "";
   const parts = location.split("@");
   const routeSegment = parts.length > 1 ? parts[0].trim() : location;
+  // Build the regex pattern and add a negative lookahead to block additional digits
   const pattern = routeObj.name.replace(/[-\s]/g, "[-\\s]*");
-  const regex = new RegExp(`${pattern}`, "i");
+  const regex = new RegExp(`\\b${pattern}(?!\\d)`, "i");
   if (!regex.test(routeSegment)) return false;
   const mpMatch = location.match(/(?:MP|Milepost)\s*([\d.]+)/i);
   if (!mpMatch) return false;
@@ -261,41 +262,6 @@ function computeDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
-// --- Custom sort function for camera locations ---
-function sortCamerasByName(cameraA, cameraB) {
-  const locA = cameraA.Location;
-  const locB = cameraB.Location;
-
-  // Regex to extract a potential route and milepost from the location string.
-  const regex = /(.*?)\s*@.*?(?:MP|Milepost)\s*([\d.]+)/i;
-  const matchA = locA.match(regex);
-  const matchB = locB.match(regex);
-
-  // If both have route and milepost info, compare them accordingly.
-  if (matchA && matchB) {
-    const routeA = matchA[1].trim().toUpperCase();
-    const routeB = matchB[1].trim().toUpperCase();
-    const mpA = parseFloat(matchA[2]);
-    const mpB = parseFloat(matchB[2]);
-
-    // First sort by route name.
-    if (routeA !== routeB) {
-      return routeA.localeCompare(routeB);
-    }
-    // If route names are the same, sort by milepost number.
-    return mpA - mpB;
-  } else if (matchA && !matchB) {
-    // Camera A has route info, so it comes first.
-    return -1;
-  } else if (!matchA && matchB) {
-    // Camera B has route info, so it comes first.
-    return 1;
-  } else {
-    // If neither have route info, fall back to simple alphabetical sort on the location string.
-    return locA.localeCompare(locB);
-  }
-}
-
 // --- Selected Filters Display & Reset ---
 function updateSelectedFilters() {
   const filtersContainer = document.getElementById("selectedFilters");
@@ -314,6 +280,7 @@ function updateSelectedFilters() {
   if (selectedCity) {
     const cityDiv = document.createElement("div");
     cityDiv.className = "filter-item";
+    // Display full text using cityFullNames mapping
     const fullText = cityFullNames[selectedCity] ? `${selectedCity} (${cityFullNames[selectedCity]})` : selectedCity;
     cityDiv.innerHTML = '<i class="fas fa-map-marked-alt"></i> City: ' + fullText;
     badgesContainer.appendChild(cityDiv);
@@ -335,6 +302,7 @@ function updateSelectedFilters() {
   
   const hasFilters = selectedRegion || selectedCity || (selectedRoute && selectedRoute !== "All") || searchQuery;
   if (hasFilters) {
+    // Right container: action buttons
     const buttonContainer = document.createElement("div");
     buttonContainer.className = "action-buttons";
     
@@ -401,10 +369,12 @@ function updateCityDropdown() {
   });
   defaultLi.appendChild(defaultA);
   cityFilterMenu.appendChild(defaultLi);
+  
   let filteredCities = uniqueCities;
   if (selectedRegion && regionCities[selectedRegion]) {
     filteredCities = uniqueCities.filter(city => regionCities[selectedRegion].includes(city));
   }
+  
   filteredCities.sort((a, b) => {
     const aFormatted = cityFullNames[a] ? 0 : 1;
     const bFormatted = cityFullNames[b] ? 0 : 1;
@@ -417,18 +387,21 @@ function updateCityDropdown() {
     const a = document.createElement("a");
     a.classList.add("dropdown-item");
     a.href = "#";
+    // Store the abbreviation in data-value
     a.setAttribute("data-value", city);
+    // Display full text if available
     const fullName = cityFullNames[city] || "";
     a.textContent = fullName ? `${city} (${fullName})` : city;
     a.addEventListener("click", (e) => {
       e.preventDefault();
-      selectedCity = city;
+      selectedCity = city; // store abbreviation only
       filterImages();
     });
     li.appendChild(a);
     cityFilterMenu.appendChild(li);
   });
 }
+
 
 function populateRegionDropdown() {
   regionFilterMenu.innerHTML = "";
@@ -564,22 +537,6 @@ function filterImages() {
     return matchesCity && matchesRegion && matchesSearch && matchesRoute;
   });
 
-  // If the search query appears to be a route search (e.g., "I-15" or "SR-26"), sort by milepost.
-  if (searchQuery && /^(I-\d+|SR-\d+)/i.test(searchQuery.trim())) {
-    visibleCameras.sort((a, b) => {
-      const extractMP = camera => {
-        const match = camera.Location.match(/(?:MP|Milepost)\s*([\d.]+)/i);
-        return match ? parseFloat(match[1]) : Infinity;
-      };
-      return extractMP(a) - extractMP(b);
-    });
-  }
-  // Otherwise, if no location filter and no route filter, apply custom name sorting.
-  else if (!selectedCity && selectedRoute === "All") {
-    visibleCameras.sort(sortCamerasByName);
-  }
-
-  // If a route filter is active, use that route's specific sorting.
   if (routeObj) {
     if (routeObj.routes && Array.isArray(routeObj.routes)) {
       let sortedCameras = [];
