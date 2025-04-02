@@ -62,6 +62,14 @@
     "mpMin": 0,
     "mpMax": 240
   },
+      {
+    "name": "SR-7",
+    "displayName": "SR-7"
+  },
+    {
+    "name": "SR-9",
+    "displayName": "SR-9"
+  },
   {
     "name": "I-15",
     "displayName": "I-15 (Statewide)"
