@@ -238,8 +238,9 @@ function isCameraOnRoute(camera, routeObj) {
   const location = camera.Location || "";
   const parts = location.split("@");
   const routeSegment = parts.length > 1 ? parts[0].trim() : location;
+  // Build the regex pattern and add a negative lookahead to block additional digits
   const pattern = routeObj.name.replace(/[-\s]/g, "[-\\s]*");
-  const regex = new RegExp(`${pattern}`, "i");
+  const regex = new RegExp(`\\b${pattern}(?!\\d)`, "i");
   if (!regex.test(routeSegment)) return false;
   const mpMatch = location.match(/(?:MP|Milepost)\s*([\d.]+)/i);
   if (!mpMatch) return false;
