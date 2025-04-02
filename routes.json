@@ -56,6 +56,12 @@
     "mpMin": 277,
     "mpMax": 284
   },
+      {
+    "name": "I-70",
+    "displayName": "I-70",
+    "mpMin": 0,
+    "mpMax": 240
+  },
   {
     "name": "I-15",
     "displayName": "I-15 (Statewide)"
