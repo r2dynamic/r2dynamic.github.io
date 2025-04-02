@@ -232,11 +232,6 @@ function toRadians(deg) {
   return deg * Math.PI / 180;
 }
 
-// Escape regex special characters in the search query
-function escapeRegExp(string) {
-  return string.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-}
-
 // --- Route Matching Helper ---
 function isCameraOnRoute(camera, routeObj) {
   if (!routeObj || !routeObj.name) return false;
@@ -253,12 +248,6 @@ function isCameraOnRoute(camera, routeObj) {
   if (routeObj.mpMin !== undefined && milepost < routeObj.mpMin) return false;
   if (routeObj.mpMax !== undefined && milepost > routeObj.mpMax) return false;
   return true;
-}
-
-// --- Helper: Extract Milepost from a Camera's Location ---
-function extractMP(camera) {
-  const match = camera.Location.match(/(?:MP|Milepost)\s*([\d.]+)/i);
-  return match ? parseFloat(match[1]) : Infinity;
 }
 
 // --- computeDistance ---
@@ -536,18 +525,7 @@ function filterImages() {
     const city = location.split(",").pop().trim();
     const matchesCity = !selectedCity || city === selectedCity;
     const matchesRegion = !selectedRegion || (regionCities[selectedRegion] && regionCities[selectedRegion].includes(city));
-    
-    // Custom search functionality: if a search query is provided, build a regex that uses word boundaries,
-    // and if the query ends with a digit, add a negative lookahead so it won't match extra digits.
-    let matchesSearch = true;
-    if (searchQuery.trim().length > 0) {
-      const trimmedQuery = searchQuery.trim();
-      const escapedQuery = escapeRegExp(trimmedQuery);
-      const pattern = `\\b${escapedQuery}${/\d$/.test(trimmedQuery) ? '(?!\\d)' : ''}`;
-      const regex = new RegExp(pattern, "i");
-      matchesSearch = regex.test(location);
-    }
-    
+    const matchesSearch = searchQuery.trim().length === 0 || location.toLowerCase().includes(searchQuery.toLowerCase());
     let matchesRoute = true;
     if (routeObj) {
       if (routeObj.routes && Array.isArray(routeObj.routes)) {
@@ -559,10 +537,36 @@ function filterImages() {
     return matchesCity && matchesRegion && matchesSearch && matchesRoute;
   });
 
-  // If a search query is provided and it ends with a digit (e.g., "SR-10" or "9000 S"),
-  // sort the matching cameras by milepost (least to greatest)
-  if (searchQuery.trim().length > 0 && /\d$/.test(searchQuery.trim())) {
-    visibleCameras.sort((a, b) => extractMP(a) - extractMP(b));
+  if (routeObj) {
+    if (routeObj.routes && Array.isArray(routeObj.routes)) {
+      let sortedCameras = [];
+      routeObj.routes.forEach(subRoute => {
+        let group = visibleCameras.filter(camera => isCameraOnRoute(camera, subRoute));
+        group.sort((a, b) => {
+          const extractMP = camera => {
+            const match = camera.Location.match(/(?:MP|Milepost)\s*([\d.]+)/i);
+            return match ? parseFloat(match[1]) : Infinity;
+          };
+          const order = subRoute.sortOrder || "asc";
+          return order === "desc"
+            ? extractMP(b) - extractMP(a)
+            : extractMP(a) - extractMP(b);
+        });
+        sortedCameras = sortedCameras.concat(group);
+      });
+      visibleCameras = sortedCameras;
+    } else {
+      visibleCameras.sort((a, b) => {
+        const extractMP = camera => {
+          const match = camera.Location.match(/(?:MP|Milepost)\s*([\d.]+)/i);
+          return match ? parseFloat(match[1]) : Infinity;
+        };
+        const order = routeObj.sortOrder || "asc";
+        return order === "desc"
+          ? extractMP(b) - extractMP(a)
+          : extractMP(a) - extractMP(b);
+      });
+    }
   }
 
   updateCameraCount();
