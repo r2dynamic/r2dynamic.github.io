@@ -1,9 +1,9 @@
-const CACHE_NAME = 'udot-cameras-cache-v8.5';
+const CACHE_NAME = 'udot-cameras-cache-v8.6';
 const OFFLINE_URL = 'offline.html';
 const FILES_TO_CACHE = [
   '/',
   '/index.html',
-  '/stylev4.css',
+  '/stylev5.css',
   '/main.js',
   '/routes.json',
   '/manifest.json',
