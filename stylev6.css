@@ -151,8 +151,8 @@ body {
 }
 @media (max-width: 600px) {
   .header-controls .button {
-    flex: 0;
-    margin: 0 3px;
+    flex: 1;
+    margin: 0 2px;
     max-width: auto;
     height: 30px;
     align-items: center;
@@ -470,5 +470,3 @@ body {
   color: #ffffff !important;
   outline: none !important;
 }
-
-
