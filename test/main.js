@@ -798,6 +798,18 @@ if (searchInput) {
   });
 }
 
+document.getElementById('filterDropdownButton').parentElement.addEventListener('hide.bs.dropdown', () => {
+  const maintenanceOptions = document.getElementById('maintenanceOptions');
+  if (maintenanceOptions) {
+    let collapseInstance = bootstrap.Collapse.getInstance(maintenanceOptions);
+    if (!collapseInstance) {
+      collapseInstance = new bootstrap.Collapse(maintenanceOptions, { toggle: false });
+    }
+    collapseInstance.hide();
+  }
+});
+
+
 // --- Main Initialization & Splash Setup ---
 document.addEventListener('DOMContentLoaded', () => {
   initialize();
