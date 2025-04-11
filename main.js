@@ -14,15 +14,15 @@ let curatedRoutes = [];
 let visibleCameras = [];
 let currentIndex = 0;
 let debounceTimer;
-let selectedCity = "";    // will hold the abbreviation (e.g., "BE")
+let selectedCity = "";    // holds the city abbreviation (e.g., "BE")
 let selectedRegion = "";
 let searchQuery = "";
 let selectedRoute = "All";
+let selectedMaintenanceStation = ""; // For Maintenance Stations filter
 
 // --- Initialize Function ---
 // Loads data immediately.
 function initialize() {
-  // Load cameras data
   getCamerasList()
     .then(data => {
       camerasList = data;
@@ -30,8 +30,8 @@ function initialize() {
       updateCameraCount();
       updateCityDropdown();
       populateRegionDropdown();
+      updateMaintenanceStationDropdown();
 
-      // If URL parameters exist, apply them. Otherwise, auto-sort if location is allowed.
       if (window.location.search) {
         applyFiltersFromURL();
       } else if (localStorage.getItem('locationAllowed') === 'true') {
@@ -56,7 +56,6 @@ function initialize() {
     })
     .catch(err => console.error("Error loading cameras:", err));
 
-  // Load curated routes.
   getCuratedRoutes()
     .then(routes => {
       curatedRoutes = routes;
@@ -92,19 +91,16 @@ function fadeOutSplash() {
 }
 
 // --- URL Parameter Functions ---
-// Updates the URL parameters based on current filter values.
 function updateURLParameters() {
   const params = new URLSearchParams();
   if (selectedCity) params.set("city", selectedCity);
   if (selectedRegion) params.set("region", selectedRegion);
   if (selectedRoute && selectedRoute !== "All") params.set("route", selectedRoute);
   if (searchQuery) params.set("search", searchQuery);
-
   const newUrl = window.location.pathname + '?' + params.toString();
   window.history.replaceState({}, '', newUrl);
 }
 
-// Reads the URL parameters and applies them to the filter variables.
 function applyFiltersFromURL() {
   const params = new URLSearchParams(window.location.search);
   if (params.has("city")) {
@@ -125,11 +121,11 @@ function applyFiltersFromURL() {
   updateCityDropdown();
   populateRegionDropdown();
   updateRouteOptions();
+  updateMaintenanceStationDropdown();
   filterImages();
 }
 
 // --- Copy URL to Clipboard Function ---
-// Copies the current URL (with parameters) to the clipboard.
 function copyURLToClipboard() {
   const url = window.location.href;
   if (navigator.clipboard && navigator.clipboard.writeText) {
@@ -238,7 +234,6 @@ function isCameraOnRoute(camera, routeObj) {
   const location = camera.Location || "";
   const parts = location.split("@");
   const routeSegment = parts.length > 1 ? parts[0].trim() : location;
-  // Build the regex pattern and add a negative lookahead to block additional digits
   const pattern = routeObj.name.replace(/[-\s]/g, "[-\\s]*");
   const regex = new RegExp(`\\b${pattern}(?!\\d)`, "i");
   if (!regex.test(routeSegment)) return false;
@@ -262,12 +257,60 @@ function computeDistance(lat1, lon1, lat2, lon2) {
   return R * c;
 }
 
+// --- Maintenance Station Dropdown ---
+// Populates the Maintenance Stations submenu.
+function updateMaintenanceStationDropdown() {
+  const stationsSet = new Set();
+  camerasList.forEach(camera => {
+    const opt1 = camera.MaintenanceStationOption1;
+    const opt2 = camera.MaintenanceStationOption2;
+    if (opt1 && opt1.toLowerCase() !== "not available") {
+      stationsSet.add(opt1);
+    }
+    if (opt2 && opt2.toLowerCase() !== "not available") {
+      stationsSet.add(opt2);
+    }
+  });
+  const stationsArray = Array.from(stationsSet).sort();
+  const maintenanceMenu = document.getElementById("maintenanceStationMenu");
+  if (!maintenanceMenu) return;
+  maintenanceMenu.innerHTML = "";
+  const defaultLi = document.createElement("li");
+  const defaultA = document.createElement("a");
+  defaultA.classList.add("dropdown-item");
+  defaultA.href = "#";
+  defaultA.setAttribute("data-value", "");
+  defaultA.textContent = "All Stations";
+  defaultA.addEventListener("click", (e) => {
+    e.preventDefault();
+    selectedMaintenanceStation = "";
+    filterImages();
+  });
+  defaultLi.appendChild(defaultA);
+  maintenanceMenu.appendChild(defaultLi);
+
+  stationsArray.forEach(station => {
+    const li = document.createElement("li");
+    const a = document.createElement("a");
+    a.classList.add("dropdown-item");
+    a.href = "#";
+    a.setAttribute("data-value", station);
+    a.textContent = station;
+    a.addEventListener("click", (e) => {
+      e.preventDefault();
+      selectedMaintenanceStation = station;
+      filterImages();
+    });
+    li.appendChild(a);
+    maintenanceMenu.appendChild(li);
+  });
+}
+
 // --- Selected Filters Display & Reset ---
 function updateSelectedFilters() {
   const filtersContainer = document.getElementById("selectedFilters");
   filtersContainer.innerHTML = "";
   
-  // Left container: filter items (vertical list)
   const badgesContainer = document.createElement("div");
   badgesContainer.className = "badges";
   
@@ -280,10 +323,15 @@ function updateSelectedFilters() {
   if (selectedCity) {
     const cityDiv = document.createElement("div");
     cityDiv.className = "filter-item";
-    // Display full text using cityFullNames mapping
     const fullText = cityFullNames[selectedCity] ? `${selectedCity} (${cityFullNames[selectedCity]})` : selectedCity;
     cityDiv.innerHTML = '<i class="fas fa-map-marked-alt"></i> City: ' + fullText;
     badgesContainer.appendChild(cityDiv);
+  }
+  if (selectedMaintenanceStation) {
+    const maintDiv = document.createElement("div");
+    maintDiv.className = "filter-item";
+    maintDiv.innerHTML = '<i class="fas fa-tools"></i> Maintenance: ' + selectedMaintenanceStation;
+    badgesContainer.appendChild(maintDiv);
   }
   if (selectedRoute && selectedRoute !== "All") {
     const routeDiv = document.createElement("div");
@@ -300,9 +348,8 @@ function updateSelectedFilters() {
   
   filtersContainer.appendChild(badgesContainer);
   
-  const hasFilters = selectedRegion || selectedCity || (selectedRoute && selectedRoute !== "All") || searchQuery;
+  const hasFilters = selectedRegion || selectedCity || selectedMaintenanceStation || (selectedRoute && selectedRoute !== "All") || searchQuery;
   if (hasFilters) {
-    // Right container: action buttons
     const buttonContainer = document.createElement("div");
     buttonContainer.className = "action-buttons";
     
@@ -334,10 +381,12 @@ function resetFilters() {
   selectedRegion = "";
   searchQuery = "";
   selectedRoute = "All";
+  selectedMaintenanceStation = "";
   if (searchInput) {
     searchInput.value = "";
   }
   updateCityDropdown();
+  updateMaintenanceStationDropdown();
   if (localStorage.getItem('locationAllowed') === 'true') {
     autoSortByLocation();
   } else {
@@ -348,12 +397,10 @@ function resetFilters() {
 
 // --- Dropdown & Gallery Setup ---
 function updateCityDropdown() {
-  // Extract city abbreviation from camera.Location using split and trim.
   const cities = camerasList.map(camera => {
     let parts = camera.Location.split(",");
     return parts[parts.length - 1].trim();
   });
-  // Use all city abbreviations (remove the length filter so full info is available)
   const uniqueCities = [...new Set(cities)];
   cityFilterMenu.innerHTML = "";
   const defaultLi = document.createElement("li");
@@ -387,21 +434,18 @@ function updateCityDropdown() {
     const a = document.createElement("a");
     a.classList.add("dropdown-item");
     a.href = "#";
-    // Store the abbreviation in data-value
     a.setAttribute("data-value", city);
-    // Display full text if available
     const fullName = cityFullNames[city] || "";
     a.textContent = fullName ? `${city} (${fullName})` : city;
     a.addEventListener("click", (e) => {
       e.preventDefault();
-      selectedCity = city; // store abbreviation only
+      selectedCity = city;
       filterImages();
     });
     li.appendChild(a);
     cityFilterMenu.appendChild(li);
   });
 }
-
 
 function populateRegionDropdown() {
   regionFilterMenu.innerHTML = "";
@@ -525,7 +569,16 @@ function filterImages() {
     const city = location.split(",").pop().trim();
     const matchesCity = !selectedCity || city === selectedCity;
     const matchesRegion = !selectedRegion || (regionCities[selectedRegion] && regionCities[selectedRegion].includes(city));
-    const matchesSearch = searchQuery.trim().length === 0 || location.toLowerCase().includes(searchQuery.toLowerCase());
+    // Build a searchable string using only SignalID and Location.
+    const searchableText = ((camera.SignalID !== undefined ? camera.SignalID.toString() : "") + " " + (camera.Location || "")).toLowerCase();
+    const query = searchQuery.trim().toLowerCase();
+    const matchesSearch = query.length === 0 || searchableText.includes(query);
+    const matchesMaintenance =
+      !selectedMaintenanceStation ||
+      (
+        (camera.MaintenanceStationOption1 && camera.MaintenanceStationOption1.toLowerCase() !== "not available" && camera.MaintenanceStationOption1 === selectedMaintenanceStation) ||
+        (camera.MaintenanceStationOption2 && camera.MaintenanceStationOption2.toLowerCase() !== "not available" && camera.MaintenanceStationOption2 === selectedMaintenanceStation)
+      );
     let matchesRoute = true;
     if (routeObj) {
       if (routeObj.routes && Array.isArray(routeObj.routes)) {
@@ -534,7 +587,7 @@ function filterImages() {
         matchesRoute = isCameraOnRoute(camera, routeObj);
       }
     }
-    return matchesCity && matchesRegion && matchesSearch && matchesRoute;
+    return matchesCity && matchesRegion && matchesSearch && matchesMaintenance && matchesRoute;
   });
 
   if (routeObj) {
@@ -734,7 +787,28 @@ if (searchInput) {
     searchQuery = e.target.value;
     filterImages();
   }, DEBOUNCE_DELAY));
+  searchInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      let instance = bootstrap.Dropdown.getInstance(document.getElementById("searchDropdownButton"));
+      if (instance) {
+        instance.hide();
+      }
+    }
+  });
 }
+
+document.getElementById('filterDropdownButton').parentElement.addEventListener('hide.bs.dropdown', () => {
+  const maintenanceOptions = document.getElementById('maintenanceOptions');
+  if (maintenanceOptions) {
+    let collapseInstance = bootstrap.Collapse.getInstance(maintenanceOptions);
+    if (!collapseInstance) {
+      collapseInstance = new bootstrap.Collapse(maintenanceOptions, { toggle: false });
+    }
+    collapseInstance.hide();
+  }
+});
+
 
 // --- Main Initialization & Splash Setup ---
 document.addEventListener('DOMContentLoaded', () => {
