@@ -151,8 +151,8 @@ body {
 }
 @media (max-width: 600px) {
   .header-controls .button {
-    flex: 1;
-    margin: 0 2px;
+    flex: 0;
+    margin: 0 3px;
     max-width: auto;
     height: 30px;
     align-items: center;
@@ -384,6 +384,8 @@ body {
   border-radius: 6px;
   transition: transform 0.2s ease-in-out;
 }
+.aspect-ratio-box:hover img { transform: scale(1.05); }
+.aspect-ratio-box:active img { transform: scale(1.02); }
 
 /* Modal Styles */
 .modal-dialog-centered {
@@ -447,7 +449,7 @@ body {
   margin: 0;
 }
 .update-list .update-header {
-  font-size: 1.2rem;  /* Larger text */
+  font-size: 1.2rem;
   font-weight: bold;
   margin: 0.5rem;
 }
@@ -455,3 +457,18 @@ body {
   font-size: 0.75rem;
   margin: 0.25rem;
 }
+
+/* Override active state for filter dropdown sub-items to persist dark grey */
+.dropdown-menu#regionFilterMenu .dropdown-item:focus,
+.dropdown-menu#regionFilterMenu .dropdown-item:hover,
+.dropdown-menu#regionFilterMenu .dropdown-item:active,
+.dropdown-menu#cityFilterMenu .dropdown-item:focus,
+.dropdown-menu#cityFilterMenu .dropdown-item:hover,
+.dropdown-menu#cityFilterMenu .dropdown-item:active {
+  background-color: #333333 !important;
+  border-color: #333333 !important;
+  color: #ffffff !important;
+  outline: none !important;
+}
+
+
