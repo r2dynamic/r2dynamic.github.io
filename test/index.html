@@ -22,23 +22,20 @@
   <meta name="theme-color" content="#4C4E52">
   <!-- External CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="stylev5.css">
+  <link rel="stylesheet" href="stylev6.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
   <title>UDOT Cameras</title>
 </head>
 <body>
-  <!-- Splash Screen with Two Video Options -->
+  <!-- Splash Screen -->
   <div id="splashScreen" class="splash-screen">
     <!-- Desktop Splash Video (Landscape) -->
     <video id="desktopVideo" class="splash-video desktop-video" autoplay muted playsinline preload="auto">
       <source src="desktop-splash.mp4" type="video/mp4">
       Your browser does not support the video tag.
     </video>
-    <!-- Mobile Splash Video (Portrait) -->
-    <video id="mobileVideo" class="splash-video mobile-video" autoplay muted playsinline preload="auto">
-      <source src="mobile-splash.mp4" type="video/mp4">
-      Your browser does not support the video tag.
-    </video>
+    <!-- Mobile Splash Image -->
+    <img id="mobileSplashImage" class="splash-image mobile-splash-image" alt="Splash Image">
   </div>
 
   <!-- Selected Filters Container -->
@@ -71,24 +68,35 @@
       </button>
       <div class="dropdown-menu glass-dropdown p-3" aria-labelledby="filterDropdownButton" style="min-width:240px; max-width:280px; max-height:500px; overflow-y:auto;">
         <!-- Region Filter Sub-Dropdown -->
-        <div class="mb-2">
+        <div class="mt-2">
           <button class="dropdown-toggle button" type="button" data-bs-toggle="collapse" data-bs-target="#regionOptions" aria-expanded="false" aria-controls="regionOptions" style="width: 100%; text-align: left;">
-            <i class="fas fa-industry"></i> Region
+            <i class="fas fa-map"></i> Region
           </button>
           <div class="collapse" id="regionOptions">
             <ul class="list-unstyled m-0" id="regionFilterMenu">
-              <!-- Options populated dynamically by main.js -->
+              <!-- Options dynamically populated -->
             </ul>
           </div>
         </div>
-        <!-- City/County Filter Sub-Dropdown -->
+        <!-- County Filter Sub-Dropdown -->
+        <div class="mt-2">
+          <button class="dropdown-toggle button" type="button" data-bs-toggle="collapse" data-bs-target="#countyOptions" aria-expanded="false" aria-controls="countyOptions" style="width: 100%; text-align: left;">
+            <i class="fas fa-building"></i> County
+          </button>
+          <div class="collapse" id="countyOptions">
+            <ul class="list-unstyled m-0" id="countyFilterMenu">
+              <!-- Options dynamically populated -->
+            </ul>
+          </div>
+        </div>
+        <!-- City Filter Sub-Dropdown -->
         <div class="mt-2">
           <button class="dropdown-toggle button" type="button" data-bs-toggle="collapse" data-bs-target="#cityOptions" aria-expanded="false" aria-controls="cityOptions" style="width: 100%; text-align: left;">
-            <i class="fas fa-map-marked-alt"></i> City/County
+            <i class="fas fa-city"></i> City
           </button>
           <div class="collapse" id="cityOptions">
             <ul class="list-unstyled m-0" id="cityFilterMenu">
-              <!-- Options populated dynamically by main.js -->
+              <!-- Options dynamically populated -->
             </ul>
           </div>
         </div>
@@ -99,7 +107,7 @@
           </button>
           <div class="collapse" id="maintenanceOptions">
             <ul class="list-unstyled m-0" id="maintenanceStationMenu">
-              <!-- Options will be populated dynamically -->
+              <!-- Options dynamically populated -->
             </ul>
           </div>
         </div>        
@@ -209,11 +217,10 @@
         <div class="modal-body text-white">
           <ul class="update-list">
             <li class="update-header">Last Camera List Update: 4/5/2025</li>
-            <li>03/22/2025 – The Routes filter is created from a predefined list of routes and milepost extents. routes are generated dynamically from the camera name, the route and milepost are parsed out. Images will be added to one of these routes automatically as often as UDOT updated their database and this app updates the main camera list. For an image to appear in a route, the camera name must contain both a route name and a milepost number.</li>
-            <li>03/30/2025 – Added bookmarkable views! With URL parameters, users can now copy and share a unique URL that preserves the current filter settings (Region, City/County, Routes, and Search).</li>
+            <li>03/22/2025 – The Routes filter is created from a predefined list of routes and milepost extents. Routes are generated dynamically from the camera name by parsing out the route and milepost. Images will be added to one of these routes automatically as often as UDOT updates their database and this app updates the main camera list. For an image to appear in a route, the camera name must contain both a route name and a milepost number.</li>
+            <li>03/30/2025 – Added bookmarkable views! With URL parameters, users can now copy and share a unique URL that preserves the current filter settings (Region, County, City, Routes, Search, and Maintenance Stations).</li>
             <li>04/04/2025 – New Maintenance Station filter!</li>
             <li>04/05/2025 – *Search for ITS ID Numbers! This is a work in progress, most cameras should have an ITS ID# that can be searched.</li>
-           
           </ul>
         </div>
         <div class="modal-footer">
@@ -251,26 +258,8 @@
   <!-- External JavaScript Files -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
-  <!-- Load our modular JavaScript -->
+  <!-- Load your modular JavaScript -->
   <script type="module" src="main.js"></script>
-  
-  <!-- Script to collapse sub dropdowns when Filter dropdown closes -->
-  <script>
-    document.addEventListener('DOMContentLoaded', function() {
-      var regionOptions = document.getElementById('regionOptions');
-      var cityOptions = document.getElementById('cityOptions');
-      // Initialize collapses without toggling
-      var regionCollapse = new bootstrap.Collapse(regionOptions, { toggle: false });
-      var cityCollapse = new bootstrap.Collapse(cityOptions, { toggle: false });
-      
-      // When the main filter dropdown is hidden, collapse both sub dropdowns.
-      var filterDropdownEl = document.getElementById('filterDropdownButton').parentElement;
-      filterDropdownEl.addEventListener('hide.bs.dropdown', function () {
-        regionCollapse.hide();
-        cityCollapse.hide();
-      });
-    });
-  </script>
   
   <!-- Service Worker Registration -->
   <script>
@@ -285,6 +274,31 @@
           });
       });
     }
+  </script>
+  
+  <!-- Random Mobile Splash Image Script -->
+  <script>
+    document.addEventListener("DOMContentLoaded", function() {
+      // Check if the viewport indicates a mobile device
+      if (window.innerWidth < 768) {
+        // Define an array of splash image URLs (all PNGs)
+        const splashImages = [
+          "images/splash1.png",
+          "images/splash2.png",
+          "images/splash3.png",
+          "images/splash5.png",
+          "images/splash5.png"
+        ];
+        // Randomly select one of the images
+        const randomIndex = Math.floor(Math.random() * splashImages.length);
+        const randomImage = splashImages[randomIndex];
+        // Set the source for the mobile splash image
+        const mobileImg = document.getElementById("mobileSplashImage");
+        if (mobileImg) {
+          mobileImg.src = randomImage;
+        }
+      }
+    });
   </script>
 </body>
 </html>
