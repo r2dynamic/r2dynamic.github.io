@@ -72,6 +72,25 @@ body {
   .mobile-video { display: none; }
 }
 
+@keyframes fadeIn {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 2;
+  }
+}
+
+.splash-image.mobile-splash-image {
+  display: block;
+  width: 100%;
+  height: auto;
+  object-fit: contain;
+  animation: fadeIn 1s ease-in forwards;
+}
+
+
+
 /* Selected Filters Container */
 .selected-filters {
   background-color: #04AA6D;
@@ -456,18 +475,5 @@ body {
 .update-list li {
   font-size: 0.75rem;
   margin: 0.25rem;
-}
-
-/* Override active state for filter dropdown sub-items to persist dark grey */
-.dropdown-menu#regionFilterMenu .dropdown-item:focus,
-.dropdown-menu#regionFilterMenu .dropdown-item:hover,
-.dropdown-menu#regionFilterMenu .dropdown-item:active,
-.dropdown-menu#cityFilterMenu .dropdown-item:focus,
-.dropdown-menu#cityFilterMenu .dropdown-item:hover,
-.dropdown-menu#cityFilterMenu .dropdown-item:active {
-  background-color: #333333 !important;
-  border-color: #333333 !important;
-  color: #ffffff !important;
-  outline: none !important;
 }
 
