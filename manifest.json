@@ -7,12 +7,12 @@
   "theme_color": "#4C4E52",
   "icons": [
     {
-      "src": "./Icongridbackground3.png",
+      "src": "./Icongridbackground3.png?v=2",
       "type": "image/png",
       "sizes": "192x192"
     },
     {
-      "src": "./Icongridbackground3.png",
+      "src": "./Icongridbackground3.png?v=2",
       "type": "image/png",
       "sizes": "512x512"
     }
