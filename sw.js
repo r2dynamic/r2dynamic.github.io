@@ -1,4 +1,4 @@
-const CACHE_NAME = 'udot-cameras-cache-v9.8';
+const CACHE_NAME = 'udot-cameras-cache-v9.9';
 const OFFLINE_URL = 'offline.html';
 const FILES_TO_CACHE = [
   '/',
@@ -9,7 +9,7 @@ const FILES_TO_CACHE = [
   '/manifest.json',
   '/mobile-splash.mp4',
   '/offline.html',
-  '/Icongridbackground3.png?v=3',
+  '/Icongridbackground3.png?v=4',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
   'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
   'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css',
