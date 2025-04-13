@@ -901,30 +901,62 @@ document.getElementById('filterDropdownButton').parentElement.addEventListener('
   });
 });
 
-// Example: Share the image URL using the Web Share API
-const shareImage = (imageUrl) => {
-  if (navigator.share) {
-    navigator.share({
-      title: "Check out this image",
-      text: "I found this image interesting. Have a look!",
-      url: imageUrl, // the URL you want to share
-    })
-    .then(() => console.log("Successful share"))
-    .catch((error) => console.error("Error sharing", error));
-  } else {
-    alert("Share not supported on this device.");
+
+// Function that fetches an image and shares it as a file.
+async function shareImageFile(imageUrl) {
+  try {
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+    // Create a File from the blob. You can choose the name as needed.
+    const file = new File([blob], "sharedImage.png", { type: blob.type });
+    
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: "Check out this image",
+        text: "I wanted to share this image with you.",
+      });
+      console.log("Image shared successfully.");
+    } else {
+      alert("Your device does not support sharing files.");
+    }
+  } catch (error) {
+    console.error("Error sharing image file:", error);
   }
-};
+}
 
-// Attach the listener to your modal or gallery image elements.
-document.querySelectorAll('.aspect-ratio-box img').forEach(img => {
-  img.addEventListener("click", (e) => {
-    // Prevent default if you want to override standard behavior
-    e.preventDefault();
-    shareImage(img.src);
+// Long-press event setup for an element selector (for example, images in the gallery)
+function setupLongPressShare(selector) {
+  const shareThreshold = 500; // long press time threshold in milliseconds
+  document.querySelectorAll(selector).forEach(img => {
+    let timer;
+    
+    img.addEventListener("touchstart", () => {
+      timer = setTimeout(() => {
+        // When a long press is detected, share the image file.
+        shareImageFile(img.src);
+      }, shareThreshold);
+    });
+    
+    // Cancel the timer if the touch ends before threshold.
+    img.addEventListener("touchend", () => {
+      clearTimeout(timer);
+    });
+    
+    img.addEventListener("touchcancel", () => {
+      clearTimeout(timer);
+    });
   });
-});
+}
 
+// Example: set up long press sharing on gallery images and modal images after the DOM is loaded.
+document.addEventListener("DOMContentLoaded", () => {
+  // For gallery images
+  setupLongPressShare('.aspect-ratio-box img');
+  
+  // For modal images
+  setupLongPressShare('#imageModal img');
+});
 
 
 // --- Main Initialization & Splash Setup ---
@@ -940,11 +972,11 @@ document.addEventListener('DOMContentLoaded', () => {
       const videos = splash.querySelectorAll('video');
       videos.forEach(video => {
         video.addEventListener('playing', () => {
-          setTimeout(fadeOutSplash, 2300);
+          setTimeout(fadeOutSplash, 3300);
         });
       });
     } else {
-      setTimeout(fadeOutSplash, 2000);
+      setTimeout(fadeOutSplash, 3000);
     }
   }
 });
