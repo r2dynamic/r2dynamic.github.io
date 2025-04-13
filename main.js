@@ -107,7 +107,6 @@ function revealMainContent() {
 }
 
 // --- Splash Screen Fade-Out ---
-// Modified: Instead of waiting for animationend event, we use setTimeout.
 function fadeOutSplash() {
   const splash = document.getElementById('splashScreen');
   if (splash) {
@@ -116,7 +115,7 @@ function fadeOutSplash() {
     setTimeout(() => {
       splash.style.display = 'none';
       updateSelectedFilters();
-    }, 1000); // 1 second matches the fadeOut animation duration
+    }, 1000); // Duration matches fade-out animation
   }
 }
 
@@ -275,7 +274,7 @@ function computeDistance(lat1, lon1, lat2, lon2) {
 }
 
 // --- Dropdown Population Functions ---
-// Update Region Dropdown based on filtered cameras (excluding region)
+// (Each update function uses getFilteredCameras and collapses its submenu upon selection)
 function updateRegionDropdown() {
   const available = getFilteredCameras("region");
   const regionsSet = new Set();
@@ -287,6 +286,7 @@ function updateRegionDropdown() {
   const regionMenu = document.getElementById("regionFilterMenu");
   if (!regionMenu) return;
   regionMenu.innerHTML = "";
+  
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
   defaultA.classList.add("dropdown-item");
@@ -308,6 +308,7 @@ function updateRegionDropdown() {
   });
   defaultLi.appendChild(defaultA);
   regionMenu.appendChild(defaultLi);
+  
   regionsArray.forEach(region => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -345,6 +346,7 @@ function updateCountyDropdown() {
   const countyMenu = document.getElementById("countyFilterMenu");
   if (!countyMenu) return;
   countyMenu.innerHTML = "";
+  
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
   defaultA.classList.add("dropdown-item");
@@ -366,6 +368,7 @@ function updateCountyDropdown() {
   });
   defaultLi.appendChild(defaultA);
   countyMenu.appendChild(defaultLi);
+  
   countiesArray.forEach(county => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -403,6 +406,7 @@ function updateCityDropdown() {
   const cityMenu = document.getElementById("cityFilterMenu");
   if (!cityMenu) return;
   cityMenu.innerHTML = "";
+  
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
   defaultA.classList.add("dropdown-item");
@@ -424,6 +428,7 @@ function updateCityDropdown() {
   });
   defaultLi.appendChild(defaultA);
   cityMenu.appendChild(defaultLi);
+  
   citiesArray.forEach(city => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -466,6 +471,7 @@ function updateMaintenanceStationDropdown() {
   const maintenanceMenu = document.getElementById("maintenanceStationMenu");
   if (!maintenanceMenu) return;
   maintenanceMenu.innerHTML = "";
+  
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
   defaultA.classList.add("dropdown-item");
@@ -487,6 +493,7 @@ function updateMaintenanceStationDropdown() {
   });
   defaultLi.appendChild(defaultA);
   maintenanceMenu.appendChild(defaultLi);
+  
   stationsArray.forEach(station => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -594,9 +601,7 @@ function resetFilters() {
   selectedRoute = "All";
   selectedMaintenanceStation = "";
   searchQuery = "";
-  if (searchInput) {
-    searchInput.value = "";
-  }
+  if (searchInput) searchInput.value = "";
   updateRegionDropdown();
   updateCountyDropdown();
   updateCityDropdown();
@@ -664,6 +669,8 @@ function renderGallery(cameras) {
     image.setAttribute("loading", "lazy");
     image.src = camera.Views[0].Url;
     image.alt = `Camera at ${camera.Location}`;
+    // Embed extra info from the camera data (here, Location – add other fields if needed)
+    image.dataset.cameraInfo = `Location: ${camera.Location}`;
     anchor.appendChild(image);
     aspectBox.appendChild(anchor);
     col.appendChild(aspectBox);
@@ -873,6 +880,48 @@ function getDistance(touch1, touch2) {
   return Math.sqrt(dx * dx + dy * dy);
 }
 
+// --- Share Image via Long Press ---
+// Function to fetch image, convert to File, and invoke share API with extra info.
+async function shareImageFile(imageUrl, extraInfo = "") {
+  try {
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+    const file = new File([blob], "sharedImage.png", { type: blob.type });
+    // Build share object—note: we omit preset text.
+    const shareData = { files: [file] };
+    if (extraInfo) {
+      shareData.title = extraInfo; // Use extra info (e.g. camera Location) as title.
+    }
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share(shareData);
+      console.log("Image shared successfully.");
+    } else {
+      alert("Your device does not support sharing files.");
+    }
+  } catch (error) {
+    console.error("Error sharing image file:", error);
+  }
+}
+
+// Function to setup long press detection and share action on images.
+function setupLongPressShare(selector) {
+  const shareThreshold = 500; // long press threshold (ms)
+  document.querySelectorAll(selector).forEach(img => {
+    let timer = null;
+    // Prevent default context menu from appearing
+    img.addEventListener("contextmenu", e => e.preventDefault());
+    img.addEventListener("touchstart", () => {
+      timer = setTimeout(() => {
+        // Retrieve extra info from custom data attribute
+        const extraInfo = img.dataset.cameraInfo || "";
+        shareImageFile(img.src, extraInfo);
+      }, shareThreshold);
+    });
+    img.addEventListener("touchend", () => clearTimeout(timer));
+    img.addEventListener("touchcancel", () => clearTimeout(timer));
+  });
+}
+
 // --- Search Input Listener ---
 if (searchInput) {
   searchInput.addEventListener("input", debounce((e) => {
@@ -914,11 +963,14 @@ document.addEventListener('DOMContentLoaded', () => {
       const videos = splash.querySelectorAll('video');
       videos.forEach(video => {
         video.addEventListener('playing', () => {
-          setTimeout(fadeOutSplash, 3300);
+          setTimeout(fadeOutSplash, 2300);
         });
       });
     } else {
-      setTimeout(fadeOutSplash, 3000);
+      setTimeout(fadeOutSplash, 2000);
     }
   }
+  // Set up long press share for gallery images and modal images:
+  setupLongPressShare('.aspect-ratio-box img');
+  setupLongPressShare('#imageModal img');
 });
