@@ -91,7 +91,7 @@ html, body {
 .splash-image.mobile-splash-image {
   width: 100%;
   height: 100%;
-  object-fit: fit; /* or 'contain' if you prefer the whole image without cropping */
+  object-fit: cover; /* or 'contain' if you prefer the whole image without cropping */
   animation: fadeIn 1s ease-in forwards;
 }
 
