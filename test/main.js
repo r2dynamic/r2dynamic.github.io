@@ -902,60 +902,66 @@ document.getElementById('filterDropdownButton').parentElement.addEventListener('
 });
 
 
-// Function that fetches an image and shares it as a file.
-async function shareImageFile(imageUrl) {
+// Function that fetches an image and shares it as a file, with optional metadata from cameras.json
+async function shareImageFile(imageUrl, extraInfo = "") {
   try {
     const response = await fetch(imageUrl);
     const blob = await response.blob();
-    // Create a File from the blob. You can choose the name as needed.
-    const file = new File([blob], "sharedImage.png", { type: blob.type });
+    const file = new File([blob], "image.png", { type: blob.type });
+    
+    // Build the share data object – include extra info if provided in title.
+    const shareData = { files: [file] };
+    if (extraInfo) {
+      shareData.title = extraInfo;
+    }
     
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        title: "Check out this image",
-        text: "I wanted to share this image with you.",
-      });
+      await navigator.share(shareData);
       console.log("Image shared successfully.");
     } else {
-      alert("Your device does not support sharing files.");
+      alert("Your device does not support file sharing.");
     }
   } catch (error) {
     console.error("Error sharing image file:", error);
   }
 }
 
-// Long-press event setup for an element selector (for example, images in the gallery)
-function setupLongPressShare(selector) {
-  const shareThreshold = 500; // long press time threshold in milliseconds
+// Long press detection for sharing the image with extra information (if you decide to include it).
+function setupLongPressShare(selector, extraInfoCallback) {
+  const shareThreshold = 500; // in ms
   document.querySelectorAll(selector).forEach(img => {
-    let timer;
+    let timer = null;
+    
+    // Prevent the default context menu to avoid conflicts.
+    img.addEventListener('contextmenu', e => e.preventDefault());
     
     img.addEventListener("touchstart", () => {
       timer = setTimeout(() => {
-        // When a long press is detected, share the image file.
-        shareImageFile(img.src);
+        // Get extra info about this image if a callback is provided.
+        const extraInfo = extraInfoCallback ? extraInfoCallback(img) : "";
+        shareImageFile(img.src, extraInfo);
       }, shareThreshold);
     });
     
-    // Cancel the timer if the touch ends before threshold.
-    img.addEventListener("touchend", () => {
-      clearTimeout(timer);
-    });
-    
-    img.addEventListener("touchcancel", () => {
-      clearTimeout(timer);
-    });
+    img.addEventListener("touchend", () => clearTimeout(timer));
+    img.addEventListener("touchcancel", () => clearTimeout(timer));
   });
 }
 
-// Example: set up long press sharing on gallery images and modal images after the DOM is loaded.
+// Example usage: If you have extra data in your cameras.json file linked to each image,
+// you might attach extra info to the image element as a data attribute (like data-info),
+// and then retrieve it in the callback.
 document.addEventListener("DOMContentLoaded", () => {
-  // For gallery images
-  setupLongPressShare('.aspect-ratio-box img');
+  // For gallery images:
+  setupLongPressShare('.aspect-ratio-box img', (img) => {
+    // Example: Return the image's alt text or any custom data attribute.
+    return img.alt; // or: return img.dataset.info;
+  });
   
-  // For modal images
-  setupLongPressShare('#imageModal img');
+  // For modal images:
+  setupLongPressShare('#imageModal img', (img) => {
+    return img.alt;
+  });
 });
 
 
