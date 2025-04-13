@@ -901,6 +901,43 @@ document.getElementById('filterDropdownButton').parentElement.addEventListener('
   });
 });
 
+async function shareImageFile(imageUrl) {
+  try {
+    const response = await fetch(imageUrl);
+    const blob = await response.blob();
+    const file = new File([blob], "image.png", { type: blob.type });
+
+    if (navigator.canShare && navigator.canShare({ files: [file] })) {
+      await navigator.share({
+        files: [file],
+        title: "Check out this image",
+        text: "I found this image interesting.",
+      });
+      console.log("Image shared successfully");
+    } else if (navigator.share) {
+      // Fallback: share the URL instead
+      await navigator.share({
+        title: "Check out this image",
+        text: "I found this image interesting.",
+        url: imageUrl,
+      });
+    } else {
+      alert("Share not supported on this device.");
+    }
+  } catch (error) {
+    console.error("Error sharing image:", error);
+  }
+}
+
+// Attach the listener to your image element(s)
+document.querySelectorAll('.aspect-ratio-box img').forEach(img => {
+  img.addEventListener("click", (e) => {
+    e.preventDefault();
+    shareImageFile(img.src);
+  });
+});
+
+
 // --- Main Initialization & Splash Setup ---
 document.addEventListener('DOMContentLoaded', () => {
   initialize();
