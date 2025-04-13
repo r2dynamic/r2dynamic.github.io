@@ -115,7 +115,7 @@ function fadeOutSplash() {
     setTimeout(() => {
       splash.style.display = 'none';
       updateSelectedFilters();
-    }, 1000); // Duration matches fade-out animation
+    }, 1000);
   }
 }
 
@@ -274,7 +274,7 @@ function computeDistance(lat1, lon1, lat2, lon2) {
 }
 
 // --- Dropdown Population Functions ---
-// (Each update function uses getFilteredCameras and collapses its submenu upon selection)
+// Each function uses getFilteredCameras and collapses its submenu on selection.
 function updateRegionDropdown() {
   const available = getFilteredCameras("region");
   const regionsSet = new Set();
@@ -601,7 +601,9 @@ function resetFilters() {
   selectedRoute = "All";
   selectedMaintenanceStation = "";
   searchQuery = "";
-  if (searchInput) searchInput.value = "";
+  if (searchInput) {
+    searchInput.value = "";
+  }
   updateRegionDropdown();
   updateCountyDropdown();
   updateCityDropdown();
@@ -669,8 +671,8 @@ function renderGallery(cameras) {
     image.setAttribute("loading", "lazy");
     image.src = camera.Views[0].Url;
     image.alt = `Camera at ${camera.Location}`;
-    // Embed extra info from the camera data (here, Location – add other fields if needed)
-    image.dataset.cameraInfo = `Location: ${camera.Location}`;
+    // Save extra info from cameras.json (Location and URL) as a custom data attribute.
+    image.dataset.cameraInfo = `Location: ${camera.Location}\nUrl: ${camera.Views[0].Url}`;
     anchor.appendChild(image);
     aspectBox.appendChild(anchor);
     col.appendChild(aspectBox);
@@ -881,17 +883,20 @@ function getDistance(touch1, touch2) {
 }
 
 // --- Share Image via Long Press ---
-// Function to fetch image, convert to File, and invoke share API with extra info.
+// Fetches the image, converts it into a File, and calls the Web Share API including extra info.
 async function shareImageFile(imageUrl, extraInfo = "") {
   try {
     const response = await fetch(imageUrl);
     const blob = await response.blob();
     const file = new File([blob], "sharedImage.png", { type: blob.type });
-    // Build share object—note: we omit preset text.
-    const shareData = { files: [file] };
-    if (extraInfo) {
-      shareData.title = extraInfo; // Use extra info (e.g. camera Location) as title.
-    }
+    
+    // Build the share object; include title and text to share extra info.
+    const shareData = { 
+      files: [file],
+      title: extraInfo,
+      text: extraInfo
+    };
+    
     if (navigator.canShare && navigator.canShare({ files: [file] })) {
       await navigator.share(shareData);
       console.log("Image shared successfully.");
@@ -903,16 +908,16 @@ async function shareImageFile(imageUrl, extraInfo = "") {
   }
 }
 
-// Function to setup long press detection and share action on images.
+// Set up long press detection on images to share them.
 function setupLongPressShare(selector) {
-  const shareThreshold = 500; // long press threshold (ms)
+  const shareThreshold = 500; // ms
   document.querySelectorAll(selector).forEach(img => {
     let timer = null;
-    // Prevent default context menu from appearing
+    // Prevent iOS default context menu.
     img.addEventListener("contextmenu", e => e.preventDefault());
     img.addEventListener("touchstart", () => {
       timer = setTimeout(() => {
-        // Retrieve extra info from custom data attribute
+        // Retrieve extra info from our data attribute (which now holds Location and Url).
         const extraInfo = img.dataset.cameraInfo || "";
         shareImageFile(img.src, extraInfo);
       }, shareThreshold);
@@ -932,9 +937,7 @@ if (searchInput) {
     if (e.key === "Enter") {
       e.preventDefault();
       let instance = bootstrap.Dropdown.getInstance(document.getElementById("searchDropdownButton"));
-      if (instance) {
-        instance.hide();
-      }
+      if (instance) instance.hide();
     }
   });
 }
@@ -943,9 +946,7 @@ document.getElementById('filterDropdownButton').parentElement.addEventListener('
   const collapseElements = document.querySelectorAll('#regionOptions, #countyOptions, #cityOptions, #maintenanceOptions');
   collapseElements.forEach(elem => {
     let collapseInstance = bootstrap.Collapse.getInstance(elem);
-    if (!collapseInstance) {
-      collapseInstance = new bootstrap.Collapse(elem, { toggle: false });
-    }
+    if (!collapseInstance) collapseInstance = new bootstrap.Collapse(elem, { toggle: false });
     collapseInstance.hide();
   });
 });
@@ -970,7 +971,7 @@ document.addEventListener('DOMContentLoaded', () => {
       setTimeout(fadeOutSplash, 2000);
     }
   }
-  // Set up long press share for gallery images and modal images:
+  // Set up long press share on gallery and modal images.
   setupLongPressShare('.aspect-ratio-box img');
   setupLongPressShare('#imageModal img');
 });
