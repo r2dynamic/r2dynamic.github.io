@@ -52,55 +52,59 @@ body {
   position: fixed;
   top: 0;
   left: 0;
-  width: 100%;
-  height: 100%;
+  width: 100vw;
+  height: calc(var(--vh, 1vh) * 100);
   z-index: 9999;
+  overflow: hidden;
   opacity: 1;
 }
 .splash-screen.fade-out {
   animation: splashFade 1s forwards;
 }
+
+/* Desktop Splash Video */
 .splash-screen video {
   width: 100%;
   height: 100%;
   object-fit: cover;
 }
 .desktop-video { display: none; }
-.mobile-video { display: block; }
 @media (min-width: 768px) {
   .desktop-video { display: block; }
-  .mobile-video { display: none; }
+  .mobile-splash-image { display: none; }
 }
 
+/* Mobile Splash Image */
+html, body {
+  height: 100%;
+  margin: 0;
+  padding: 0;
+}
 
-/* Make sure the splash container fills the safe viewport */
+/* Splash screen container uses the calculated viewport height */
 .splash-screen {
   position: fixed;
   top: 0;
   left: 0;
   width: 100vw;
-  /* Subtract safe area insets so that on devices like iPhones in standalone mode 
-     the container does not go beyond the usable screen space */
-  height: calc(100vh - env(safe-area-inset-top) - env(safe-area-inset-bottom));
+  height: calc(var(--vh, 1vh) * 100);
   overflow: hidden;
+  z-index: 9999;
 }
 
-/* Style the mobile splash image so it fills the container */
+/* Mobile splash image fills the container and aligns its top */
 .splash-image.mobile-splash-image {
   width: 100%;
   height: 100%;
-  object-fit: cover;  /* Use 'cover' to fill the container, or 'contain' if you want the full image to show with blank areas */
-  animation: fadeIn 1.5s ease-in forwards;
+  object-fit: cover;
+  object-position: center top; /* force alignment of the top edge */
+  animation: fadeIn 1s ease-in forwards;
 }
 
-/* Fade in keyframes */
 @keyframes fadeIn {
   from { opacity: 0; }
   to { opacity: 1; }
 }
-
-
-
 
 
 /* Selected Filters Container */
@@ -113,7 +117,6 @@ body {
   border-radius: 8px;
   box-shadow: 0 6px #999;
   margin-bottom: 5px;
-  /* Initially hidden until a filter is selected */
   display: none;
   transition: opacity 0.3s ease;
   white-space: pre-line;
@@ -123,7 +126,7 @@ body {
   box-sizing: border-box;
 }
 
-/* Left container for filter items (vertical list) */
+/* Filter Items and Action Buttons */
 .selected-filters .badges {
   display: flex;
   flex-direction: column;
@@ -138,16 +141,14 @@ body {
   align-items: center;
 }
 .selected-filters .filter-item i {
-  margin-right: 15px; /* Increased gap between icon and text */
+  margin-right: 15px;
 }
-
-/* Right container for action buttons */
 .selected-filters .action-buttons {
   margin-left: auto;
   display: flex;
   gap: 5px;
   align-items: center;
-  height: 40px;  /* Fixed height to avoid stretching */
+  height: 40px;
 }
 .reset-button {
   background-color: #04AA6D;
@@ -402,7 +403,7 @@ body {
 .aspect-ratio-box {
   width: 100%;
   position: relative;
-  padding-bottom: 56.25%; /* 16:9 ratio */
+  padding-bottom: 56.25%;
   overflow: hidden;
 }
 .aspect-ratio-box img {
@@ -488,4 +489,3 @@ body {
   font-size: 0.75rem;
   margin: 0.25rem;
 }
-
