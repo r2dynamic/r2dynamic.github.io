@@ -901,41 +901,30 @@ document.getElementById('filterDropdownButton').parentElement.addEventListener('
   });
 });
 
-async function shareImageFile(imageUrl) {
-  try {
-    const response = await fetch(imageUrl);
-    const blob = await response.blob();
-    const file = new File([blob], "image.png", { type: blob.type });
-
-    if (navigator.canShare && navigator.canShare({ files: [file] })) {
-      await navigator.share({
-        files: [file],
-        title: "Check out this image",
-        text: "I found this image interesting.",
-      });
-      console.log("Image shared successfully");
-    } else if (navigator.share) {
-      // Fallback: share the URL instead
-      await navigator.share({
-        title: "Check out this image",
-        text: "I found this image interesting.",
-        url: imageUrl,
-      });
-    } else {
-      alert("Share not supported on this device.");
-    }
-  } catch (error) {
-    console.error("Error sharing image:", error);
+// Example: Share the image URL using the Web Share API
+const shareImage = (imageUrl) => {
+  if (navigator.share) {
+    navigator.share({
+      title: "Check out this image",
+      text: "I found this image interesting. Have a look!",
+      url: imageUrl, // the URL you want to share
+    })
+    .then(() => console.log("Successful share"))
+    .catch((error) => console.error("Error sharing", error));
+  } else {
+    alert("Share not supported on this device.");
   }
-}
+};
 
-// Attach the listener to your image element(s)
+// Attach the listener to your modal or gallery image elements.
 document.querySelectorAll('.aspect-ratio-box img').forEach(img => {
   img.addEventListener("click", (e) => {
+    // Prevent default if you want to override standard behavior
     e.preventDefault();
-    shareImageFile(img.src);
+    shareImage(img.src);
   });
 });
+
 
 
 // --- Main Initialization & Splash Setup ---
