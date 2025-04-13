@@ -114,6 +114,8 @@ function fadeOutSplash() {
     splash.classList.add('fade-out');
     splash.addEventListener('animationend', () => {
       splash.style.display = 'none';
+      // When splash is gone, update filters container display based on current selection
+      updateSelectedFilters();
     });
   }
 }
@@ -557,6 +559,13 @@ function updateMaintenanceStationDropdown() {
 // --- Selected Filters Display & Reset ---
 function updateSelectedFilters() {
   const filtersContainer = document.getElementById("selectedFilters");
+  const splash = document.getElementById("splashScreen");
+  // If splash screen is still visible, keep the filters hidden
+  if (splash && splash.style.display !== 'none') {
+    filtersContainer.style.display = "none";
+    return;
+  }
+  
   filtersContainer.innerHTML = "";
   
   const badgesContainer = document.createElement("div");
@@ -583,7 +592,7 @@ function updateSelectedFilters() {
   if (selectedMaintenanceStation) {
     const maintDiv = document.createElement("div");
     maintDiv.className = "filter-item";
-    maintDiv.innerHTML = '<i class="fas fa-warehouse"></i> Maintenance: ' + selectedMaintenanceStation;
+    maintDiv.innerHTML = '<i class="fas fa-tools"></i> Maintenance: ' + selectedMaintenanceStation;
     badgesContainer.appendChild(maintDiv);
   }
   if (selectedRoute && selectedRoute !== "All") {
@@ -625,9 +634,10 @@ function updateSelectedFilters() {
     buttonContainer.appendChild(copyButton);
     
     filtersContainer.appendChild(buttonContainer);
+    filtersContainer.style.display = "flex";
+  } else {
+    filtersContainer.style.display = "none";
   }
-  
-  filtersContainer.style.display = hasFilters ? "flex" : "none";
 }
 
 function resetFilters() {
