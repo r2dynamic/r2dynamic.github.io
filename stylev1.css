@@ -72,6 +72,25 @@ body {
   .mobile-video { display: none; }
 }
 
+
+
+/* Mobile splash image styling */
+.splash-image.mobile-splash-image {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;  /* Ensures the image covers the container */
+  animation: fadeIn 2s ease-in forwards;
+}
+
+/* Optional: Keyframes for fade-in effect */
+@keyframes fadeIn {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+
+
+
+
 /* Selected Filters Container */
 .selected-filters {
   background-color: #04AA6D;
