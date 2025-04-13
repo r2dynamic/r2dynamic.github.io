@@ -8,7 +8,7 @@ const DEBOUNCE_DELAY = 300;
 const MIN_IMAGE_SIZE = 80; // Enforced minimum grid image size
 
 // --- Global Variables ---
-// Filters based on camera data fields (all interdependent)
+// Interdependent filter selections
 let selectedRegion = "";
 let selectedCounty = "";
 let selectedCity = "";
@@ -107,16 +107,16 @@ function revealMainContent() {
 }
 
 // --- Splash Screen Fade-Out ---
+// Modified: Instead of waiting for animationend event, we use setTimeout.
 function fadeOutSplash() {
   const splash = document.getElementById('splashScreen');
   if (splash) {
     revealMainContent();
     splash.classList.add('fade-out');
-    splash.addEventListener('animationend', () => {
+    setTimeout(() => {
       splash.style.display = 'none';
-      // When splash is gone, update filters container display based on current selection
       updateSelectedFilters();
-    });
+    }, 1000); // 1 second matches the fadeOut animation duration
   }
 }
 
@@ -135,27 +135,15 @@ function updateURLParameters() {
 
 function applyFiltersFromURL() {
   const params = new URLSearchParams(window.location.search);
-  if (params.has("region")) {
-    selectedRegion = params.get("region");
-  }
-  if (params.has("county")) {
-    selectedCounty = params.get("county");
-  }
-  if (params.has("city")) {
-    selectedCity = params.get("city");
-  }
-  if (params.has("route")) {
-    selectedRoute = params.get("route");
-  }
+  if (params.has("region")) selectedRegion = params.get("region");
+  if (params.has("county")) selectedCounty = params.get("county");
+  if (params.has("city")) selectedCity = params.get("city");
+  if (params.has("route")) selectedRoute = params.get("route");
   if (params.has("search")) {
     searchQuery = params.get("search");
-    if (searchInput) {
-      searchInput.value = searchQuery;
-    }
+    if (searchInput) searchInput.value = searchQuery;
   }
-  if (params.has("maintenance")) {
-    selectedMaintenanceStation = params.get("maintenance");
-  }
+  if (params.has("maintenance")) selectedMaintenanceStation = params.get("maintenance");
   updateRegionDropdown();
   updateCountyDropdown();
   updateCityDropdown();
@@ -169,12 +157,8 @@ function copyURLToClipboard() {
   const url = window.location.href;
   if (navigator.clipboard && navigator.clipboard.writeText) {
     navigator.clipboard.writeText(url)
-      .then(() => {
-        alert("URL copied to clipboard!");
-      })
-      .catch(err => {
-        console.error("Failed to copy URL:", err);
-      });
+      .then(() => alert("URL copied to clipboard!"))
+      .catch(err => console.error("Failed to copy URL:", err));
   } else {
     const input = document.createElement("input");
     input.value = url;
@@ -200,7 +184,7 @@ const sizeSlider = document.getElementById("sizeSlider");
 const sizeControlButton = document.getElementById("sizeControlButton");
 const sizeSliderContainer = document.getElementById("sizeSliderContainer");
 
-// --- Modal Map Toggle Elements ---
+// --- Modal Map Toggle ---
 const mapButton = document.getElementById("mapButton");
 const modalBody = document.getElementById("modalBody");
 const modalImageContainer = document.getElementById("modalImageContainer");
@@ -232,9 +216,7 @@ if (mapButton) {
       mapDisplayed = true;
     } else {
       const mapContainer = document.getElementById("modalMapContainer");
-      if (mapContainer) {
-        modalBody.removeChild(mapContainer);
-      }
+      if (mapContainer) modalBody.removeChild(mapContainer);
       modalImageContainer.style.flex = "1";
       mapButton.textContent = "Map";
       mapDisplayed = false;
@@ -245,9 +227,7 @@ if (mapButton) {
 if (imageModalEl) {
   imageModalEl.addEventListener("hidden.bs.modal", () => {
     const mapContainer = document.getElementById("modalMapContainer");
-    if (mapContainer) {
-      modalBody.removeChild(mapContainer);
-    }
+    if (mapContainer) modalBody.removeChild(mapContainer);
     modalImageContainer.style.flex = "1";
     mapButton.textContent = "Map";
     mapDisplayed = false;
@@ -295,7 +275,6 @@ function computeDistance(lat1, lon1, lat2, lon2) {
 }
 
 // --- Dropdown Population Functions ---
-
 // Update Region Dropdown based on filtered cameras (excluding region)
 function updateRegionDropdown() {
   const available = getFilteredCameras("region");
@@ -308,8 +287,6 @@ function updateRegionDropdown() {
   const regionMenu = document.getElementById("regionFilterMenu");
   if (!regionMenu) return;
   regionMenu.innerHTML = "";
-  
-  // Default option
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
   defaultA.classList.add("dropdown-item");
@@ -323,7 +300,6 @@ function updateRegionDropdown() {
     updateCityDropdown();
     updateMaintenanceStationDropdown();
     filterImages();
-    // Collapse region submenu
     const regionOptions = document.getElementById("regionOptions");
     if (regionOptions) {
       const collapseInstance = bootstrap.Collapse.getInstance(regionOptions) || new bootstrap.Collapse(regionOptions, { toggle: false });
@@ -332,7 +308,6 @@ function updateRegionDropdown() {
   });
   defaultLi.appendChild(defaultA);
   regionMenu.appendChild(defaultLi);
-  
   regionsArray.forEach(region => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -347,7 +322,6 @@ function updateRegionDropdown() {
       updateCityDropdown();
       updateMaintenanceStationDropdown();
       filterImages();
-      // Collapse region submenu
       const regionOptions = document.getElementById("regionOptions");
       if (regionOptions) {
         const collapseInstance = bootstrap.Collapse.getInstance(regionOptions) || new bootstrap.Collapse(regionOptions, { toggle: false });
@@ -359,7 +333,6 @@ function updateRegionDropdown() {
   });
 }
 
-// Update County Dropdown based on filtered cameras (excluding county)
 function updateCountyDropdown() {
   const available = getFilteredCameras("county");
   const countiesSet = new Set();
@@ -372,8 +345,6 @@ function updateCountyDropdown() {
   const countyMenu = document.getElementById("countyFilterMenu");
   if (!countyMenu) return;
   countyMenu.innerHTML = "";
-  
-  // Default option
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
   defaultA.classList.add("dropdown-item");
@@ -387,7 +358,6 @@ function updateCountyDropdown() {
     updateRegionDropdown();
     updateMaintenanceStationDropdown();
     filterImages();
-    // Collapse county submenu
     const countyOptions = document.getElementById("countyOptions");
     if (countyOptions) {
       const collapseInstance = bootstrap.Collapse.getInstance(countyOptions) || new bootstrap.Collapse(countyOptions, { toggle: false });
@@ -396,7 +366,6 @@ function updateCountyDropdown() {
   });
   defaultLi.appendChild(defaultA);
   countyMenu.appendChild(defaultLi);
-  
   countiesArray.forEach(county => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -411,7 +380,6 @@ function updateCountyDropdown() {
       updateRegionDropdown();
       updateMaintenanceStationDropdown();
       filterImages();
-      // Collapse county submenu
       const countyOptions = document.getElementById("countyOptions");
       if (countyOptions) {
         const collapseInstance = bootstrap.Collapse.getInstance(countyOptions) || new bootstrap.Collapse(countyOptions, { toggle: false });
@@ -423,7 +391,6 @@ function updateCountyDropdown() {
   });
 }
 
-// Update City Dropdown based on filtered cameras (excluding city)
 function updateCityDropdown() {
   const available = getFilteredCameras("city");
   const citiesSet = new Set();
@@ -436,8 +403,6 @@ function updateCityDropdown() {
   const cityMenu = document.getElementById("cityFilterMenu");
   if (!cityMenu) return;
   cityMenu.innerHTML = "";
-  
-  // Default option
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
   defaultA.classList.add("dropdown-item");
@@ -451,7 +416,6 @@ function updateCityDropdown() {
     updateCountyDropdown();
     updateMaintenanceStationDropdown();
     filterImages();
-    // Collapse city submenu
     const cityOptions = document.getElementById("cityOptions");
     if (cityOptions) {
       const collapseInstance = bootstrap.Collapse.getInstance(cityOptions) || new bootstrap.Collapse(cityOptions, { toggle: false });
@@ -460,7 +424,6 @@ function updateCityDropdown() {
   });
   defaultLi.appendChild(defaultA);
   cityMenu.appendChild(defaultLi);
-  
   citiesArray.forEach(city => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -475,7 +438,6 @@ function updateCityDropdown() {
       updateCountyDropdown();
       updateMaintenanceStationDropdown();
       filterImages();
-      // Collapse city submenu
       const cityOptions = document.getElementById("cityOptions");
       if (cityOptions) {
         const collapseInstance = bootstrap.Collapse.getInstance(cityOptions) || new bootstrap.Collapse(cityOptions, { toggle: false });
@@ -487,7 +449,6 @@ function updateCityDropdown() {
   });
 }
 
-// Update Maintenance Station Dropdown based on filtered cameras (excluding maintenance)
 function updateMaintenanceStationDropdown() {
   const available = getFilteredCameras("maintenance");
   const stationsSet = new Set();
@@ -505,8 +466,6 @@ function updateMaintenanceStationDropdown() {
   const maintenanceMenu = document.getElementById("maintenanceStationMenu");
   if (!maintenanceMenu) return;
   maintenanceMenu.innerHTML = "";
-  
-  // Default option
   const defaultLi = document.createElement("li");
   const defaultA = document.createElement("a");
   defaultA.classList.add("dropdown-item");
@@ -520,7 +479,6 @@ function updateMaintenanceStationDropdown() {
     updateCountyDropdown();
     updateCityDropdown();
     filterImages();
-    // Collapse maintenance submenu
     const maintenanceOptions = document.getElementById("maintenanceOptions");
     if (maintenanceOptions) {
       const collapseInstance = bootstrap.Collapse.getInstance(maintenanceOptions) || new bootstrap.Collapse(maintenanceOptions, { toggle: false });
@@ -529,7 +487,6 @@ function updateMaintenanceStationDropdown() {
   });
   defaultLi.appendChild(defaultA);
   maintenanceMenu.appendChild(defaultLi);
-  
   stationsArray.forEach(station => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -544,7 +501,6 @@ function updateMaintenanceStationDropdown() {
       updateCountyDropdown();
       updateCityDropdown();
       filterImages();
-      // Collapse maintenance submenu
       const maintenanceOptions = document.getElementById("maintenanceOptions");
       if (maintenanceOptions) {
         const collapseInstance = bootstrap.Collapse.getInstance(maintenanceOptions) || new bootstrap.Collapse(maintenanceOptions, { toggle: false });
@@ -560,17 +516,13 @@ function updateMaintenanceStationDropdown() {
 function updateSelectedFilters() {
   const filtersContainer = document.getElementById("selectedFilters");
   const splash = document.getElementById("splashScreen");
-  // If splash screen is still visible, keep the filters hidden
   if (splash && splash.style.display !== 'none') {
     filtersContainer.style.display = "none";
     return;
   }
-  
   filtersContainer.innerHTML = "";
-  
   const badgesContainer = document.createElement("div");
   badgesContainer.className = "badges";
-  
   if (selectedRegion) {
     const regionDiv = document.createElement("div");
     regionDiv.className = "filter-item";
@@ -607,22 +559,18 @@ function updateSelectedFilters() {
     searchDiv.innerHTML = '<i class="fas fa-search"></i> Search: ' + searchQuery;
     badgesContainer.appendChild(searchDiv);
   }
-  
   filtersContainer.appendChild(badgesContainer);
-  
   const hasFilters = selectedRegion || selectedCounty || selectedCity ||
                      selectedMaintenanceStation || (selectedRoute && selectedRoute !== "All") || searchQuery;
   if (hasFilters) {
     const buttonContainer = document.createElement("div");
     buttonContainer.className = "action-buttons";
-    
     const resetButton = document.createElement("button");
     resetButton.innerHTML = '<i class="fas fa-undo"></i>';
     resetButton.title = "Reset Filters";
     resetButton.classList.add("reset-button");
     resetButton.addEventListener("click", resetFilters);
     buttonContainer.appendChild(resetButton);
-    
     const copyButton = document.createElement("button");
     copyButton.innerHTML = '<i class="fas fa-link"></i>';
     copyButton.title = "Copy Link";
@@ -632,7 +580,6 @@ function updateSelectedFilters() {
       copyURLToClipboard();
     });
     buttonContainer.appendChild(copyButton);
-    
     filtersContainer.appendChild(buttonContainer);
     filtersContainer.style.display = "flex";
   } else {
@@ -679,7 +626,6 @@ function updateRouteOptions() {
   });
   defaultLi.appendChild(defaultA);
   routeFilterMenu.appendChild(defaultLi);
-  
   curatedRoutes.forEach(route => {
     const li = document.createElement("li");
     const a = document.createElement("a");
@@ -698,7 +644,7 @@ function updateRouteOptions() {
   });
 }
 
-// --- Gallery Rendering ---
+// --- Gallery Rendering Functions ---
 function renderGallery(cameras) {
   galleryContainer.innerHTML = "";
   cameras.forEach((camera, index) => {
@@ -747,7 +693,6 @@ function filterImages() {
   const routeObj = selectedRoute !== "All"
     ? curatedRoutes.find(route => (route.displayName || route.name) === selectedRoute)
     : null;
-
   visibleCameras = camerasList.filter(camera => {
     const searchableText = ((camera.SignalID !== undefined ? camera.SignalID.toString() : "") + " " + (camera.Location || "")).toLowerCase();
     const query = searchQuery.trim().toLowerCase();
@@ -769,7 +714,6 @@ function filterImages() {
     const matchesCity = !selectedCity || (camera.MunicipalBoundary && camera.MunicipalBoundary === selectedCity);
     return matchesSearch && matchesMaintenance && matchesRoute && matchesRegion && matchesCounty && matchesCity;
   });
-
   updateCameraCount();
   renderGallery(visibleCameras);
   currentIndex = 0;
@@ -965,16 +909,16 @@ document.addEventListener('DOMContentLoaded', () => {
   
   const splash = document.getElementById('splashScreen');
   if (splash) {
-    const videos = splash.querySelectorAll('video');
-    videos.forEach(video => {
-      video.addEventListener('playing', () => {
-        setTimeout(fadeOutSplash, 2300);
+    let desktopVideo = document.getElementById('desktopVideo');
+    if (desktopVideo && getComputedStyle(desktopVideo).display !== 'none') {
+      const videos = splash.querySelectorAll('video');
+      videos.forEach(video => {
+        video.addEventListener('playing', () => {
+          setTimeout(fadeOutSplash, 2300);
+        });
       });
-    });
-  }
-  setTimeout(() => {
-    if (splash && splash.style.display !== 'none') {
-      fadeOutSplash();
+    } else {
+      setTimeout(fadeOutSplash, 2000);
     }
-  }, 4300);
+  }
 });
