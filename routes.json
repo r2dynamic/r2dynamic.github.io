@@ -1,69 +1,69 @@
-[
+[ 
   {
-    "name": "US-89/91",
+    "name": "91P",
     "displayName": "US-89/91 (Sardine Canyon)",
-    "mpMin": 0,
-    "mpMax": 100
+    "mpMin": 4,
+    "mpMax": 26
   },
   {
-    "name": "I-84",
+    "name": "84P",
     "displayName": "I-84 (Weber Canyon)",
     "mpMin": 85,
     "mpMax": 125
   },
   {
-    "name": "I-80",
+    "name": "80P",
     "displayName": "Parley's Canyon",
     "mpMin": 128,
     "mpMax": 150
   },
   {
-    "name": "SR-190",
+    "name": "190P",
     "displayName": "Big Cottonwood Cyn"
   },
   {
-    "name": "SR-210",
+    "name": "210P",
     "displayName": "Little Cottonwood Cyn"
   },
   {
     "displayName": "TOC to Grantsville",
     "routes": [
-      { "name": "SR-201", "mpMin": 0, "mpMax": 14, "sortOrder": "desc" },
-      { "name": "I-80", "mpMin": 83, "mpMax": 101, "sortOrder": "desc" }
+      { "name": "201P", "mpMin": 0, "mpMax": 14, "sortOrder": "desc" },
+      { "name": "80P", "mpMin": 83, "mpMax": 101, "sortOrder": "desc" }
     ]
   },  
   {
-    "name": "US-189",
+    "name": "189P",
     "displayName": "Provo Cyn",
     "mpMin": 7,
     "mpMax": 30
   },
   {
-    "name": "US-6",
+    "name": "6P",
     "displayName": "US-6",
     "mpMin": 177,
     "mpMax": 242
   },
   {
-    "name": "I-15",
+    "name": "15P",
     "displayName": "I-15 (SF to AF)",
     "mpMin": 257,
     "mpMax": 277
   },
     {
-    "name": "I-15",
+    "name": "15P",
     "displayName": "I-15 (AF to Lehi)",
     "mpMin": 277,
     "mpMax": 284
   },
   {
-    "name": "I-70",
+    "name": "70P",
     "displayName": "I-70",
     "mpMin": 0,
     "mpMax": 240
   },
   {
-    "name": "I-15",
+    "name": "15",
     "displayName": "I-15 (Statewide)"
   }
   
