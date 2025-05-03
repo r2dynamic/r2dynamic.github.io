@@ -14,16 +14,16 @@
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
   <meta property="og:title" content="UDOT Cameras">
   <meta property="og:description" content="Interact with UDOT Cameras in a grid format">
-  <meta property="og:image" content="https://udotcameras.com/Icongridbackground2.png">
+  <meta property="og:image" content="https://udotcameras.com/Icongridbackground3.png">
   <meta property="og:url" content="https://udotcameras.com">
   <!-- Favicon -->
-  <link rel="icon" href="/Icongridbackground2.png" type="image/png">
+  <link rel="icon" href="/camIcon1.png" type="image/png">
   <!-- PWA Manifest & Theme Color -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4C4E52">
   <!-- External CSS -->
   <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet" />
-  <link rel="stylesheet" href="stylev2.css">
+  <link rel="stylesheet" href="stylev3.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
   <title>UDOT Cameras</title>
 </head>
@@ -105,7 +105,36 @@
               <!-- Options dynamically populated -->
             </ul>
           </div>
-        </div>        
+        </div> 
+        <!-- Other Filters Sub‑Dropdown -->
+<div class="mt-2">
+  <button
+    class="dropdown‑toggle button"
+    type="button"
+    data-bs-toggle="collapse"
+    data-bs-target="#otherFiltersOptions"
+    aria-expanded="false"
+    aria-controls="otherFiltersOptions"
+    style="width:100%; text-align:left;"
+  >
+    <i class="fas fa-sliders-h"></i> Other Filters
+  </button>
+  <div class="collapse" id="otherFiltersOptions">
+    <ul class="list-unstyled m-0" id="otherFiltersMenu">
+      <li>
+        <a
+          class="dropdown-item"
+          href="#"
+          data-value="Inactive Cameras"
+        >
+          Inactive Cameras
+        </a>
+      </li>
+      <!-- future filter items go here -->
+    </ul>
+  </div>
+</div>
+       
       </div>
     </div>
 
@@ -125,7 +154,7 @@
         <i class="fas fa-search"></i>
       </button>
       <div class="dropdown-menu glass-dropdown p-3" style="min-width: 250px;" aria-label="Search options">
-        <input type="text" id="searchInput" placeholder="Name or ITS ID#*" class="form-control glass-dropdown-input" />
+        <input type="text" id="searchInput" placeholder="Camera Name" class="form-control glass-dropdown-input" />
       </div>
     </div>
 
@@ -215,7 +244,6 @@
             <li>03/22/2025 – The Routes filter is created from a predefined list of routes and milepost extents. Routes are generated dynamically from the camera name by parsing out the route and milepost. Images will be added to one of these routes automatically as often as UDOT updates their database and this app updates the main camera list. For an image to appear in a route, the camera name must contain both a route name and a milepost number.</li>
             <li>03/30/2025 – Added bookmarkable views! With URL parameters, users can now copy and share a unique URL that preserves the current filter settings.</li>
             <li>04/04/2025 – New Maintenance Station filter!</li>
-            <li>04/05/2025 – *Search for ITS ID Numbers! This is a work in progress, most cameras should have an ITS ID# that can be searched.</li>
           </ul>
         </div>
         <div class="modal-footer">
@@ -227,23 +255,27 @@
 
   <!-- About This App Modal -->
   <div class="modal fade" id="aboutAppModal" tabindex="-1" aria-labelledby="aboutAppLabel" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-lg">
+    <div class="modal-dialog modal-dialog-centered">
       <div class="modal-content glass-modal">
         <div class="modal-header">
           <h5 class="modal-title fw-bold" id="aboutAppLabel">About This App</h5>
         </div>
-        <div class="modal-body text-center p-4" style="max-width: 100%; overflow: hidden;">
-          <p id="mobileAppText" class="mb-3 text-white">
-            Coming Soon.
-          </p>        
+        <div class="modal-body text-white">
+          <ul class="update-list">
+            <li class="update-header">View and explore UDOT Traffic cameras!</li>
+            <li>This Progressive Web App (PWA) can be viewed in a web browser or installed as an app.
+                A PWA is installed as an app within a web browser while viewing udotcameras.com, not in the App Store or Google Play.</li>
+            <li>This website is not associated with UDOT and is not a product of UDOT.
+                 udotcameras.com is independently developed as an experiment and a fun, convenient way to look at cameras.</li>
+          </ul>
         </div>
-        <div style="width: 100%; max-width: 600px; margin: 0 auto;">
-          <img src="comingsoon.gif"
-               alt="Mobile App Demo"
+       <div style="width: 100%; max-width: 60px; margin: 0 auto;">
+          <img src="camIcon2.png"
+               alt="UDOT Cameras"
                class="img-fluid rounded shadow"
                style="width: 100%; height: auto;" />
         </div>
-        <div class="modal-footer justify-content-center">
+        <div class="modal-footer">
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
       </div>
@@ -280,5 +312,6 @@
     window.addEventListener('resize', setVh);
     document.addEventListener('DOMContentLoaded', setVh);
   </script>
+  
 </body>
 </html>
