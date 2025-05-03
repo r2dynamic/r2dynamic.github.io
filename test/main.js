@@ -86,31 +86,31 @@ function initialize() {
     })
     .catch(err => console.error("Error loading cameras:", err));
 
-  getCuratedRoutes()
-    .then(routes => {
-      curatedRoutes = routes.sort((a, b) => {
-        const aMin = a.mpMin != null ? a.mpMin : Infinity;
-        const bMin = b.mpMin != null ? b.mpMin : Infinity;
-        return aMin - bMin;
-      });
-      updateRouteOptions();
-    })
-    .catch(err => console.error("Error loading curated routes:", err))
-    .finally(() => {
-      // Wire up Other Filters submenu AFTER everything loads
-      document
-        .querySelectorAll('#otherFiltersMenu .dropdown-item')
-        .forEach(a => {
-          a.addEventListener('click', e => {
-            e.preventDefault();
-            selectedOtherFilter = a.dataset.value;
-            bootstrap.Collapse
-              .getOrCreateInstance(document.getElementById('otherFiltersOptions'))
-              .hide();
-            filterImages();
-          });
+    getCuratedRoutes()
+  .then(routes => {
+    // Preserve file order exactly as in routes.json
+    curatedRoutes = routes;
+    updateRouteOptions();
+  })
+  .catch(err => console.error("Error loading curated routes:", err))
+  .finally(() => {
+    // Wire up Other Filters submenu AFTER everything loads
+    document
+      .querySelectorAll('#otherFiltersMenu .dropdown-item')
+      .forEach(a => {
+        a.addEventListener('click', e => {
+          e.preventDefault();
+          selectedOtherFilter = a.dataset.value;
+          bootstrap.Collapse
+            .getOrCreateInstance(
+              document.getElementById('otherFiltersOptions')
+            )
+            .hide();
+          filterImages();
         });
-    });
+      });
+  });
+
 }
 
 // --- Reveal Main Content ---
