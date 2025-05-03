@@ -36055,7 +36055,7 @@
         {
           "Id": 11089,
           "Url": "https://www.udottraffic.utah.gov/map/Cctv/11089",
-          "Status": "Enabled",
+          "Status": "Disabled",
           "Description": ""
         }
       ]
@@ -50335,7 +50335,7 @@
         {
           "Id": 12043,
           "Url": "https://www.udottraffic.utah.gov/map/Cctv/12043",
-          "Status": "Enabled",
+          "Status": "Disabled",
           "Description": ""
         }
       ]
@@ -52075,7 +52075,7 @@
         {
           "Id": 12372,
           "Url": "https://www.udottraffic.utah.gov/map/Cctv/12372",
-          "Status": "Enabled",
+          "Status": "Disabled",
           "Description": ""
         }
       ]
@@ -52405,7 +52405,7 @@
         {
           "Id": 11257,
           "Url": "https://www.udottraffic.utah.gov/map/Cctv/11257",
-          "Status": "Enabled",
+          "Status": "Disabled",
           "Description": ""
         }
       ]
