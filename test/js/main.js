@@ -125,8 +125,8 @@ document.addEventListener('DOMContentLoaded', () => {
       dv.addEventListener('playing', () => setTimeout(fadeOutSplash, 2300));
       dv.addEventListener('error', () => setTimeout(fadeOutSplash, 2000));
     }
-    // Always hide splash after maximum 5 seconds
-    setTimeout(fadeOutSplash, 5000);
+    // Always hide splash after maximum 3 seconds
+    setTimeout(fadeOutSplash, 3000);
   }
 
   // Set up image share long-press
