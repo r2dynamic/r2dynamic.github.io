@@ -16,7 +16,7 @@ import {
   setupModalCleanup,
   setupLongPressShare
 } from './modal.js';
-import { setupNearestCameraButton } from './geolocation.js';
+import { setupNearestCameraButton, autoSortByLocation } from './geolocation.js';
 import {
   setupSearchListener,
   setupRefreshButton,
@@ -104,6 +104,11 @@ document.addEventListener('DOMContentLoaded', () => {
   initializeApp();
 
   setupNearestCameraButton();
+  // Auto-sort by last known location if permission was granted
+  if (localStorage.getItem('locationAllowed') === 'true') {
+    autoSortByLocation();
+  }
+
   setupRefreshButton();
   setupSearchListener();
   setupDropdownHide();

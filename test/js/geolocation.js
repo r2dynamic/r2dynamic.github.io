@@ -1,5 +1,7 @@
 // geolocation.js
 import { computeDistance } from './utils.js';
+import { updateCameraCount, renderGallery, showImage } from './gallery.js';
+import { updateSelectedFilters, updateURLParameters } from './ui.js';
 
 const nearestButton = document.getElementById('nearestButton');
 
@@ -9,20 +11,27 @@ const nearestButton = document.getElementById('nearestButton');
 export function setupNearestCameraButton() {
   if (!nearestButton) return;
   nearestButton.addEventListener('click', () => {
-    if (!navigator.geolocation) return alert('Geolocation not supported');
+    if (!navigator.geolocation) {
+      return alert('Geolocation not supported');
+    }
     navigator.geolocation.getCurrentPosition(
       pos => {
         localStorage.setItem('locationAllowed', 'true');
-        const ulat = pos.coords.latitude, ulng = pos.coords.longitude;
-        const cw   = camerasList.map(cam => ({
+        const ulat = pos.coords.latitude;
+        const ulng = pos.coords.longitude;
+
+        // build and sort the distance array
+        const cw = window.camerasList.map(cam => ({
           camera: cam,
           distance: computeDistance(ulat, ulng, cam.Latitude, cam.Longitude)
         }));
         cw.sort((a, b) => a.distance - b.distance);
-        visibleCameras = cw.map(item => item.camera);
+
+        // update the globals and UI
+        window.visibleCameras = cw.map(item => item.camera);
         updateCameraCount();
-        renderGallery(visibleCameras);
-        currentIndex = 0;
+        renderGallery(window.visibleCameras);
+        window.currentIndex = 0;
         showImage(0);
         updateSelectedFilters();
         updateURLParameters();
@@ -36,23 +45,28 @@ export function setupNearestCameraButton() {
  * Auto-sorts the gallery by proximity on load if permitted.
  */
 export function autoSortByLocation() {
-  if (!navigator.geolocation) return renderGallery(visibleCameras);
+  if (!navigator.geolocation) {
+    return renderGallery(window.visibleCameras);
+  }
   navigator.geolocation.getCurrentPosition(
     pos => {
       localStorage.setItem('locationAllowed', 'true');
-      const ulat = pos.coords.latitude, ulng = pos.coords.longitude;
-      const cw   = camerasList.map(cam => ({
+      const ulat = pos.coords.latitude;
+      const ulng = pos.coords.longitude;
+
+      const cw = window.camerasList.map(cam => ({
         camera: cam,
         distance: computeDistance(ulat, ulng, cam.Latitude, cam.Longitude)
       }));
       cw.sort((a, b) => a.distance - b.distance);
-      visibleCameras = cw.map(item => item.camera);
+
+      window.visibleCameras = cw.map(item => item.camera);
       updateCameraCount();
-      renderGallery(visibleCameras);
-      currentIndex = 0;
+      renderGallery(window.visibleCameras);
+      window.currentIndex = 0;
       updateSelectedFilters();
       updateURLParameters();
     },
-    err => renderGallery(visibleCameras)
+    _err => renderGallery(window.visibleCameras)
   );
 }
