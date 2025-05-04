@@ -1,5 +1,5 @@
 // dataLoader.js
-import { getCamerasList, getCuratedRoutes } from './cameraData.js';
+import { getCamerasList, getCuratedRoutes } from '../cameraData.js';
 
 /**
  * Loads camera list.
