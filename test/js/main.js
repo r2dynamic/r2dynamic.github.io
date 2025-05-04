@@ -66,6 +66,7 @@ window.applyFiltersFromURL = applyFiltersFromURL;
  * Initializes cameras and routes, then sets up the Other Filters submenu.
  */
 async function initializeApp() {
+  autoSortByLocation();
   try {
     window.camerasList = await loadCameras();
     window.visibleCameras = [...window.camerasList];
