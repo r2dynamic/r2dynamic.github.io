@@ -1,3 +1,5 @@
+import { renderGallery, updateCameraCount } from './gallery.js';
+
 // ui.js
 // UI helper functions moved out of main.js for shared use
 
@@ -141,4 +143,20 @@ export function applyFiltersFromURL() {
     document.getElementById('searchInput').value = window.searchQuery;
   }
   if (params.has('maintenance')) window.selectedMaintenanceStation = params.get('maintenance');
+}
+
+
+/**
+ * Refreshes the gallery based on the provided cameras array:
+ * - updates global state
+ * - resets index
+ * - re-renders count, gallery, badges, and URL
+ */
+export function refreshGallery(cameras) {
+  window.visibleCameras = cameras;
+  window.currentIndex = 0;
+  updateCameraCount();
+  renderGallery(cameras);
+  updateSelectedFilters();
+  updateURLParameters();
 }

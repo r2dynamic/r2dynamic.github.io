@@ -496,6 +496,7 @@ html, body {
 .aspect-ratio-box.overview-map {
   position: relative;
   overflow: hidden;
+  border-radius: 8px;
 }
 .aspect-ratio-box.overview-map #overview-tile {
   position: absolute;

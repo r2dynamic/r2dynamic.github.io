@@ -1,8 +1,10 @@
 // filters.js
-import { renderGallery, updateCameraCount } from './gallery.js';
+import { refreshGallery } from './ui.js';
 import { updateSelectedFilters, updateURLParameters } from './ui.js';
 
-// ... rest of the filtering code unchanged ...
+/**
+ * Determines if a camera falls on a given single route segment.
+ */
 function isCameraOnSingleRoute(camera, { name, mpMin, mpMax }) {
   if (camera.RoadwayOption1 === name) {
     const mp = camera.MilepostOption1;
@@ -19,6 +21,9 @@ function isCameraOnSingleRoute(camera, { name, mpMin, mpMax }) {
   return false;
 }
 
+/**
+ * Determines if a camera falls on any part of a route object.
+ */
 function isCameraOnRoute(camera, routeObj) {
   if (Array.isArray(routeObj.routes)) {
     return routeObj.routes.some(sub => isCameraOnSingleRoute(camera, sub));
@@ -26,29 +31,25 @@ function isCameraOnRoute(camera, routeObj) {
   return isCameraOnSingleRoute(camera, routeObj);
 }
 
+/**
+ * Filters and renders camera images based on current selections.
+ */
 export function filterImages() {
   const cameras = window.camerasList;
   const routes  = window.curatedRoutes;
   let filtered;
 
   if (window.selectedOtherFilter === 'Inactive Cameras') {
-    filtered = cameras.filter(cam =>
-      cam.Views?.[0]?.Status === 'Disabled'
-    );
-    window.visibleCameras = filtered;
-    updateCameraCount();
-    renderGallery(filtered);
-    window.currentIndex = 0;
-    updateSelectedFilters();
-    updateURLParameters();
+    filtered = cameras.filter(cam => cam.Views?.[0]?.Status === 'Disabled');
+    refreshGallery(filtered);
     return;
   }
 
+  // main filtering logic
   filtered = cameras.filter(cam => {
     if (cam.Views?.[0]?.Status === 'Disabled') return false;
     const txt = `${cam.SignalID || ''} ${cam.Location || ''}`.toLowerCase();
-    const matchesSearch = !window.searchQuery ||
-      txt.includes(window.searchQuery.toLowerCase());
+    const matchesSearch = !window.searchQuery || txt.includes(window.searchQuery.toLowerCase());
     const matchesMaintenance = !window.selectedMaintenanceStation ||
       ((cam.MaintenanceStationOption1 === window.selectedMaintenanceStation &&
         cam.MaintenanceStationOption1.toLowerCase() !== 'not available') ||
@@ -69,6 +70,7 @@ export function filterImages() {
            matchesCity;
   });
 
+  // optional route-based sorting
   if (window.selectedRoute !== 'All') {
     const routeObj = routes.find(r => (r.displayName || r.name) === window.selectedRoute);
     if (routeObj) {
@@ -99,10 +101,6 @@ export function filterImages() {
     }
   }
 
-  window.visibleCameras = filtered;
-  updateCameraCount();
-  renderGallery(filtered);
-  window.currentIndex = 0;
-  updateSelectedFilters();
-  updateURLParameters();
+  // render the updated list
+  refreshGallery(filtered);
 }

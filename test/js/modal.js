@@ -105,7 +105,7 @@ export function setupOverviewModal() {
     if (!cams.length) return;
     const first = cams[0];
     map = L.map('overviewMap').setView([first.Latitude, first.Longitude], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+    L.tileLayer('https://basemaps.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
     cams.forEach(cam => {
