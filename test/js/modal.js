@@ -101,11 +101,13 @@ export function setupOverviewModal() {
   let map;
   const modalEl = document.getElementById('overviewMapModal');
   modalEl.addEventListener('shown.bs.modal', () => {
+    const titleEl = document.getElementById('overviewMapModalLabel');
+    titleEl.textContent = window.selectedRoute || 'Route Overview';
     const cams = window.visibleCameras || [];
     if (!cams.length) return;
     const first = cams[0];
     map = L.map('overviewMap').setView([first.Latitude, first.Longitude], 10);
-    L.tileLayer('https://basemaps.arcgis.com/arcgis/rest/services/World_Basemap_v2/VectorTileServer', {
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
       attribution: '&copy; OpenStreetMap contributors'
     }).addTo(map);
     cams.forEach(cam => {

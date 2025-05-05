@@ -490,9 +490,9 @@ html, body {
   margin: 0.25rem;
 }
 
-
-
-/* Overview map tile in gallery */
+/* -------------------------------------------------- */
+/* Overview Thumbnail in Gallery                      */
+/* -------------------------------------------------- */
 .aspect-ratio-box.overview-map {
   position: relative;
   overflow: hidden;
@@ -500,13 +500,60 @@ html, body {
 }
 .aspect-ratio-box.overview-map #overview-tile {
   position: absolute;
-  top: 0; left: 0; width: 100%; height: 100%;
+  inset: 0;                       /* top:0; right:0; bottom:0; left:0; */
 }
-/* Full-screen modal adjustments */
-.modal-xl .modal-content {
-  width: 100%;
-  height: 100%;
-}
-.modal-xl .modal-body {
+
+/* -------------------------------------------------- */
+/* Overview Map Modal — center, glass look & footer   */
+/* -------------------------------------------------- */
+/* Only when visible, make the modal container flex */
+#overviewMapModal.modal.show {
+  display: flex !important;
+  align-items: center;
+  justify-content: center;
   padding: 0;
+}
+/* Force it to be 90% of viewport */
+#overviewMapModal .modal-dialog {
+  margin: 0 !important;
+  width: 90vw !important;
+  max-height: 90vh !important;
+}
+/* Glass styling and column layout */
+#overviewMapModal .modal-content {
+  display: flex;
+  flex-direction: column;
+  width: 100%;
+  max-height: 90vh;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+/* Header centered, no bottom border */
+#overviewMapModal .modal-header {
+  border-bottom: none;
+  justify-content: center;
+}
+/* Title spans full width */
+#overviewMapModal .modal-title {
+  flex: 1;
+  text-align: center;
+  margin: 0;
+}
+/* Body grows to fill, centers contents, scrolls if needed */
+#overviewMapModal .modal-body {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 0;
+  overflow: auto;
+}
+/* Footer at bottom-right, transparent background */
+#overviewMapModal .modal-footer {
+  border-top: none;
+  justify-content: flex-end;
+  padding: 1rem;
+  background: transparent;
 }
