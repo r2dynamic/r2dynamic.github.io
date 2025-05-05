@@ -16,6 +16,7 @@ import {
   setupModalCleanup,
   setupLongPressShare
 } from './modal.js';
+import { setupOverviewModal } from './modal.js';
 import { setupNearestCameraButton, autoSortByLocation } from './geolocation.js';
 import {
   setupSearchListener,
@@ -120,6 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupSizeSlider();
   setupModalMapToggle();
   setupModalCleanup();
+    setupOverviewModal();
 
   // Splash screen logic with fallback
   const splash = document.getElementById('splashScreen');

@@ -9,6 +9,18 @@ let currentIndex = 0;
  */
 export function renderGallery(cameras) {
   galleryContainer.innerHTML = '';
+  // Route overview map
+  if (window.selectedRoute && window.selectedRoute !== 'All') {
+    const overviewCell = document.createElement('div'); overviewCell.className = 'col';
+    overviewCell.innerHTML = `
+      <div class="aspect-ratio-box overview-map">
+        <a href="#" data-bs-toggle="modal" data-bs-target="#overviewMapModal">
+          <div id="overview-tile" style="width:100%;height:100%;"></div>
+        </a>
+      </div>
+    `;
+    galleryContainer.append(overviewCell);
+  }
   cameras.forEach((camera, i) => {
     const col = document.createElement('div'); col.classList.add('col');
     const arb = document.createElement('div'); arb.classList.add('aspect-ratio-box');

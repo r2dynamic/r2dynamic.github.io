@@ -490,3 +490,22 @@ html, body {
   margin: 0.25rem;
 }
 
+
+
+/* Overview map tile in gallery */
+.aspect-ratio-box.overview-map {
+  position: relative;
+  overflow: hidden;
+}
+.aspect-ratio-box.overview-map #overview-tile {
+  position: absolute;
+  top: 0; left: 0; width: 100%; height: 100%;
+}
+/* Full-screen modal adjustments */
+.modal-xl .modal-content {
+  width: 100%;
+  height: 100%;
+}
+.modal-xl .modal-body {
+  padding: 0;
+}

@@ -92,3 +92,30 @@ export function setupLongPressShare(selector) {
     );
   });
 }
+
+
+/**
+ * Sets up the Overview Map modal for routes.
+ */
+export function setupOverviewModal() {
+  let map;
+  const modalEl = document.getElementById('overviewMapModal');
+  modalEl.addEventListener('shown.bs.modal', () => {
+    const cams = window.visibleCameras || [];
+    if (!cams.length) return;
+    const first = cams[0];
+    map = L.map('overviewMap').setView([first.Latitude, first.Longitude], 10);
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
+    cams.forEach(cam => {
+      L.marker([cam.Latitude, cam.Longitude]).addTo(map);
+    });
+  });
+  modalEl.addEventListener('hidden.bs.modal', () => {
+    if (map) {
+      map.remove();
+      map = null;
+    }
+  });
+}
