@@ -97,6 +97,8 @@ export function setupLongPressShare(selector) {
 /**
  * Sets up the Overview Map modal for routes.
  */
+// Replace your existing setupOverviewModal with this:
+
 export function setupOverviewModal() {
   let map;
   const modalEl = document.getElementById('overviewMapModal');
@@ -105,15 +107,54 @@ export function setupOverviewModal() {
     titleEl.textContent = window.selectedRoute || 'Route Overview';
     const cams = window.visibleCameras || [];
     if (!cams.length) return;
-    const first = cams[0];
-    map = L.map('overviewMap').setView([first.Latitude, first.Longitude], 10);
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '&copy; OpenStreetMap contributors'
-    }).addTo(map);
+
+    // 1) Clean up any prior map
+    if (map) {
+      map.remove();
+      map = null;
+    }
+
+    // 2) Build coords array & bounds
+    const coords = cams.map(cam => [cam.Latitude, cam.Longitude]);
+    const bounds = L.latLngBounds(coords);
+
+    // 3) Initialize Leaflet map in your #overviewMap container
+    map = L.map('overviewMap', {
+      attributionControl: false,
+      zoomControl:        false,
+      dragging:           false,
+      scrollWheelZoom:    false,
+      doubleClickZoom:    false,
+      touchZoom:          false
+    });
+
+    // 4) Add your chosen basemap
+    L.tileLayer(
+      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
+      { attribution: '&copy; OpenStreetMap contributors' }
+    ).addTo(map);
+
+    // 5) Drop in your circleMarkers with the SAME style as the thumbnail
     cams.forEach(cam => {
-      L.marker([cam.Latitude, cam.Longitude]).addTo(map);
+      L.circleMarker([cam.Latitude, cam.Longitude], {
+        radius:      4,
+        fillColor:   '#ff7800',
+        color:       '#000',
+        weight:      1,
+        opacity:     1,
+        fillOpacity: 0.8
+      }).addTo(map);
+    });
+
+    // 6) Force Leaflet to recalculate size, then center & zoom to show all markers
+    map.invalidateSize();
+    map.fitBounds(bounds, {
+      padding: [8, 8],   // keeps markers off the very edge
+      maxZoom: 16        // tweak as desired
     });
   });
+
+  // Tear down when closed
   modalEl.addEventListener('hidden.bs.modal', () => {
     if (map) {
       map.remove();
@@ -121,3 +162,5 @@ export function setupOverviewModal() {
     }
   });
 }
+
+

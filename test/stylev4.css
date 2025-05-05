@@ -500,60 +500,88 @@ html, body {
 }
 .aspect-ratio-box.overview-map #overview-tile {
   position: absolute;
-  inset: 0;                       /* top:0; right:0; bottom:0; left:0; */
+  inset: 0;
 }
 
-/* -------------------------------------------------- */
-/* Overview Map Modal — center, glass look & footer   */
-/* -------------------------------------------------- */
-/* Only when visible, make the modal container flex */
+/* ------------------------------- */
+/* 1) Overview Thumbnail in Gallery */
+/* ------------------------------- */
+.aspect-ratio-box.overview-map {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.aspect-ratio-box.overview-map #overview-tile {
+  position: absolute;
+  inset: 0;
+}
+
+/* ------------------------------- */
+/* 2) Overview Map Modal Styling  */
+/* ------------------------------- */
+/* a) Flex‑center the dialog when shown */
 #overviewMapModal.modal.show {
   display: flex !important;
   align-items: center;
   justify-content: center;
-  padding: 0;
+  padding: 0; /* no extra gutters */
 }
-/* Force it to be 90% of viewport */
-#overviewMapModal .modal-dialog {
-  margin: 0 !important;
+
+/* b) Force the dialog to 90% of the viewport */
+#overviewMapModal.modal.show .modal-dialog {
+  margin: 0 auto !important;
   width: 90vw !important;
-  max-height: 90vh !important;
+  height: 90vh !important;
+  max-width: none;
 }
-/* Glass styling and column layout */
+
+/* c) Make content stack in a column and fill the dialog */
 #overviewMapModal .modal-content {
   display: flex;
   flex-direction: column;
-  width: 100%;
-  max-height: 90vh;
+  height: 100% !important;
   background: rgba(255,255,255,0.1);
   backdrop-filter: blur(10px);
   border-radius: 1rem;
   overflow: hidden;
 }
-/* Header centered, no bottom border */
+
+/* d) Header stays visible at the top */
 #overviewMapModal .modal-header {
+  flex: 0 0 auto;
   border-bottom: none;
   justify-content: center;
+  background: rgba(255,255,255,0.2); /* subtle backdrop behind the title */
+  padding: 0.5rem 1rem;  
 }
-/* Title spans full width */
+
 #overviewMapModal .modal-title {
-  flex: 1;
-  text-align: center;
+  color: #000;                        /* ensure black text over glass */
+  font-size: 1.25rem;                 /* bump up the size so it’s legible */
   margin: 0;
 }
-/* Body grows to fill, centers contents, scrolls if needed */
+
+/* e) Body (the map container) flexes between header & footer */
 #overviewMapModal .modal-body {
   flex: 1 1 auto;
   display: flex;
-  align-items: center;
-  justify-content: center;
   padding: 0;
-  overflow: auto;
+  overflow: hidden;
+  min-height: 0; /* allow it to shrink */
 }
-/* Footer at bottom-right, transparent background */
+
+/* f) Your map itself fills that body */
+#overviewMap {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+}
+
+/* g) Footer stays at the bottom */
 #overviewMapModal .modal-footer {
+  flex: 0 0 auto;
   border-top: none;
   justify-content: flex-end;
-  padding: 1rem;
   background: transparent;
+  padding: 1rem;
 }
