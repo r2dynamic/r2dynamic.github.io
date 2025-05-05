@@ -1,4 +1,4 @@
-// geolocation.js
+// js/geolocation.js
 import { computeDistance } from './utils.js';
 import { updateCameraCount, renderGallery, showImage } from './gallery.js';
 import { updateSelectedFilters, updateURLParameters } from './ui.js';
@@ -27,7 +27,7 @@ export function setupNearestCameraButton() {
         }));
         cw.sort((a, b) => a.distance - b.distance);
 
-        // update the globals and UI
+        // update globals and UI
         window.visibleCameras = cw.map(item => item.camera);
         updateCameraCount();
         renderGallery(window.visibleCameras);

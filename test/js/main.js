@@ -66,7 +66,9 @@ window.applyFiltersFromURL = applyFiltersFromURL;
  * Initializes cameras and routes, then sets up the Other Filters submenu.
  */
 async function initializeApp() {
+  // fire the location prompt/sort behind the splash
   autoSortByLocation();
+
   try {
     window.camerasList = await loadCameras();
     window.visibleCameras = [...window.camerasList];
@@ -85,6 +87,7 @@ async function initializeApp() {
   } catch (err) {
     console.error('Error loading routes:', err);
   } finally {
+    // Setup "Other Filters" submenu interactions
     document.querySelectorAll('#otherFiltersMenu .dropdown-item').forEach(a => {
       a.addEventListener('click', e => {
         e.preventDefault();
