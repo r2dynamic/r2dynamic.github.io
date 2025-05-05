@@ -29,6 +29,8 @@
     <!-- Leaflet for Route Overview Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+    <script src="https://unpkg.com/overlapping-marker-spiderfier-leaflet/dist/oms.min.js"></script>
+
 </head>
 <body>
   <!-- Splash Screen -->
@@ -322,22 +324,26 @@
 <script type="module" src="js/main.js"></script>
 
     
-    <!-- Overview Map Modal -->
-    <div class="modal fade" id="overviewMapModal" tabindex="-1" aria-labelledby="overviewMapModalLabel" aria-hidden="true">
-      <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 90vw;">
-        <div class="modal-content glass-modal">
-          <div class="modal-header">
-            <h5 class="modal-title" id="overviewMapModalLabel"></h5>
-          </div>
-          <div class="modal-body p-0">
-            <div id="overviewMap" style="width:100%;"></div>
-          </div>
-          <div class="modal-footer justify-content-end">
-            <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-          </div>
-        </div>
+   
+<!-- Overview Map Modal -->
+<div class="modal fade" id="overviewMapModal" tabindex="-1" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered" style="max-width: 90vw;">
+    <div class="modal-content glass-modal">
+      <div class="modal-header">
+        <!-- ← add the id here! -->
+        <h5 class="modal-title" id="overviewMapModalLabel">Route Overview</h5>
+        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <div id="overviewMap" style="width:100%;height:80vh;"></div>
+      </div>
+      <div class="modal-footer justify-content-end">
+        <button type="button" class="btn-close" data-bs-dismiss="modal">Close</button>
       </div>
     </div>
+  </div>
+</div>
+
 
 </body>
 </html>

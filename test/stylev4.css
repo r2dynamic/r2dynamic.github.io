@@ -556,7 +556,7 @@ html, body {
 }
 
 #overviewMapModal .modal-title {
-  color: #000;                        /* ensure black text over glass */
+  color: #ffffff;                        /* ensure black text over glass */
   font-size: 1.25rem;                 /* bump up the size so it’s legible */
   margin: 0;
 }
@@ -584,4 +584,57 @@ html, body {
   justify-content: flex-end;
   background: transparent;
   padding: 1rem;
+}
+
+
+
+/* Glass‑morphic Leaflet popups */
+.leaflet-popup.glass-popup {
+  /* ensure popups don’t inherit unwanted Bootstrap styles */
+}
+.leaflet-popup.glass-popup .leaflet-popup-content-wrapper {
+  background: rgba(255,255,255,0.1) !important;
+  backdrop-filter: blur(10px);
+  border-radius: 0.5rem;
+  padding: 0 !important;
+  box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+}
+
+/* remove default inner padding/margins */
+.leaflet-popup.glass-popup .leaflet-popup-content {
+  margin: 0 !important;
+  padding: 0 !important;
+  text-align: center;
+  line-height: 1;
+  font-size: 0.85rem;    /* adjust text size as needed */
+  color: #222;
+}
+
+/* image fills the popup completely */
+.glass-popup-img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border-radius: 0;      /* or your desired corner radius */
+  margin-top: 0.25rem;   /* small gap above the image */
+}
+
+/* style the “tip” triangle to match glass */
+.leaflet-popup.glass-popup .leaflet-popup-tip {
+  background: rgba(255,255,255,0.1);
+  filter: blur(1px);
+}
+
+/* close button styling */
+.leaflet-popup.glass-popup .leaflet-popup-close-button {
+  color: #f90404a4;
+  font-size: 1.1rem;
+  opacity: 0.7;
+  top: 0;
+  right: 0;
+  text-shadow: none;
+}
+.leaflet-popup.glass-popup .leaflet-popup-close-button:hover {
+  opacity: 1;
+  color: #fc0202;
 }

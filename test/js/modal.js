@@ -4,6 +4,8 @@ const modalBody           = document.getElementById('modalBody');
 const modalImageContainer = document.getElementById('modalImageContainer');
 let mapDisplayed          = false;
 
+
+
 /**
  * Sets up the map toggle within the image modal.
  */
@@ -94,49 +96,51 @@ export function setupLongPressShare(selector) {
 }
 
 
-/**
- * Sets up the Overview Map modal for routes.
- */
-// Replace your existing setupOverviewModal with this:
+
 
 export function setupOverviewModal() {
   let map;
   const modalEl = document.getElementById('overviewMapModal');
+
+  // When the modal is shown, build and center the map
   modalEl.addEventListener('shown.bs.modal', () => {
+    // 0) Set the title
     const titleEl = document.getElementById('overviewMapModalLabel');
     titleEl.textContent = window.selectedRoute || 'Route Overview';
+
+    // 1) Grab your cameras
     const cams = window.visibleCameras || [];
     if (!cams.length) return;
 
-    // 1) Clean up any prior map
+    // 2) Clean up any previous map instance
     if (map) {
       map.remove();
       map = null;
     }
 
-    // 2) Build coords array & bounds
+    // 3) Build coords & compute bounds
     const coords = cams.map(cam => [cam.Latitude, cam.Longitude]);
     const bounds = L.latLngBounds(coords);
 
-    // 3) Initialize Leaflet map in your #overviewMap container
+    // 4) Init the Leaflet map
     map = L.map('overviewMap', {
       attributionControl: false,
       zoomControl:        false,
       dragging:           false,
       scrollWheelZoom:    false,
       doubleClickZoom:    false,
-      touchZoom:          false
+      touchZoom:          false,
+      closePopupOnClick:  false
     });
 
-    // 4) Add your chosen basemap
-    L.tileLayer(
-      'https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',
-      { attribution: '&copy; OpenStreetMap contributors' }
-    ).addTo(map);
+    // 5) Add your basemap
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
+      attribution: '&copy; OpenStreetMap contributors'
+    }).addTo(map);
 
-    // 5) Drop in your circleMarkers with the SAME style as the thumbnail
+    // 6) Add circleMarkers with glass‑popup bindings
     cams.forEach(cam => {
-      L.circleMarker([cam.Latitude, cam.Longitude], {
+      const marker = L.circleMarker([cam.Latitude, cam.Longitude], {
         radius:      4,
         fillColor:   '#ff7800',
         color:       '#000',
@@ -144,17 +148,36 @@ export function setupOverviewModal() {
         opacity:     1,
         fillOpacity: 0.8
       }).addTo(map);
+    
+      const html = `
+        <div class="glass-popup-content">
+          <img src="${cam.Views[0].Url}"
+               alt="Camera at ${cam.Location}"
+               class="glass-popup-img">
+        </div>
+      `;
+    
+      marker.bindPopup(html, {
+        className:    'glass-popup',
+        maxWidth:     200,           // allow up to 300 px wide
+        minWidth:     100,           // but no less than 200 px
+        autoClose:    false,         // keep it open when another opens
+        closeOnClick: false,         // clicking map won’t close it
+        offset:       L.point(0, -10), // lift it up a bit above the marker
+        keepInView:   false          // don’t auto‑pan when you open many
+      });
     });
+    
 
-    // 6) Force Leaflet to recalculate size, then center & zoom to show all markers
+    // 7) Now that the map container has real size, recalc & fit bounds
     map.invalidateSize();
     map.fitBounds(bounds, {
-      padding: [8, 8],   // keeps markers off the very edge
-      maxZoom: 16        // tweak as desired
+      padding: [8, 8],
+      maxZoom: 16
     });
   });
 
-  // Tear down when closed
+  // Tear down when the modal hides
   modalEl.addEventListener('hidden.bs.modal', () => {
     if (map) {
       map.remove();
@@ -162,5 +185,6 @@ export function setupOverviewModal() {
     }
   });
 }
+
 
 
