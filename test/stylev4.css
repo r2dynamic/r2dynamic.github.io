@@ -563,49 +563,74 @@ html, body {
   background: rgba(255,255,255,0.2);
 }
 
-/* Glass popup styling */
+/* ————————————————
+   GLASS POPUP STYLING
+   ———————————————— */
+/* wrapper */
 .leaflet-popup.glass-popup .leaflet-popup-content-wrapper {
   background: rgba(255,255,255,0.1) !important;
   backdrop-filter: blur(10px);
   border-radius: 0.5rem;
-  padding: 0.25rem 0 !important;
+  padding: 0 !important;       /* no header/footer gap */
+  overflow: hidden;            /* clip anything else */
   box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
-  min-width: 250px;
-  max-width: 300px;
+  min-width: 120px;
+  max-width: 160px;
 }
+
+/* content */
 .leaflet-popup.glass-popup .leaflet-popup-content {
   margin: 0 !important;
   padding: 0 !important;
-  text-align: center;
-  line-height: 1;
+  line-height: 0;             /* no extra space */
 }
+
+/* hide the built‑in arrow tip */
+.leaflet-popup.glass-popup .leaflet-popup-tip,
+.leaflet-popup.glass-popup .leaflet-popup-tip-container {
+  display: none !important;
+}
+
+/* 16:9 image container */
 .glass-popup-img {
   display: block;
   width: 100%;
-  height: auto;
-  border-radius: 4;
-  margin-top: 0.25rem;
-}
-.leaflet-popup.glass-popup .leaflet-popup-tip {
-  background: rgba(255,255,255,0.1);
-  filter: blur(1px);
-}
-.leaflet-popup .leaflet-popup-close-button {
-  display: none !important;
-}
-/* tiny, muted header inside popups */
-.popup-title {
-  font-size: 0.65rem;
-  font-weight: 500;
-  color: #ffffff;
-  margin-bottom: 0.25rem;
-  text-align: center;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  border-radius: 4px;
 }
 
-.oms-circle-marker div {
-  width: 8px;
-  height: 8px;
-  background: #ff7800;
-  border: 1px solid #000;
-  border-radius: 50%;
+/* ————————————————
+   POPUP CLOSE–BUTTON CUSTOMIZATION
+   ———————————————— */
+/* Target only your “glass-popup” popups */
+.leaflet-popup.glass-popup .leaflet-popup-close-button {
+  position: absolute;            /* stays in top‑right */
+  top: -10px;                      /* inset from top */
+  right: -10px;                    /* inset from right */
+  width: 24px;                   /* button size */
+  height: 24px;
+  line-height: 24px;             /* center the “×” */
+  padding: 0;
+    /* semi‑transparent bg */
+  color: #ff0000;                   /* icon color */
+  font-size: 14px;               /* icon size */
+  font-weight: bold;
+  text-align: center;
+  text-decoration: none;         /* remove underline */
+  
+  border-radius: 12px;           /* circular button */
+  box-shadow: 0 1px 2px rgba(0,0,0,0.3);
+  transition: background 0.2s, color 0.2s;
+}
+
+/* Hover state */
+.leaflet-popup.glass-popup .leaflet-popup-close-button:hover {
+  background: rgba(250, 2, 2, 0.507);
+  color: #000000;
+}
+
+/* Active/pressed state */
+.leaflet-popup.glass-popup .leaflet-popup-close-button:active {
+  background: rgb(230, 177, 2);
 }

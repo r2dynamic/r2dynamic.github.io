@@ -130,56 +130,123 @@ export function setupOverviewModal() {
       dragging: true,
       scrollWheelZoom: true,
       doubleClickZoom: false,
-      touchZoom: true
+      touchZoom: true,
+      closePopupOnClick: false    // ← keep popups open when you click the map
     });
-
+    
     // Add tile layer
     L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
       attribution: '&copy; Esri'
     }).addTo(map);
 
-    // Add circleMarkers with hover popups
-    cams.forEach(cam => {
-      const marker = L.circleMarker([cam.Latitude, cam.Longitude], {
-        radius: 6,
-        fillColor: '#ff7800',
-        color: '#000',
-        weight: 1,
-        opacity: 1,
-        fillOpacity: 0.8
-      }).addTo(map);
+    // … after adding your tileLayer …
 
-      const popupHtml = `
-      <div class="glass-popup-content">
-        <div class="popup-title">${cam.Location}</div>
-        <img 
-          src="${cam.Views[0].Url}" 
-          alt="Camera at ${cam.Location}" 
-          class="glass-popup-img"
-        />
-      </div>
-    `;
-    
-    
+// inside your shown.bs.modal handler, after you add the tileLayer…
+cams.forEach(cam => {
+  // 1) create the marker
+  const marker = L.circleMarker(
+    [cam.Latitude, cam.Longitude],
+    {
+      radius: 6,
+      fillColor: '#ff7800',
+      color: '#000',
+      weight: 1,
+      opacity: 1,
+      fillOpacity: 0.8
+    }
+  ).addTo(map);
 
-      marker.bindPopup(popupHtml, {
-        className: 'glass-popup',
-        maxWidth: 300,
-        minWidth: 250,
-        closeButton:  false, 
-        keepInView: false
-      });
+  // 2) popup HTML
+  const popupHtml = `
+    <div class="glass-popup-content">
+      <img
+        src="${cam.Views[0].Url}"
+        alt="Camera view"
+        class="glass-popup-img"
+      />
+    </div>
+  `;
 
-      // Open and close popup on hover
-      marker.on('mouseover', () => marker.openPopup());
-      marker.on('mouseout', () => marker.closePopup());
-    });
+  // 3) bind the popup (with offset)
+  marker.bindPopup(popupHtml, {
+    className: 'glass-popup',
+    maxWidth: 160,
+    minWidth: 120,
+    closeButton: true,
+    keepInView: false,
+    autoClose: false,
+    closeOnClick: false,
+    offset: [0, -30]      // ← same Y-offset we'll use in the connector
+  });
+
+  // open on click
+  marker.on('click', () => marker.openPopup());
+
+  // 4) on open: create connector + dynamic updater
+  marker.on('popupopen', () => {
+    const mapContainer = map.getContainer();
+    const popup = marker.getPopup();
+
+    // create an empty line and stash it
+    marker._connector = L.polyline([], {
+      color: '#ff7800',
+      weight: 3,
+      interactive: false
+    }).addTo(map);
+
+    // function to recalc endpoints
+    const updateConnector = () => {
+      if (!marker._connector || !popup.isOpen()) return;
+
+      // 4a) marker latlng
+      const mLatLng = marker.getLatLng();
+
+      // 4b) popup DOM bottom‑center
+      const popupEl = popup.getElement ? popup.getElement() : popup._container;
+      const popupRect = popupEl.getBoundingClientRect();
+      const mapRect   = mapContainer.getBoundingClientRect();
+      const cx = popupRect.left - mapRect.left + popupRect.width  / 2;
+      const cy = popupRect.top  - mapRect.top  + popupRect.height;
+
+      // 4c) back to latlng
+      const pLatLng = map.containerPointToLatLng([cx, cy]);
+
+      // 4d) update the polyline
+      marker._connector.setLatLngs([ mLatLng, pLatLng ]);
+    };
+
+    // stash for removal later
+    marker._updateConnector = updateConnector;
+
+    // hook into map movements
+    map.on('move zoom viewreset', updateConnector);
+
+    // initial draw
+    updateConnector();
+  });
+
+  // 5) on close: remove line + listeners
+  marker.on('popupclose', () => {
+    if (marker._connector) {
+      map.removeLayer(marker._connector);
+      marker._connector = null;
+    }
+    if (marker._updateConnector) {
+      map.off('move zoom viewreset', marker._updateConnector);
+      marker._updateConnector = null;
+    }
+  });
+});
+
+// …then your map.invalidateSize() and map.fitBounds() as before…
+
+
 
     // Resize & fit bounds
     map.invalidateSize();
     map.fitBounds(bounds, {
-      padding: [20, 20],
-      maxZoom: 10
+      padding: [10, 10],
+      maxZoom: 12
     });
   });
 
