@@ -44,14 +44,14 @@ requestAnimationFrame(() => {
   });
 
   // 3. add tiles
-  L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-    attribution: '&copy; OpenStreetMap contributors'
+  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+    attribution: '&copy; Esri'
   }).addTo(miniMap);
 
   // 4. add markers
   coords.forEach(([lat, lng]) => {
     L.circleMarker([lat, lng], {
-      radius:      4,
+      radius:      2,
       fillColor:   '#ff7800',
       color:       '#000',
       weight:      1,

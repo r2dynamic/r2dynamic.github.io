@@ -490,9 +490,7 @@ html, body {
   margin: 0.25rem;
 }
 
-/* -------------------------------------------------- */
-/* Overview Thumbnail in Gallery                      */
-/* -------------------------------------------------- */
+/* Overview Thumbnail in Gallery */
 .aspect-ratio-box.overview-map {
   position: relative;
   overflow: hidden;
@@ -503,39 +501,16 @@ html, body {
   inset: 0;
 }
 
-/* ------------------------------- */
-/* 1) Overview Thumbnail in Gallery */
-/* ------------------------------- */
-.aspect-ratio-box.overview-map {
-  position: relative;
-  overflow: hidden;
-  border-radius: 8px;
-}
-.aspect-ratio-box.overview-map #overview-tile {
-  position: absolute;
-  inset: 0;
-}
-
-/* ------------------------------- */
-/* 2) Overview Map Modal Styling  */
-/* ------------------------------- */
-/* a) Flex‑center the dialog when shown */
-#overviewMapModal.modal.show {
-  display: flex !important;
-  align-items: center;
-  justify-content: center;
-  padding: 0; /* no extra gutters */
-}
-
-/* b) Force the dialog to 90% of the viewport */
+/* Overview Map Modal Styling */
 #overviewMapModal.modal.show .modal-dialog {
   margin: 0 auto !important;
+  max-width: 90vw !important;
+  max-height: 90vh !important;
   width: 90vw !important;
   height: 90vh !important;
-  max-width: none;
 }
 
-/* c) Make content stack in a column and fill the dialog */
+/* Stack content vertically and fill dialog */
 #overviewMapModal .modal-content {
   display: flex;
   flex-direction: column;
@@ -546,95 +521,91 @@ html, body {
   overflow: hidden;
 }
 
-/* d) Header stays visible at the top */
+/* Header */
 #overviewMapModal .modal-header {
   flex: 0 0 auto;
   border-bottom: none;
   justify-content: center;
-  background: rgba(255,255,255,0.2); /* subtle backdrop behind the title */
-  padding: 0.5rem 1rem;  
+  background: rgba(255,255,255,0.2);
+  padding: 0.5rem 1rem;
 }
-
 #overviewMapModal .modal-title {
-  color: #ffffff;                        /* ensure black text over glass */
-  font-size: 1.25rem;                 /* bump up the size so it’s legible */
   margin: 0;
+  text-align: center;
+  font-size: 1.25rem;
+  color: #ffffff;
 }
 
-/* e) Body (the map container) flexes between header & footer */
+/* Body: flex container for the map */
 #overviewMapModal .modal-body {
   flex: 1 1 auto;
-  display: flex;
+  display: flex !important;
+  flex-direction: column;
   padding: 0;
+  min-height: 0; /* allow flex shrink */
   overflow: hidden;
-  min-height: 0; /* allow it to shrink */
 }
 
-/* f) Your map itself fills that body */
+/* Map container full size */
 #overviewMap {
   flex: 1 1 auto;
   width: 100%;
   height: 100%;
+  min-height: 0;
 }
 
-/* g) Footer stays at the bottom */
+/* Footer */
 #overviewMapModal .modal-footer {
   flex: 0 0 auto;
   border-top: none;
   justify-content: flex-end;
-  background: transparent;
   padding: 1rem;
+  background: rgba(255,255,255,0.2);
 }
 
-
-
-/* Glass‑morphic Leaflet popups */
-.leaflet-popup.glass-popup {
-  /* ensure popups don’t inherit unwanted Bootstrap styles */
-}
+/* Glass popup styling */
 .leaflet-popup.glass-popup .leaflet-popup-content-wrapper {
   background: rgba(255,255,255,0.1) !important;
   backdrop-filter: blur(10px);
   border-radius: 0.5rem;
-  padding: 0 !important;
+  padding: 0.25rem 0 !important;
   box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
+  min-width: 250px;
+  max-width: 300px;
 }
-
-/* remove default inner padding/margins */
 .leaflet-popup.glass-popup .leaflet-popup-content {
   margin: 0 !important;
   padding: 0 !important;
   text-align: center;
   line-height: 1;
-  font-size: 0.85rem;    /* adjust text size as needed */
-  color: #222;
 }
-
-/* image fills the popup completely */
 .glass-popup-img {
   display: block;
   width: 100%;
   height: auto;
-  border-radius: 0;      /* or your desired corner radius */
-  margin-top: 0.25rem;   /* small gap above the image */
+  border-radius: 4;
+  margin-top: 0.25rem;
 }
-
-/* style the “tip” triangle to match glass */
 .leaflet-popup.glass-popup .leaflet-popup-tip {
   background: rgba(255,255,255,0.1);
   filter: blur(1px);
 }
-
-/* close button styling */
-.leaflet-popup.glass-popup .leaflet-popup-close-button {
-  color: #f90404a4;
-  font-size: 1.1rem;
-  opacity: 0.7;
-  top: 0;
-  right: 0;
-  text-shadow: none;
+.leaflet-popup .leaflet-popup-close-button {
+  display: none !important;
 }
-.leaflet-popup.glass-popup .leaflet-popup-close-button:hover {
-  opacity: 1;
-  color: #fc0202;
+/* tiny, muted header inside popups */
+.popup-title {
+  font-size: 0.65rem;
+  font-weight: 500;
+  color: #ffffff;
+  margin-bottom: 0.25rem;
+  text-align: center;
+}
+
+.oms-circle-marker div {
+  width: 8px;
+  height: 8px;
+  background: #ff7800;
+  border: 1px solid #000;
+  border-radius: 50%;
 }

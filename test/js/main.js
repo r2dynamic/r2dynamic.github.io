@@ -121,7 +121,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupSizeSlider();
   setupModalMapToggle();
   setupModalCleanup();
-    setupOverviewModal();
+  setupOverviewModal();
 
   // Splash screen logic with fallback
   const splash = document.getElementById('splashScreen');
