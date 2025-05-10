@@ -565,33 +565,41 @@ html, body {
   padding: none;
  
 }
+/* ─────────────────────────────────────────────────
+   T O O L T I P   I M A G E   S T Y L I N G
+   ───────────────────────────────────────────────── */
 
-/* ———————————————— 
-   GLASS TOOLTIP STYLING 
-   ———————————————— */
-/* base tooltip wrapper */
-.leaflet-tooltip.glass-popup {
-  background: rgba(255, 255, 255, 0.1) !important;
-  backdrop-filter: blur(10px);
-  border-radius: 0.5rem;
-  padding: 0;             /* no extra gap around content */
-  box-shadow: 0 0.25rem 0.5rem rgba(0,0,0,0.2);
-  min-width: 120px;
-  max-width: 160px;
-  line-height: 0;         /* collapse any default line‑height */
+/* ────────── TOOLTIP CONTAINER ────────── */
+.leaflet-tooltip {
+  background: none       !important;
+  border: none           !important;
+  box-shadow: none       !important;
+  padding: 0             !important;
 }
 
-/* hide the little arrow/“tip” */
-.leaflet-tooltip.glass-popup::before,
-.leaflet-tooltip.glass-popup::after {
-  display: none !important;
+/* keep Leaflet’s default arrow positioning (do NOT override ::before) */
+
+/* ensure the inner wrapper has no extra padding or background */
+.leaflet-tooltip .leaflet-tooltip-content {
+  background: none       !important;
+  border: none           !important;
+  padding: 0             !important;
+  margin: 0              !important;
 }
 
-/* image inside the tooltip */
-.leaflet-tooltip.glass-popup .glass-popup-img {
-  display: block;
-  width: 100%;
-  aspect-ratio: 16 / 9;
-  object-fit: cover;
-  border-radius: 4px;
+/* ─────── IMAGE SIZING & RATIO ─────── */
+.leaflet-tooltip img {
+  display: block         !important; /* kill inline gap */
+  width: 120px           !important;
+  aspect-ratio: 16 / 9   !important;
+  object-fit: cover      !important;
+  border-radius: 8px     !important;
+}
+.custom-marker {
+  width:            12px;
+  height:           12px;
+  background-color: #04AA6D;
+  border:           2px solid #fff;
+  border-radius:    50%;
+  box-shadow:       0 0 2px rgba(0,0,0,0.3);
 }
