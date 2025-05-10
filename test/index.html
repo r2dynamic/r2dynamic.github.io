@@ -26,10 +26,20 @@
   <link rel="stylesheet" href="stylev4.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
   <title>UDOT Cameras</title>
+
+  <!-- first load rbush -->
+<script src="https://unpkg.com/rbush@3.0.1/rbush.min.js"></script>
+<!-- then load LabelGun -->
+<script src="https://unpkg.com/labelgun@6.0.0/lib/labelgun.js"></script>
+<!-- finally your app code -->
+<script type="module" src="js/main.js"></script>
+
     <!-- Leaflet for Route Overview Map -->
     <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
     <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
-    <script src="https://unpkg.com/overlapping-marker-spiderfier-leaflet/dist/oms.min.js"></script>
+
+
+
 
 </head>
 <body>
@@ -320,8 +330,7 @@
   </script>
 
   
- 
-<script type="module" src="js/main.js"></script>
+
 
     
    
