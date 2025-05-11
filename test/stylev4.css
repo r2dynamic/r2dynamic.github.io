@@ -603,3 +603,14 @@ html, body {
   border-radius:    50%;
   box-shadow:       0 0 2px rgba(0,0,0,0.3);
 }
+/* hide the default tooltip “triangle” */
+.leaflet-tooltip.glass-popup .leaflet-tooltip-tip,
+.leaflet-tooltip.glass-popup .leaflet-tooltip-anchor {
+  display: none !important;
+}
+.leaflet-tooltip .leaflet-tooltip-tip,
+.leaflet-tooltip .leaflet-tooltip-anchor {
+  display: none !important;
+}
+
+

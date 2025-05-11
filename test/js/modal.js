@@ -1,313 +1,300 @@
 // modal.js
-// Embedded Google Map toggle + Overview modal with custom small markers,
-// dynamic tooltip placement (including corners), sticky tooltips,
-// 120px 16:9 thumbnails, anti‑collision, hover previews, zoom auto‑open/close,
-// Open‑All/Close‑All buttons, and OSM tile layer.
+import { debounce } from './utils.js';
 
+// DOM references
 const mapButton           = document.getElementById('mapButton');
 const modalBody           = document.getElementById('modalBody');
 const modalImageContainer = document.getElementById('modalImageContainer');
 let mapDisplayed          = false;
 
-// 1) Image modal Google‑Maps toggle
+// 1) Toggle embedded Google Map iframe in image modal
 export function setupModalMapToggle() {
   if (!mapButton) return;
   mapButton.addEventListener('click', () => {
     if (!mapDisplayed) {
-      const imgEl = document.querySelector('#imageModal img');
-      const lat   = imgEl.dataset.latitude;
-      const lon   = imgEl.dataset.longitude;
+      const img = document.querySelector('#imageModal img');
+      const lat = img.dataset.latitude;
+      const lon = img.dataset.longitude;
       if (!lat || !lon) return alert('No location data');
 
       const container = document.createElement('div');
       container.id    = 'modalMapContainer';
       container.style.flex = '1';
       const iframe = document.createElement('iframe');
-      Object.assign(iframe, { width:'100%', height:'100%', frameBorder:'0', style:'border:0;' });
+      Object.assign(iframe, { width: '100%', height: '100%', frameBorder: '0', style: 'border:0;' });
       iframe.src = `https://maps.google.com/maps?q=${lat},${lon}&z=15&t=k&output=embed`;
       container.append(iframe);
       modalBody.append(container);
       modalImageContainer.style.flex = '1';
-      modalBody.style.display       = 'flex';
-      mapButton.textContent         = 'Hide Map';
-      mapDisplayed                  = true;
+      modalBody.style.display        = 'flex';
+      mapButton.textContent          = 'Hide Map';
+      mapDisplayed                   = true;
     } else {
       document.getElementById('modalMapContainer')?.remove();
       modalImageContainer.style.flex = '1';
-      mapButton.textContent         = 'Map';
-      mapDisplayed                  = false;
+      mapButton.textContent          = 'Map';
+      mapDisplayed                   = false;
     }
   });
 }
 
-// 2) Cleanup embedded map when modal closes
+// 2) Cleanup embedded map when image modal closes
 export function setupModalCleanup() {
   document.getElementById('imageModal')
     .addEventListener('hidden.bs.modal', () => {
       document.getElementById('modalMapContainer')?.remove();
       modalImageContainer.style.flex = '1';
-      mapButton.textContent         = 'Map';
-      mapDisplayed                  = false;
+      mapButton.textContent          = 'Map';
+      mapDisplayed                   = false;
     });
 }
 
-// 3) Long‑press sharing (unchanged)
-export async function shareImageFile(imageUrl, extraInfo="") {
+// 3) Long‐press sharing (unchanged)
+export async function shareImageFile(url, info = "") {
   try {
-    const res  = await fetch(imageUrl);
+    const res  = await fetch(url);
     const blob = await res.blob();
-    const file = new File([blob],"sharedImage.png",{type:blob.type});
-    const shareData = { files:[file], title:extraInfo, text:extraInfo };
-    if (navigator.canShare && navigator.canShare({ files:[file] })) {
-      await navigator.share(shareData);
+    const file = new File([blob], 'sharedImage.png', { type: blob.type });
+    const data = { files: [file], title: info, text: info };
+    if (navigator.canShare?.({ files: [file] })) {
+      await navigator.share(data);
     } else {
-      alert("Your device does not support sharing files.");
+      alert('Sharing not supported');
     }
-  } catch(e) {
-    console.error("Sharing error:", e);
+  } catch (e) {
+    console.error(e);
   }
 }
-export function setupLongPressShare(selector) {
+export function setupLongPressShare(sel) {
   const threshold = 500;
-  document.querySelectorAll(selector).forEach(img => {
+  document.querySelectorAll(sel).forEach(img => {
     let timer;
     img.addEventListener('contextmenu', e => e.preventDefault());
     img.addEventListener('touchstart', () => {
-      timer = setTimeout(() => shareImageFile(img.src, img.dataset.cameraInfo||""), threshold);
+      timer = setTimeout(() => shareImageFile(img.src, img.dataset.cameraInfo || ''), threshold);
     });
     ['touchend','touchcancel'].forEach(evt => img.addEventListener(evt, () => clearTimeout(timer)));
   });
 }
 
-// 4) Overview modal setup
+// 4) Overview modal with dynamic connectors
 export function setupOverviewModal() {
-  // ---- create a tiny custom circle icon ----
-  const smallIcon = L.divIcon({
-    className:  'custom-marker',
-    iconSize:   [12,12],
-    iconAnchor: [6,6],
-    tooltipAnchor: [0,-6]
-  });
+  // small circular marker
+  const smallIcon = L.divIcon({ className: 'custom-marker', iconSize: [12,12], iconAnchor: [6,6], tooltipAnchor: [0,10] });
+
+  // constants
+  const MAX_TOOLTIPS = 20;
+  const THUMB_WIDTH  = 120;
+  const ARROW_HALF   = 6;
+  const MARKER_RAD   = 6;
+  const ZOOM_OPEN    = 13;
+  const ZOOM_COLLIDE = 14;
 
   let map;
   const markers = [];
   const openTips = [];
 
-  // simple rectangle intersection test
-  function rectsIntersect(a,b) {
-    return !(b.left > a.right ||
-             b.right < a.left ||
-             b.top > a.bottom ||
-             b.bottom < a.top);
+  // AABB test
+  function intersects(a,b) {
+    return !(b.left>a.right||b.right<a.left||b.top>a.bottom||b.bottom<a.top);
   }
 
-  const modalEl = document.getElementById('overviewMapModal');
-  modalEl.addEventListener('shown.bs.modal', () => {
-    // reset state
-    if (map) { map.remove(); map = null; }
-    markers.length = 0;
-    openTips.length = 0;
+  // HTML generator
+  function makeHtml(cam) {
+    return `<div class="glass-popup-content"><img src="${cam.Views[0].Url}"/></div>`;
+  }
 
-    const cams = window.visibleCameras || [];
-    if (!cams.length) return;
+  // clear tooltip & connector
+  function clearTooltip(marker) {
+    // remove tooltip
+    marker.unbindTooltip();
+    marker.sticky = false;
+    marker._autoOpened = false;
+    // remove connector & listener
+    if (marker._connector) {
+      map.removeLayer(marker._connector);
+      marker._connector = null;
+    }
+    if (marker._updateConn) {
+      map.off('move zoom viewreset', marker._updateConn);
+      marker._updateConn = null;
+    }
+    // remove from openTips
+    const i = openTips.indexOf(marker);
+    if (i !== -1) openTips.splice(i,1);
+  }
 
-    // build map with OSM tiles
+  // reposition & redraw connector
+  function repositionTooltip(marker) {
+    // clear old
+    clearTooltip(marker);
+
+    const cam  = marker.cam;
+    const html = makeHtml(cam);
+
+    // build marker boxes
+    const boxes = markers.map(m => {
+      const p = map.latLngToContainerPoint(m.getLatLng());
+      return { left: p.x-MARKER_RAD, top: p.y-MARKER_RAD, right: p.x+MARKER_RAD, bottom: p.y+MARKER_RAD };
+    });
+
+    // candidates
+    const candidates = [
+      { dir:'top',    offset:[0,-MARKER_RAD] },
+      { dir:'bottom', offset:[0,MARKER_RAD] },
+      { dir:'left',   offset:[-MARKER_RAD,0] },
+      { dir:'right',  offset:[MARKER_RAD,0] },
+      { dir:'top',    offset:[-(THUMB_WIDTH/2-ARROW_HALF),-MARKER_RAD] },
+      { dir:'top',    offset:[ (THUMB_WIDTH/2-ARROW_HALF),-MARKER_RAD] },
+      { dir:'bottom', offset:[-(THUMB_WIDTH/2-ARROW_HALF), MARKER_RAD] },
+      { dir:'bottom', offset:[ (THUMB_WIDTH/2-ARROW_HALF), MARKER_RAD] }
+    ];
+
+    const measured = candidates.map(c => {
+      const tmp = L.tooltip({ direction:c.dir, offset:c.offset, permanent:true, interactive:false, opacity:0 })
+        .setLatLng(marker.getLatLng())
+        .setContent(html)
+        .addTo(map);
+      const r = tmp.getElement().getBoundingClientRect();
+      map.removeLayer(tmp);
+      return {...c,rect:r};
+    });
+
+    // choose
+    const chosen = measured.find(c => {
+      if (boxes.some(b=>intersects(b,c.rect))) return false;
+      for (let m of openTips) {
+        const r2 = m.getTooltip().getElement().getBoundingClientRect();
+        if (intersects(c.rect,r2)) return false;
+      }
+      return true;
+    })||measured[0];
+
+    // bind tooltip
+    marker.bindTooltip(html, {
+      direction:   chosen.dir,
+      offset:      chosen.offset,
+      permanent:   true,
+      interactive: true,
+      className:   'glass-popup',
+      maxWidth:    THUMB_WIDTH
+    }).openTooltip();
+    marker.sticky = true;
+    openTips.push(marker);
+
+    // draw connector
+    let ttEl    = marker.getTooltip().getElement();
+    let ttRect  = ttEl.getBoundingClientRect();
+    let mpRect  = map.getContainer().getBoundingClientRect();
+
+    function computeTipPoint() {
+      ttEl    = marker.getTooltip().getElement();
+      ttRect  = ttEl.getBoundingClientRect();
+      mpRect  = map.getContainer().getBoundingClientRect();
+      let px,py;
+      const dir = chosen.dir;
+      if (dir==='top') {
+        px = ttRect.left - mpRect.left + ttRect.width/2;
+        py = ttRect.bottom - mpRect.top;
+      } else if (dir==='bottom') {
+        px = ttRect.left - mpRect.left + ttRect.width/2;
+        py = ttRect.top - mpRect.top;
+      } else if (dir==='left') {
+        px = ttRect.right - mpRect.left;
+        py = ttRect.top - mpRect.top + ttRect.height/2;
+      } else {
+        // right
+        px = ttRect.left - mpRect.left;
+        py = ttRect.top - mpRect.top + ttRect.height/2;
+      }
+      return map.containerPointToLatLng([px,py]);
+    }
+
+    const tipLL = computeTipPoint();
+    const poly  = L.polyline([ marker.getLatLng(), tipLL ], { color:'#ff7800', weight:4, interactive:false }).addTo(map);
+
+    // update connector on map move/zoom & on reflow
+    const updateConn = () => {
+      const newTip = computeTipPoint();
+      poly.setLatLngs([ marker.getLatLng(), newTip ]);
+    };
+    map.on('move zoom viewreset', updateConn);
+
+    // stash
+    marker._connector   = poly;
+    marker._updateConn  = updateConn;
+  }
+
+  // auto open in view
+  function openInView() {
+    if (map.getZoom()<ZOOM_OPEN) return;
+    const bounds = map.getBounds();
+    markers.forEach(m=>{
+      if (!m.sticky && bounds.contains(m.getLatLng())) m.fire('click');
+    });
+  }
+
+  // debounced collision pass
+  const collisionPass = debounce(()=>{
+    if (map.getZoom()<ZOOM_COLLIDE) return;
+    openTips.slice().forEach(m=>repositionTooltip(m));
+  },300);
+
+  // main modal shown
+  const modal = document.getElementById('overviewMapModal');
+  modal.addEventListener('shown.bs.modal', ()=>{
+    // teardown
+    if(map){map.remove();map=null;} markers.length=0; openTips.length=0;
+    const cams = window.visibleCameras||[]; if(!cams.length) return;
+
+    // init map
     const coords = cams.map(c=>[c.Latitude,c.Longitude]);
     const bounds = L.latLngBounds(coords);
-    map = L.map('overviewMap', {
-      attributionControl: true,
-      zoomControl:        false,
-      dragging:           true,
-      scrollWheelZoom:    true
-    });
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png', {
-      attribution: '© OpenStreetMap contributors'
-    }).addTo(map);
+    map = L.map('overviewMap',{attributionControl:true,zoomControl:false,dragging:true,scrollWheelZoom:true});
+    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors'}).addTo(map);
 
-    // helper for generating tooltip HTML
-    const makeHtml = cam => `
-      <div class="glass-popup-content">
-        <img src="${cam.Views[0].Url}" />
-      </div>
-    `;
-
-    // constants for sizing & collision
-    const TW = 120;           // tooltip width
-    const arrowHalf = 6;      // half the arrow width
-    const markerRadius = 6;   // half our icon size
-
-    // add each camera as a small marker
-    cams.forEach(cam => {
-      const marker = L.marker([cam.Latitude,cam.Longitude], { icon: smallIcon }).addTo(map);
-      markers.push(marker);
-      marker.sticky = false;
-      marker._autoOpened = false;
-      let hoverTip = null;
-
-      // hover = temporary preview
-      marker.on('mouseover', () => {
-        if (!marker.sticky && !hoverTip) {
-          hoverTip = L.tooltip({ permanent:false, interactive:false })
-            .setLatLng(marker.getLatLng())
+    // add markers
+    cams.forEach(cam=>{
+      const m = L.marker([cam.Latitude, cam.Longitude], { icon: smallIcon }).addTo(map);
+      m.cam = cam; m.sticky=false;
+      markers.push(m);
+      
+      let hover=null;
+      m.on('mouseover', ()=>{
+        if(!m.sticky && !hover){
+          hover=L.tooltip({permanent:false,interactive:false})
+            .setLatLng(m.getLatLng())
             .setContent(makeHtml(cam))
             .addTo(map);
         }
       });
-      marker.on('mouseout', () => {
-        if (hoverTip) { map.removeLayer(hoverTip); hoverTip = null; }
-      });
+      m.on('mouseout', ()=>{ if(hover){map.removeLayer(hover); hover=null;} });
 
-      // click = toggle sticky + dynamic placement
-      marker.on('click', () => {
-        // if it's already sticky, remove it
-        if (marker.sticky) {
-          const idx = openTips.findIndex(e => e.marker === marker);
-          if (idx !== -1) {
-            const entry = openTips[idx];
-            map.removeLayer(entry.tooltip);
-            map.removeLayer(entry.connector);
-            map.off('moveend zoomend', entry.updateConn);
-            openTips.splice(idx,1);
-          }
-          marker.sticky = false;
-          marker._autoOpened = false;
-          return;
-        }
-
-        const html = makeHtml(cam);
-
-        // build marker bounding boxes
-        const markerBoxes = markers.map(m => {
-          const p = map.latLngToContainerPoint(m.getLatLng());
-          return {
-            left: p.x - markerRadius,
-            top:  p.y - markerRadius,
-            right:p.x + markerRadius,
-            bottom:p.y + markerRadius
-          };
-        });
-
-        // list of directions+offsets including corners
-        const candidates = [
-          { dir:'top',    offset:[0, -markerRadius] },
-          { dir:'bottom', offset:[0,  markerRadius] },
-          { dir:'left',   offset:[-markerRadius, 0] },
-          { dir:'right',  offset:[markerRadius,  0] },
-          // corners:
-          { dir:'top',    offset:[-(TW/2 - arrowHalf), -markerRadius] },
-          { dir:'top',    offset:[ (TW/2 - arrowHalf), -markerRadius] },
-          { dir:'bottom', offset:[-(TW/2 - arrowHalf),  markerRadius] },
-          { dir:'bottom', offset:[ (TW/2 - arrowHalf),  markerRadius] },
-        ];
-
-        // measure & test collisions
-        const measured = candidates.map(c => {
-          const tmp = L.tooltip({
-            direction:   c.dir,
-            offset:      c.offset,
-            permanent:   true,
-            interactive: false,
-            opacity:     0
-          })
-            .setLatLng(marker.getLatLng())
-            .setContent(html)
-            .addTo(map);
-          const rect = tmp.getElement().getBoundingClientRect();
-          map.removeLayer(tmp);
-          return {...c, rect};
-        });
-
-        // find first non‑colliding candidate
-        const chosen = measured.find(c =>
-          !markerBoxes.some(mb => rectsIntersect(mb, c.rect)) &&
-          !openTips.some(e => rectsIntersect(e.tooltip.getElement().getBoundingClientRect(), c.rect))
-        ) || measured[0];
-
-        // bind & open the real tooltip
-        marker.bindTooltip(html, {
-          direction:   chosen.dir,
-          offset:      chosen.offset,
-          permanent:   true,
-          interactive: true,
-          className:   'glass-popup',
-          maxWidth:    TW
-        }).openTooltip();
-        const perm = marker.getTooltip();
-
-        // draw connector line
-        const connector = L.polyline([], {
-          color:'#ff7800',
-          weight:3,
-          interactive:false
-        }).addTo(map);
-        const updateConn = () => {
-          const mLL = marker.getLatLng();
-          const te  = perm.getElement().getBoundingClientRect();
-          const me  = map.getContainer().getBoundingClientRect();
-          const cx  = te.left - me.left + te.width/2;
-          const cy  = te.top  - me.top  + te.height;
-          connector.setLatLngs([ mLL, map.containerPointToLatLng([cx,cy]) ]);
-        };
-        updateConn();
-        map.on('moveend zoomend', updateConn);
-
-        openTips.push({ marker, tooltip:perm, connector, updateConn });
-        marker.sticky = true;
+      m.on('click', ()=>{
+        if(m.sticky){ clearTooltip(m); return; }
+        // cap
+        if(map.getZoom()>=ZOOM_COLLIDE && openTips.length>=MAX_TOOLTIPS){ clearTooltip(openTips.shift()); }
+        repositionTooltip(m);
       });
     });
 
-    // 5) On pan/zoom: close any overlapping tooltip
-    map.on('moveend zoomend', () => {
-      openTips.slice().forEach(entry => {
-        const rect = entry.tooltip.getElement().getBoundingClientRect();
-        // overlaps marker?
-        const ovM = markers.some(m => {
-          const p = map.latLngToContainerPoint(m.getLatLng());
-          const mb = {
-            left: p.x - markerRadius,
-            top:  p.y - markerRadius,
-            right:p.x + markerRadius,
-            bottom:p.y + markerRadius
-          };
-          return rectsIntersect(rect, mb);
-        });
-        // overlaps another tooltip?
-        const ovT = openTips.some(other =>
-          other !== entry &&
-          rectsIntersect(rect, other.tooltip.getElement().getBoundingClientRect())
-        );
-        if (ovM || ovT) entry.marker.fire('click');
-      });
+    // events
+    map.off('moveend'); map.on('moveend', openInView);
+    map.off('zoomend');
+    map.on('zoomend', ()=>{
+      const z=map.getZoom();
+      if(z>=ZOOM_OPEN) openInView(); else openTips.slice().forEach(clearTooltip);
+      if(z>=ZOOM_COLLIDE) collisionPass();
     });
 
-    // 6) Zoom‑threshold auto open/close
-    const zoomThreshold = 13;
-    map.on('zoomend', () => {
-      const z = map.getZoom();
-      if (z >= zoomThreshold) {
-        markers.forEach(m => {
-          if (!m.sticky) { m._autoOpened = true; m.fire('click'); }
-        });
-      } else {
-        markers.forEach(m => {
-          if (m._autoOpened) { m.fire('click'); m._autoOpened = false; }
-        });
-      }
-    });
+    document.getElementById('openAllTips').onclick  = ()=>markers.forEach(m=>!m.sticky&&m.fire('click'));
+    document.getElementById('closeAllTips').onclick = ()=>openTips.slice().forEach(clearTooltip);
 
-    // 7) Footer buttons
-    document.getElementById('openAllTips').onclick  =
-      () => markers.forEach(m => !m.sticky && m.fire('click'));
-    document.getElementById('closeAllTips').onclick =
-      () => markers.forEach(m =>  m.sticky &&  m.fire('click'));
-
-    // 8) Fit map
-    map.invalidateSize();
-    map.fitBounds(bounds, { padding:[10,10], maxZoom:12 });
+    map.invalidateSize(); map.fitBounds(bounds,{padding:[10,10],maxZoom:12});
   });
 
-  // on hide: clean up
-  modalEl.addEventListener('hidden.bs.modal', () => {
-    if (map) { map.remove(); map = null; }
+  modal.addEventListener('hidden.bs.modal', ()=>{
+    openTips.slice().forEach(clearTooltip);
+    if(map){map.remove();map=null;}
   });
 }
