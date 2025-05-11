@@ -596,21 +596,17 @@ html, body {
   border-radius: 8px     !important;
 }
 .custom-marker {
-  width:            12px;
-  height:           12px;
-  background-color: #04AA6D;
-  border:           2px solid #fff;
+  width:            10px;
+  height:           10px;
+  background-color: #ff7800;
+  border:           .5px solid #ffffff;
   border-radius:    50%;
-  box-shadow:       0 0 2px rgba(0,0,0,0.3);
+  box-shadow:       0 0 2px rgb(255, 255, 255);
 }
-/* hide the default tooltip “triangle” */
-.leaflet-tooltip.glass-popup .leaflet-tooltip-tip,
-.leaflet-tooltip.glass-popup .leaflet-tooltip-anchor {
+.leaflet-tooltip:before,
+.leaflet-tooltip:after {
   display: none !important;
 }
-.leaflet-tooltip .leaflet-tooltip-tip,
-.leaflet-tooltip .leaflet-tooltip-anchor {
-  display: none !important;
-}
+
 
 

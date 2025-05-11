@@ -37,14 +37,14 @@ requestAnimationFrame(() => {
   const miniMap = L.map(overviewTile, {
     attributionControl: false,
     zoomControl:      false,
-    dragging:         false,
+    dragging:         true,
     scrollWheelZoom:  true,
     doubleClickZoom:  false,
     touchZoom:        false
   });
 
   // 3. add tiles
-  L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+  L.tileLayer('http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
     attribution: '&copy; Esri'
   }).addTo(miniMap);
 
@@ -53,10 +53,10 @@ requestAnimationFrame(() => {
     L.circleMarker([lat, lng], {
       radius:      2,
       fillColor:   '#ff7800',
-      color:       '#000',
+      color:       '#ff7800',
       weight:      1,
       opacity:     1,
-      fillOpacity: 0.8
+      fillOpacity: 1
     }).addTo(miniMap);
   });
 

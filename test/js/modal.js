@@ -86,7 +86,7 @@ export function setupOverviewModal() {
   const MAX_TOOLTIPS = 20;
   const THUMB_WIDTH  = 120;
   const ARROW_HALF   = 6;
-  const MARKER_RAD   = 6;
+  const MARKER_RAD   = 8;
   const ZOOM_OPEN    = 13;
   const ZOOM_COLLIDE = 14;
 
@@ -251,7 +251,7 @@ export function setupOverviewModal() {
     const coords = cams.map(c=>[c.Latitude,c.Longitude]);
     const bounds = L.latLngBounds(coords);
     map = L.map('overviewMap',{attributionControl:true,zoomControl:false,dragging:true,scrollWheelZoom:true});
-    L.tileLayer('https://{s}.tile.openstreetmap.org/{z}/{x}/{y}.png',{attribution:'© OpenStreetMap contributors'}).addTo(map);
+    L.tileLayer('https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png',{attribution:'© OpenStreetMap contributors'}).addTo(map);
 
     // add markers
     cams.forEach(cam=>{
