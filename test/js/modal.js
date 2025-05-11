@@ -211,19 +211,65 @@ export function setupOverviewModal() {
     const tipLL = map.containerPointToLatLng(tipCP);
 
     // draw connector
-    const poly = L.polyline([ marker.getLatLng(), tipLL ], { color:'#ff7800', weight:4, interactive:false }).addTo(map);
+    const poly  = L.polyline([ marker.getLatLng(), tipLL ], { color:'#ff7800', weight:4, interactive:false }).addTo(map);
 
-    // update connector on move/zoom
+    // Enlarge tooltip image on long press / hold, bring to front, and pan to fit
+    const tooltip = marker.getTooltip();
+    const tooltipEl = tooltip.getElement();
+    const imgEl = tooltipEl.querySelector('img');
+    if (imgEl) {
+      imgEl.style.transition = 'transform 0.2s ease';
+      imgEl.style.transformOrigin = 'center center';
+      // prevent closing on click
+      imgEl.addEventListener('click', e => e.stopPropagation());
+
+      function panToFit() {
+        const scale = 2;
+        const imgRect = imgEl.getBoundingClientRect();
+        const mapRect = map.getContainer().getBoundingClientRect();
+        const cx = imgRect.left + imgRect.width/2;
+        const cy = imgRect.top + imgRect.height/2;
+        const newW = imgRect.width * scale;
+        const newH = imgRect.height * scale;
+        const newLeft = cx - newW/2;
+        const newTop = cy - newH/2;
+        const newRight = cx + newW/2;
+        const newBottom = cy + newH/2;
+        const posLeft = newLeft - mapRect.left;
+        const posRight = newRight - mapRect.left;
+        const posTop = newTop - mapRect.top;
+        const posBottom = newBottom - mapRect.top;
+        let dx = 0, dy = 0;
+        if (posLeft < 0) dx = posLeft;
+        else if (posRight > mapRect.width) dx = posRight - mapRect.width;
+        if (posTop < 0) dy = posTop;
+        else if (posBottom > mapRect.height) dy = posBottom - mapRect.height;
+        if (dx || dy) map.panBy([dx, dy], { animate: false });
+      }
+
+      ['mousedown','touchstart'].forEach(evt =>
+        imgEl.addEventListener(evt, e => {
+          e.stopPropagation();
+          imgEl.style.transform = 'scale(2)';
+          tooltip.bringToFront();
+          panToFit();
+        })
+      );
+      ['mouseup','touchend','touchcancel'].forEach(evt =>
+        imgEl.addEventListener(evt, e => {
+          e.stopPropagation();
+          imgEl.style.transform = 'scale(1)';
+        })
+      );
+    }
+
     const updateConn = () => {
       let cp = computeTipCP();
-      let v  = cp.subtract(markerCP);
-      let d  = markerCP.distanceTo(cp);
-      if (d < MIN_ANCHOR_PX) {
-        const u = d ? v.multiplyBy(1/d) : L.point(0,1);
-        cp = markerCP.add(u.multiplyBy(MIN_ANCHOR_PX));
-      }
-      const ll = map.containerPointToLatLng(cp);
-      poly.setLatLngs([ marker.getLatLng(), ll ]);
+      let v = cp.subtract(markerCP);
+      let d = markerCP.distanceTo(cp);
+      if (d < MIN_ANCHOR_PX) v = v.multiplyBy(MIN_ANCHOR_PX / (d || MIN_ANCHOR_PX));
+      const adjLL = map.containerPointToLatLng(markerCP.add(v));
+      poly.setLatLngs([ marker.getLatLng(), adjLL ]);
     };
     map.on('move zoom viewreset', updateConn);
     marker._connector  = poly;
@@ -258,7 +304,7 @@ export function setupOverviewModal() {
     const bounds = L.latLngBounds(coords);
     map = L.map('overviewMap', { attributionControl:true, zoomControl:false, dragging:true, scrollWheelZoom:true });
 
-     // Base + overlays
+      // Base + overlays
     const CartoDB_DarkMatterNoLabels = L.tileLayer(
       'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
         attribution: '&copy; Esri',
