@@ -49,7 +49,7 @@ export function setupModalCleanup() {
     });
 }
 
-// 3) Long‐press sharing
+// 3) Long‑press sharing
 export async function shareImageFile(url, info = "") {
   try {
     const res   = await fetch(url);
@@ -81,27 +81,25 @@ export function setupLongPressShare(sel) {
 export function setupOverviewModal() {
   const smallIcon = L.divIcon({ className: 'custom-marker', iconSize: [12,12], iconAnchor: [6,6], tooltipAnchor: [0,10] });
 
-  const MAX_TOOLTIPS = 20;
-  const THUMB_WIDTH  = 120;
-  const ARROW_HALF   = 6;
-  const MARKER_RAD   = 8;
-  const ZOOM_OPEN    = 13;
-  const ZOOM_COLLIDE = 14;
+  const MAX_TOOLTIPS    = 20;
+  const THUMB_WIDTH     = 120;
+  const ARROW_HALF      = 6;
+  const MARKER_RAD      = 8;
+  const MIN_ANCHOR_PX   = 5; // minimum 5px anchor length
+  const ZOOM_OPEN       = 13;
+  const ZOOM_COLLIDE    = 14;
 
   let map;
   const markers = [];
   const openTips = [];
 
   function intersects(a,b) {
-    return !(b.left>a.right||b.right<a.left||b.top>a.bottom||b.bottom<a.top);
+    return !(b.left > a.right || b.right < a.left || b.top > a.bottom || b.bottom < a.top);
   }
 
-function makeHtml(cam) {
-  return `<div class="glass-popup-content">
-            <img src="${cam.Views[0].Url}"/>
-          </div>`;
-}
-
+  function makeHtml(cam) {
+    return `<div class=\"glass-popup-content\"><img src=\"${cam.Views[0].Url}\"/></div>`;
+  }
 
   function clearTooltip(marker) {
     marker.unbindTooltip();
@@ -116,48 +114,65 @@ function makeHtml(cam) {
       marker._updateConn = null;
     }
     const idx = openTips.indexOf(marker);
-    if (idx !== -1) openTips.splice(idx,1);
+    if (idx !== -1) openTips.splice(idx, 1);
   }
 
   function repositionTooltip(marker) {
     clearTooltip(marker);
     const html = makeHtml(marker.cam);
 
+    // build marker boxes
     const boxes = markers.map(m => {
       const p = map.latLngToContainerPoint(m.getLatLng());
-      return { left: p.x-MARKER_RAD, top: p.y-MARKER_RAD, right: p.x+MARKER_RAD, bottom: p.y+MARKER_RAD };
+      return { left: p.x - MARKER_RAD, top: p.y - MARKER_RAD, right: p.x + MARKER_RAD, bottom: p.y + MARKER_RAD };
     });
 
+    // candidate placements
     const candidates = [
-      { dir:'top',    offset:[0,-MARKER_RAD] },
-      { dir:'bottom', offset:[0,MARKER_RAD] },
-      { dir:'left',   offset:[-MARKER_RAD,0] },
-      { dir:'right',  offset:[MARKER_RAD,0] },
-      { dir:'top',    offset:[-(THUMB_WIDTH/2-ARROW_HALF),-MARKER_RAD] },
-      { dir:'top',    offset:[ (THUMB_WIDTH/2-ARROW_HALF),-MARKER_RAD] },
-      { dir:'bottom', offset:[-(THUMB_WIDTH/2-ARROW_HALF), MARKER_RAD] },
-      { dir:'bottom', offset:[ (THUMB_WIDTH/2-ARROW_HALF), MARKER_RAD] }
+      { dir:'top',    offset:[0, -MARKER_RAD] },
+      { dir:'bottom', offset:[0,  MARKER_RAD] },
+      { dir:'left',   offset:[-MARKER_RAD, 0] },
+      { dir:'right',  offset:[ MARKER_RAD, 0] },
+      { dir:'top',    offset:[-(THUMB_WIDTH/2 - ARROW_HALF), -MARKER_RAD] },
+      { dir:'top',    offset:[ (THUMB_WIDTH/2 - ARROW_HALF), -MARKER_RAD] },
+      { dir:'bottom', offset:[-(THUMB_WIDTH/2 - ARROW_HALF),  MARKER_RAD] },
+      { dir:'bottom', offset:[ (THUMB_WIDTH/2 - ARROW_HALF),  MARKER_RAD] }
     ];
 
+    // measure placements
     const measured = candidates.map(c => {
-      const tmp = L.tooltip({ direction:c.dir, offset:c.offset, permanent:true, interactive:false, opacity:0 })
+      const tmp = L.tooltip({ direction:c.dir, offset:c.offset, permanent:true, interactive:false, opacity:1 })
         .setLatLng(marker.getLatLng())
         .setContent(html)
         .addTo(map);
       const r = tmp.getElement().getBoundingClientRect();
       map.removeLayer(tmp);
-      return {...c,rect:r};
+      return { ...c, rect: r };
     });
 
+    // pick non-colliding or default
     const chosen = measured.find(c => {
-      if (boxes.some(b => intersects(b,c.rect))) return false;
+      if (boxes.some(b => intersects(b, c.rect))) return false;
       for (let ot of openTips) {
         const r2 = ot.getTooltip().getElement().getBoundingClientRect();
-        if (intersects(c.rect,r2)) return false;
+        if (intersects(c.rect, r2)) return false;
       }
       return true;
     }) || measured[0];
 
+    // enforce minimum anchor length on the initial offset
+    let [ox, oy] = chosen.offset;
+    const minOffset = MARKER_RAD + MIN_ANCHOR_PX;
+    const norm = Math.hypot(ox, oy);
+    if (norm < minOffset) {
+      // scale up the offset vector to meet the minimum
+      const factor = minOffset / (norm || minOffset);
+      ox *= factor;
+      oy *= factor;
+    }
+    const finalOffset = [ox, oy];
+
+    // bind tooltip
     marker.bindTooltip(html, {
       direction:   chosen.dir,
       offset:      chosen.offset,
@@ -165,41 +180,50 @@ function makeHtml(cam) {
       interactive: true,
       className:   'glass-popup',
       maxWidth:    THUMB_WIDTH,
-      opacity:     1 
+      opacity:     1
     }).openTooltip();
     marker.sticky = true;
     openTips.push(marker);
 
-    function computeTipPoint() {
+    // compute container points
+    const markerCP = map.latLngToContainerPoint(marker.getLatLng());
+    function computeTipCP() {
       const tt = marker.getTooltip().getElement().getBoundingClientRect();
       const mp = map.getContainer().getBoundingClientRect();
       let px, py;
       switch (chosen.dir) {
-        case 'top':
-          px = tt.left - mp.left + tt.width/2;
-          py = tt.bottom - mp.top;
-          break;
-        case 'bottom':
-          px = tt.left - mp.left + tt.width/2;
-          py = tt.top - mp.top;
-          break;
-        case 'left':
-          px = tt.right - mp.left;
-          py = tt.top - mp.top + tt.height/2;
-          break;
-        default: // right
-          px = tt.left - mp.left;
-          py = tt.top - mp.top + tt.height/2;
+        case 'top':    px = tt.left - mp.left + tt.width/2; py = tt.bottom - mp.top; break;
+        case 'bottom': px = tt.left - mp.left + tt.width/2; py = tt.top - mp.top; break;
+        case 'left':   px = tt.right - mp.left; py = tt.top - mp.top + tt.height/2; break;
+        default:       px = tt.left - mp.left; py = tt.top - mp.top + tt.height/2;
       }
-      return map.containerPointToLatLng([px, py]);
+      return L.point(px, py);
     }
 
-    const tipLL = computeTipPoint();
-    const poly  = L.polyline([ marker.getLatLng(), tipLL ], { color:'#ff7800', weight:4, interactive:false }).addTo(map);
+    // initial tip cp, enforce minimum
+    let tipCP = computeTipCP();
+    let vec   = tipCP.subtract(markerCP);
+    let dist  = markerCP.distanceTo(tipCP);
+    if (dist < MIN_ANCHOR_PX) {
+      const unit = dist ? vec.multiplyBy(1/dist) : L.point(0,1);
+      tipCP = markerCP.add(unit.multiplyBy(MIN_ANCHOR_PX));
+    }
+    const tipLL = map.containerPointToLatLng(tipCP);
 
+    // draw connector
+    const poly = L.polyline([ marker.getLatLng(), tipLL ], { color:'#ff7800', weight:4, interactive:false }).addTo(map);
+
+    // update connector on move/zoom
     const updateConn = () => {
-      const newTip = computeTipPoint();
-      poly.setLatLngs([ marker.getLatLng(), newTip ]);
+      let cp = computeTipCP();
+      let v  = cp.subtract(markerCP);
+      let d  = markerCP.distanceTo(cp);
+      if (d < MIN_ANCHOR_PX) {
+        const u = d ? v.multiplyBy(1/d) : L.point(0,1);
+        cp = markerCP.add(u.multiplyBy(MIN_ANCHOR_PX));
+      }
+      const ll = map.containerPointToLatLng(cp);
+      poly.setLatLngs([ marker.getLatLng(), ll ]);
     };
     map.on('move zoom viewreset', updateConn);
     marker._connector  = poly;
@@ -221,6 +245,9 @@ function makeHtml(cam) {
 
   const modal = document.getElementById('overviewMapModal');
   modal.addEventListener('shown.bs.modal', () => {
+    // Update modal title to current route name
+    document.getElementById('overviewMapModalLabel').textContent = window.selectedRoute || 'Route Overview';
+
     if (map) { map.remove(); map = null; }
     markers.length = 0;
     openTips.length = 0;
@@ -231,21 +258,20 @@ function makeHtml(cam) {
     const bounds = L.latLngBounds(coords);
     map = L.map('overviewMap', { attributionControl:true, zoomControl:false, dragging:true, scrollWheelZoom:true });
 
-    // Base + overlays
+     // Base + overlays
     const CartoDB_DarkMatterNoLabels = L.tileLayer(
       'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
         attribution: '&copy; Esri',
-        subdomains: 'abcd', maxZoom:25
+        subdomains: 'abcd', maxZoom:20
       }
     ).addTo(map);
     const Stadia_StamenTerrainLines = L.tileLayer(
       'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
-        minZoom:0, maxZoom:25,
+        minZoom:0, maxZoom:18,
         attribution: '&copy; OpenStreetMap contributors',
         ext:'png'
       }
     ).addTo(map);
-
 
     cams.forEach(cam => {
       const m = L.marker([cam.Latitude, cam.Longitude], { icon: smallIcon }).addTo(map);
@@ -254,7 +280,7 @@ function makeHtml(cam) {
       let hover = null;
       m.on('mouseover', () => {
         if (!m.sticky && !hover) {
-          hover = L.tooltip({ permanent:false, interactive:false })
+          hover = L.tooltip({ permanent:false, interactive:false, opacity:1 })
             .setLatLng(m.getLatLng())
             .setContent(makeHtml(cam))
             .addTo(map);
