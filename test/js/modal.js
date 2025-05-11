@@ -96,9 +96,16 @@ export function setupOverviewModal() {
     return !(b.left>a.right||b.right<a.left||b.top>a.bottom||b.bottom<a.top);
   }
 
-  function makeHtml(cam) {
-    return `<div class=\"glass-popup-content\"><img src=\"${cam.Views[0].Url}\"/></div>`;
-  }
+// when building your tooltip html:
+function makeHtml(cam) {
+  // if the camera server supports width=240 query:
+  const src240 = cam.Views[0].Url + '?width=240';
+  return `
+    <div class="glass-popup-content">
+      <img src="${src240}" width="120" />
+    </div>
+  `;
+}
 
   function clearTooltip(marker) {
     marker.unbindTooltip();
@@ -228,17 +235,17 @@ export function setupOverviewModal() {
     const bounds = L.latLngBounds(coords);
     map = L.map('overviewMap', { attributionControl:true, zoomControl:false, dragging:true, scrollWheelZoom:true });
 
-    // Base + overlays
+     // Base + overlays
     const CartoDB_DarkMatterNoLabels = L.tileLayer(
-      'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-        attribution: '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions">CARTO</a>',
+      'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+        attribution: '&copy; Esri',
         subdomains: 'abcd', maxZoom:20
       }
     ).addTo(map);
     const Stadia_StamenTerrainLines = L.tileLayer(
-      'https://tiles.stadiamaps.com/tiles/stamen_terrain_lines/{z}/{x}/{y}{r}.{ext}', {
+      'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
         minZoom:0, maxZoom:18,
-        attribution:'&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://www.stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+        attribution: '&copy; OpenStreetMap contributors',
         ext:'png'
       }
     ).addTo(map);

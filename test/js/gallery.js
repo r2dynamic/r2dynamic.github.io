@@ -43,8 +43,8 @@ export function renderGallery(cameras) {
 
       // 3. add CartoDB DarkMatter base
       const darkBase = L.tileLayer(
-        'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>',
+        'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
+          attribution: '&copy; Esri',
           subdomains: 'abcd',
           maxZoom: 20
         }
@@ -52,8 +52,8 @@ export function renderGallery(cameras) {
 
       // 4. add Stamen terrain line overlay
       const terrainLines = L.tileLayer(
-        'https://tiles.stadiamaps.com/tiles/stamen_terrain_lines/{z}/{x}/{y}{r}.png', {
-          attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors',
+        'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+           attribution: '&copy; Esri',
           minZoom: 0,
           maxZoom: 18
         }
