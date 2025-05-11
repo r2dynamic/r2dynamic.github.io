@@ -64,7 +64,7 @@ export function renderGallery(cameras) {
         L.circleMarker([lat, lng], {
           radius:      2,
           fillColor:   '#ff7800',
-          color:       '#090909',
+          color:       '#ffffff',
           weight:      .5,
           opacity:     1,
           fillOpacity: 1

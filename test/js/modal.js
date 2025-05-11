@@ -96,16 +96,12 @@ export function setupOverviewModal() {
     return !(b.left>a.right||b.right<a.left||b.top>a.bottom||b.bottom<a.top);
   }
 
-// when building your tooltip html:
 function makeHtml(cam) {
-  // if the camera server supports width=240 query:
-  const src240 = cam.Views[0].Url + '?width=240';
-  return `
-    <div class="glass-popup-content">
-      <img src="${src240}" width="120" />
-    </div>
-  `;
+  return `<div class="glass-popup-content">
+            <img src="${cam.Views[0].Url}"/>
+          </div>`;
 }
+
 
   function clearTooltip(marker) {
     marker.unbindTooltip();
@@ -235,16 +231,16 @@ function makeHtml(cam) {
     const bounds = L.latLngBounds(coords);
     map = L.map('overviewMap', { attributionControl:true, zoomControl:false, dragging:true, scrollWheelZoom:true });
 
-     // Base + overlays
+    // Base + overlays
     const CartoDB_DarkMatterNoLabels = L.tileLayer(
       'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
         attribution: '&copy; Esri',
-        subdomains: 'abcd', maxZoom:20
+        subdomains: 'abcd', maxZoom:25
       }
     ).addTo(map);
     const Stadia_StamenTerrainLines = L.tileLayer(
       'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
-        minZoom:0, maxZoom:18,
+        minZoom:0, maxZoom:25,
         attribution: '&copy; OpenStreetMap contributors',
         ext:'png'
       }

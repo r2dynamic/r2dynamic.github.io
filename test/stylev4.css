@@ -592,14 +592,13 @@ html, body {
   display: block         !important; /* kill inline gap */
   width: 120px           !important;
   aspect-ratio: 16 / 9   !important;
-  object-fit: cover      !important;
   border-radius: 8px     !important;
 }
 .custom-marker {
   width:            10px;
   height:           10px;
   background-color: #ff7800;
-  border:           .5px solid #090909;
+  border:           .5px solid #ffffff;
   border-radius:    50%;
   box-shadow:       0 0 2px rgb(255, 255, 255);
 }
@@ -614,13 +613,9 @@ html, body {
   box-sizing: border-box;
 }
 
-/* at the bottom of stylev4.css */
-.leaflet-tooltip img {
-  /* disable interpolation */
-  image-rendering: pixelated !important;
-  /* fallback for some browsers */
-  image-rendering: crisp-edges !important;
-}
+
+
+
 
 
 
