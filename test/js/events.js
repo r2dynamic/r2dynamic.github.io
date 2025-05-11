@@ -1,9 +1,35 @@
 // events.js
 import { debounce, getDistance } from './utils.js';
 import { filterImages } from './filters.js';
+import { updateURLParameters } from './ui.js';
+import { copyURLToClipboard } from './ui.js';
 
 const DEBOUNCE_DELAY = 300;
 const MIN_IMAGE_SIZE = 80;
+
+export function setupCopyUrlButton() {
+  const btn = document.getElementById('copyUrlButton');
+  if (!btn) return;
+
+  btn.addEventListener('click', e => {
+    e.preventDefault();
+
+    // ensure address bar is up‑to‑date
+    updateURLParameters();
+
+    copyURLToClipboard()
+      .then(() => {
+        // Optional feedback:
+        const old = btn.textContent;
+        btn.textContent = 'Copied!';
+        setTimeout(() => btn.textContent = old, 1500);
+      })
+      .catch(err => {
+        console.error('Failed to copy URL:', err);
+      });
+  });
+}
+
 
 /**
  * Sets up the search input listener with debounce.

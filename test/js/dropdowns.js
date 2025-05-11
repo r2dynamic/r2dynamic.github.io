@@ -1,17 +1,20 @@
-// dropdowns.js
+// js/dropdowns.js
+
+import { filterImages } from './filters.js';
+import { updateURLParameters } from './ui.js';
 
 /**
  * Returns filtered cameras based on global selected* settings.
  */
 export function getFilteredCameras(exclude) {
-  return camerasList.filter(camera => {
-    if (exclude !== 'region'      && selectedRegion             && `${camera.Region}` !== selectedRegion) return false;
-    if (exclude !== 'county'      && selectedCounty             && camera.CountyBoundary !== selectedCounty) return false;
-    if (exclude !== 'city'        && selectedCity               && camera.MunicipalBoundary !== selectedCity) return false;
-    if (exclude !== 'maintenance' && selectedMaintenanceStation) {
-      const ok = (camera.MaintenanceStationOption1 === selectedMaintenanceStation &&
+  return window.camerasList.filter(camera => {
+    if (exclude !== 'region' && window.selectedRegion && `${camera.Region}` !== window.selectedRegion) return false;
+    if (exclude !== 'county' && window.selectedCounty && camera.CountyBoundary !== window.selectedCounty) return false;
+    if (exclude !== 'city' && window.selectedCity && camera.MunicipalBoundary !== window.selectedCity) return false;
+    if (exclude !== 'maintenance' && window.selectedMaintenanceStation) {
+      const ok = (camera.MaintenanceStationOption1 === window.selectedMaintenanceStation &&
                   camera.MaintenanceStationOption1.toLowerCase() !== 'not available')
-               || (camera.MaintenanceStationOption2 === selectedMaintenanceStation &&
+               || (camera.MaintenanceStationOption2 === window.selectedMaintenanceStation &&
                    camera.MaintenanceStationOption2.toLowerCase() !== 'not available');
       if (!ok) return false;
     }
@@ -24,37 +27,51 @@ export function getFilteredCameras(exclude) {
  */
 export function updateRegionDropdown() {
   const avail = getFilteredCameras('region');
-  const set   = new Set(avail.map(c => c.Region).filter(v => v != null).map(v => v.toString()));
-  const menu  = document.getElementById('regionFilterMenu');
+  const set = new Set(avail.map(c => c.Region).filter(v => v != null).map(v => v.toString()));
+  const menu = document.getElementById('regionFilterMenu');
   if (!menu) return;
   menu.innerHTML = '';
-  const li0 = document.createElement('li'), a0 = document.createElement('a');
-  a0.classList.add('dropdown-item'); a0.href = '#'; a0.dataset.value = '';
+
+  // “All Regions” item
+  const li0 = document.createElement('li');
+  const a0  = document.createElement('a');
+  a0.classList.add('dropdown-item');
+  a0.href = '#';
+  a0.dataset.value = '';
   a0.textContent = 'All Regions';
   a0.addEventListener('click', e => {
     e.preventDefault();
-    selectedRegion = '';
+    window.selectedRegion = '';
     updateCountyDropdown();
     updateCityDropdown();
     updateMaintenanceStationDropdown();
     filterImages();
+    updateURLParameters();
     bootstrap.Collapse.getOrCreateInstance(document.getElementById('regionOptions')).hide();
   });
-  li0.append(a0); menu.append(li0);
+  li0.append(a0);
+  menu.append(li0);
 
+  // One item per region
   Array.from(set).sort().forEach(val => {
-    const li = document.createElement('li'), a = document.createElement('a');
-    a.classList.add('dropdown-item'); a.href = '#'; a.dataset.value = val; a.textContent = val;
+    const li = document.createElement('li');
+    const a  = document.createElement('a');
+    a.classList.add('dropdown-item');
+    a.href = '#';
+    a.dataset.value = val;
+    a.textContent = val;
     a.addEventListener('click', e => {
       e.preventDefault();
-      selectedRegion = val;
+      window.selectedRegion = val;
       updateCountyDropdown();
       updateCityDropdown();
       updateMaintenanceStationDropdown();
       filterImages();
+      updateURLParameters();
       bootstrap.Collapse.getOrCreateInstance(document.getElementById('regionOptions')).hide();
     });
-    li.append(a); menu.append(li);
+    li.append(a);
+    menu.append(li);
   });
 }
 
@@ -63,37 +80,49 @@ export function updateRegionDropdown() {
  */
 export function updateCountyDropdown() {
   const avail = getFilteredCameras('county');
-  const set   = new Set(avail.map(c => c.CountyBoundary).filter(v => v));
-  const menu  = document.getElementById('countyFilterMenu');
+  const set = new Set(avail.map(c => c.CountyBoundary).filter(v => v));
+  const menu = document.getElementById('countyFilterMenu');
   if (!menu) return;
   menu.innerHTML = '';
-  const li0 = document.createElement('li'), a0 = document.createElement('a');
-  a0.classList.add('dropdown-item'); a0.href = '#'; a0.dataset.value = '';
+
+  const li0 = document.createElement('li');
+  const a0  = document.createElement('a');
+  a0.classList.add('dropdown-item');
+  a0.href = '#';
+  a0.dataset.value = '';
   a0.textContent = 'All Counties';
   a0.addEventListener('click', e => {
     e.preventDefault();
-    selectedCounty = '';
-    updateCityDropdown();
+    window.selectedCounty = '';
     updateRegionDropdown();
+    updateCityDropdown();
     updateMaintenanceStationDropdown();
     filterImages();
+    updateURLParameters();
     bootstrap.Collapse.getOrCreateInstance(document.getElementById('countyOptions')).hide();
   });
-  li0.append(a0); menu.append(li0);
+  li0.append(a0);
+  menu.append(li0);
 
   Array.from(set).sort().forEach(val => {
-    const li = document.createElement('li'), a = document.createElement('a');
-    a.classList.add('dropdown-item'); a.href = '#'; a.dataset.value = val; a.textContent = val;
+    const li = document.createElement('li');
+    const a  = document.createElement('a');
+    a.classList.add('dropdown-item');
+    a.href = '#';
+    a.dataset.value = val;
+    a.textContent = val;
     a.addEventListener('click', e => {
       e.preventDefault();
-      selectedCounty = val;
-      updateCityDropdown();
+      window.selectedCounty = val;
       updateRegionDropdown();
+      updateCityDropdown();
       updateMaintenanceStationDropdown();
       filterImages();
+      updateURLParameters();
       bootstrap.Collapse.getOrCreateInstance(document.getElementById('countyOptions')).hide();
     });
-    li.append(a); menu.append(li);
+    li.append(a);
+    menu.append(li);
   });
 }
 
@@ -102,37 +131,49 @@ export function updateCountyDropdown() {
  */
 export function updateCityDropdown() {
   const avail = getFilteredCameras('city');
-  const set   = new Set(avail.map(c => c.MunicipalBoundary).filter(v => v));
-  const menu  = document.getElementById('cityFilterMenu');
+  const set = new Set(avail.map(c => c.MunicipalBoundary).filter(v => v));
+  const menu = document.getElementById('cityFilterMenu');
   if (!menu) return;
   menu.innerHTML = '';
-  const li0 = document.createElement('li'), a0 = document.createElement('a');
-  a0.classList.add('dropdown-item'); a0.href = '#'; a0.dataset.value = '';
+
+  const li0 = document.createElement('li');
+  const a0  = document.createElement('a');
+  a0.classList.add('dropdown-item');
+  a0.href = '#';
+  a0.dataset.value = '';
   a0.textContent = 'All Cities';
   a0.addEventListener('click', e => {
     e.preventDefault();
-    selectedCity = '';
+    window.selectedCity = '';
     updateRegionDropdown();
     updateCountyDropdown();
     updateMaintenanceStationDropdown();
     filterImages();
+    updateURLParameters();
     bootstrap.Collapse.getOrCreateInstance(document.getElementById('cityOptions')).hide();
   });
-  li0.append(a0); menu.append(li0);
+  li0.append(a0);
+  menu.append(li0);
 
   Array.from(set).sort().forEach(val => {
-    const li = document.createElement('li'), a = document.createElement('a');
-    a.classList.add('dropdown-item'); a.href = '#'; a.dataset.value = val; a.textContent = val;
+    const li = document.createElement('li');
+    const a  = document.createElement('a');
+    a.classList.add('dropdown-item');
+    a.href = '#';
+    a.dataset.value = val;
+    a.textContent = val;
     a.addEventListener('click', e => {
       e.preventDefault();
-      selectedCity = val;
+      window.selectedCity = val;
       updateRegionDropdown();
       updateCountyDropdown();
       updateMaintenanceStationDropdown();
       filterImages();
+      updateURLParameters();
       bootstrap.Collapse.getOrCreateInstance(document.getElementById('cityOptions')).hide();
     });
-    li.append(a); menu.append(li);
+    li.append(a);
+    menu.append(li);
   });
 }
 
@@ -147,36 +188,49 @@ export function updateMaintenanceStationDropdown() {
     if (o1 && o1.toLowerCase() !== 'not available') set.add(o1);
     if (o2 && o2.toLowerCase() !== 'not available') set.add(o2);
   });
+
   const menu = document.getElementById('maintenanceStationMenu');
   if (!menu) return;
   menu.innerHTML = '';
-  const li0 = document.createElement('li'), a0 = document.createElement('a');
-  a0.classList.add('dropdown-item'); a0.href = '#'; a0.dataset.value = '';
+
+  const li0 = document.createElement('li');
+  const a0  = document.createElement('a');
+  a0.classList.add('dropdown-item');
+  a0.href = '#';
+  a0.dataset.value = '';
   a0.textContent = 'All Stations';
   a0.addEventListener('click', e => {
     e.preventDefault();
-    selectedMaintenanceStation = '';
+    window.selectedMaintenanceStation = '';
     updateRegionDropdown();
     updateCountyDropdown();
     updateCityDropdown();
     filterImages();
+    updateURLParameters();
     bootstrap.Collapse.getOrCreateInstance(document.getElementById('maintenanceOptions')).hide();
   });
-  li0.append(a0); menu.append(li0);
+  li0.append(a0);
+  menu.append(li0);
 
   Array.from(set).sort().forEach(val => {
-    const li = document.createElement('li'), a = document.createElement('a');
-    a.classList.add('dropdown-item'); a.href = '#'; a.dataset.value = val; a.textContent = val;
+    const li = document.createElement('li');
+    const a  = document.createElement('a');
+    a.classList.add('dropdown-item');
+    a.href = '#';
+    a.dataset.value = val;
+    a.textContent = val;
     a.addEventListener('click', e => {
       e.preventDefault();
-      selectedMaintenanceStation = val;
+      window.selectedMaintenanceStation = val;
       updateRegionDropdown();
       updateCountyDropdown();
       updateCityDropdown();
       filterImages();
+      updateURLParameters();
       bootstrap.Collapse.getOrCreateInstance(document.getElementById('maintenanceOptions')).hide();
     });
-    li.append(a); menu.append(li);
+    li.append(a);
+    menu.append(li);
   });
 }
 
@@ -184,28 +238,43 @@ export function updateMaintenanceStationDropdown() {
  * Populates the Route options dropdown.
  */
 export function updateRouteOptions() {
-  const routeFilterMenu = document.getElementById('routeFilterMenu');
-  routeFilterMenu.innerHTML = '';
-  const li0 = document.createElement('li'), a0 = document.createElement('a');
-  a0.classList.add('dropdown-item'); a0.href = '#'; a0.dataset.value = 'All';
+  const menu = document.getElementById('routeFilterMenu');
+  if (!menu) return;
+  menu.innerHTML = '';
+
+  // All Routes
+  const li0 = document.createElement('li');
+  const a0  = document.createElement('a');
+  a0.classList.add('dropdown-item');
+  a0.href = '#';
+  a0.dataset.value = 'All';
   a0.textContent = 'All Routes';
   a0.addEventListener('click', e => {
     e.preventDefault();
-    selectedRoute = 'All';
+    window.selectedRoute = 'All';
     filterImages();
+    updateURLParameters();
   });
-  li0.append(a0); routeFilterMenu.append(li0);
+  li0.append(a0);
+  menu.append(li0);
 
-  curatedRoutes.forEach(route => {
-    const li = document.createElement('li'), a = document.createElement('a');
-    a.classList.add('dropdown-item'); a.href = '#';
-    const lbl = route.displayName || route.name;
-    a.dataset.value = lbl; a.textContent = lbl;
+  // One per curated route
+  window.curatedRoutes.forEach(route => {
+    const li = document.createElement('li');
+    const a  = document.createElement('a');
+    a.classList.add('dropdown-item');
+    a.href = '#';
+    const label = route.displayName || route.name;
+    a.dataset.value = label;
+    a.textContent = label;
     a.addEventListener('click', e => {
       e.preventDefault();
-      selectedRoute = lbl;
+      window.selectedRoute = label;
       filterImages();
+      updateURLParameters();
     });
-    li.append(a); routeFilterMenu.append(li);
+    li.append(a);
+    menu.append(li);
   });
 }
+

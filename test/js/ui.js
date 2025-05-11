@@ -160,3 +160,39 @@ export function refreshGallery(cameras) {
   updateSelectedFilters();
   updateURLParameters();
 }
+// js/ui.js
+/**
+ * Copies the current window.location.href into the clipboard,
+ * using the async Clipboard API if available, or a textarea + execCommand fallback.
+ */
+export function copyURLToClipboard() {
+  const url = window.location.href;
+
+  // Modern async API (requires secure context / http:// or localhost)
+  if (navigator.clipboard && window.isSecureContext) {
+    return navigator.clipboard.writeText(url);
+  }
+
+  // Fallback (for file:// or older browsers)
+  const textarea = document.createElement('textarea');
+  textarea.value = url;
+  // Move element out of viewport so it’s not visible
+  textarea.style.position = 'absolute';
+  textarea.style.left = '-9999px';
+  document.body.appendChild(textarea);
+  textarea.select();
+
+  return new Promise((resolve, reject) => {
+    try {
+      document.execCommand('copy');
+      document.body.removeChild(textarea);
+      resolve();
+    } catch (err) {
+      document.body.removeChild(textarea);
+      reject(err);
+    }
+  });
+}
+
+
+

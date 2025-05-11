@@ -3,6 +3,9 @@
 
 import { loadCameras, loadRoutes } from './dataLoader.js';
 import { filterImages } from './filters.js';
+import { setupCopyUrlButton } from './events.js';
+import { copyURLToClipboard } from './utils.js';
+
 import {
   updateRegionDropdown,
   updateCountyDropdown,
@@ -62,47 +65,31 @@ window.updateURLParameters = updateURLParameters;
 window.updateSelectedFilters = updateSelectedFilters;
 window.resetFilters = resetFilters;
 window.applyFiltersFromURL = applyFiltersFromURL;
+window.copyURLToClipboard = copyURLToClipboard;
+
 
 /**
  * Initializes cameras and routes, then sets up the Other Filters submenu.
  */
 async function initializeApp() {
-  // fire the location prompt/sort behind the splash
-  autoSortByLocation();
+  // 1. Load cameras & routes
+  window.camerasList  = await loadCameras();
+  window.curatedRoutes = await loadRoutes();
 
-  try {
-    window.camerasList = await loadCameras();
-    window.visibleCameras = [...window.camerasList];
-    filterImages();
-    updateRegionDropdown();
-    updateCountyDropdown();
-    updateCityDropdown();
-    updateMaintenanceStationDropdown();
-  } catch (err) {
-    console.error('Error loading cameras:', err);
-  }
+  // 2. Build your dropdowns from the full lists
+  updateRegionDropdown();
+  updateCountyDropdown();
+  updateCityDropdown();
+  updateMaintenanceStationDropdown();
+  updateRouteOptions();
 
-  try {
-    window.curatedRoutes = await loadRoutes();
-    updateRouteOptions();
-  } catch (err) {
-    console.error('Error loading routes:', err);
-  } finally {
-    // Setup "Other Filters" submenu interactions
-    document.querySelectorAll('#otherFiltersMenu .dropdown-item').forEach(a => {
-      a.addEventListener('click', e => {
-        e.preventDefault();
-        window.selectedOtherFilter = a.dataset.value;
-        bootstrap.Collapse.getOrCreateInstance(
-          document.getElementById('otherFiltersOptions')
-        ).hide();
-        filterImages();
-      });
-    });
-  }
+  // 3. Read any bookmarkable URL parameters **before** rendering…
+  applyFiltersFromURL();  // sets window.selectedRegion, etc. :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}
 
-  applyFiltersFromURL();
+  // 4. …then render everything using those initial values
+  filterImages();         // runs refreshGallery(), which calls updateURLParameters :contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3}
 }
+
 
 // --- DOMContentLoaded: kick off the app ---
 document.addEventListener('DOMContentLoaded', () => {
@@ -145,4 +132,12 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.getElementById(id);
       if (el) bootstrap.Collapse.getOrCreateInstance(el, { toggle: false }).hide();
     });
+
+
+
+document.addEventListener('DOMContentLoaded', () => {
+  initializeApp();
+
+  setupCopyUrlButton();
+});
 });
