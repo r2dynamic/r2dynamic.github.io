@@ -1,4 +1,4 @@
-// gallery.js (Revised to display mini overview map in the gallery)
+// gallery.js (Revised to display mini overview map in the gallery with CartoDB + Stamen overlays)
 const galleryContainer   = document.getElementById('imageGallery');
 const cameraCountElement = document.getElementById('cameraCount');
 let currentIndex = 0;
@@ -24,58 +24,68 @@ export function renderGallery(cameras) {
     galleryContainer.append(overviewCell);
 
     // Initialize the mini overview map
-    // …after galleryContainer.append(overviewCell) …
+    const overviewTile = overviewCell.querySelector('#overview-tile');
 
-const overviewTile = overviewCell.querySelector('#overview-tile');
+    requestAnimationFrame(() => {
+      // 1. build coords & bounds
+      const coords = window.visibleCameras.map(cam => [cam.Latitude, cam.Longitude]);
+      const bounds = L.latLngBounds(coords);
 
-requestAnimationFrame(() => {
-  // 1. build coords & bounds
-  const coords = window.visibleCameras.map(cam => [cam.Latitude, cam.Longitude]);
-  const bounds = L.latLngBounds(coords);
+      // 2. init map
+      const miniMap = L.map(overviewTile, {
+        attributionControl: false,
+        zoomControl:      false,
+        dragging:         true,
+        scrollWheelZoom:  true,
+        doubleClickZoom:  false,
+        touchZoom:        true
+      });
 
-  // 2. init map
-  const miniMap = L.map(overviewTile, {
-    attributionControl: false,
-    zoomControl:      false,
-    dragging:         true,
-    scrollWheelZoom:  true,
-    doubleClickZoom:  false,
-    touchZoom:        false
-  });
+      // 3. add CartoDB DarkMatter base
+      const darkBase = L.tileLayer(
+        'https://{s}.basemaps.cartocdn.com/dark_nolabels/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors &copy; <a href="https://carto.com/attributions" target="_blank">CARTO</a>',
+          subdomains: 'abcd',
+          maxZoom: 20
+        }
+      ).addTo(miniMap);
 
-  // 3. add tiles
-  L.tileLayer('http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Base/MapServer/tile/{z}/{y}/{x}', {
-    attribution: '&copy; Esri'
-  }).addTo(miniMap);
+      // 4. add Stamen terrain line overlay
+      const terrainLines = L.tileLayer(
+        'https://tiles.stadiamaps.com/tiles/stamen_terrain_lines/{z}/{x}/{y}{r}.png', {
+          attribution: '&copy; <a href="https://www.stadiamaps.com/" target="_blank">Stadia Maps</a> &copy; <a href="https://stamen.com/" target="_blank">Stamen Design</a> &copy; <a href="https://openmaptiles.org/" target="_blank">OpenMapTiles</a> &copy; <a href="https://www.openstreetmap.org/" target="_blank">OpenStreetMap</a> contributors',
+          minZoom: 0,
+          maxZoom: 18
+        }
+      ).addTo(miniMap);
 
-  // 4. add markers
-  coords.forEach(([lat, lng]) => {
-    L.circleMarker([lat, lng], {
-      radius:      2,
-      fillColor:   '#ff7800',
-      color:       '#ff7800',
-      weight:      1,
-      opacity:     1,
-      fillOpacity: 1
-    }).addTo(miniMap);
-  });
+      // 5. add markers
+      coords.forEach(([lat, lng]) => {
+        L.circleMarker([lat, lng], {
+          radius:      2,
+          fillColor:   '#ff7800',
+          color:       '#090909',
+          weight:      .5,
+          opacity:     1,
+          fillOpacity: 1
+        }).addTo(miniMap);
+      });
 
-  // 5. helper to size & fit
-  const fitMap = () => {
-    miniMap.invalidateSize();             // recalc container dims
-    miniMap.fitBounds(bounds, {           // auto‑zoom & center exactly
-      padding: [8, 8],                    // px margin around markers
-      maxZoom: 16                         // won’t zoom in closer than this
+      // 6. helper to size & fit
+      const fitMap = () => {
+        miniMap.invalidateSize();             // recalc container dims
+        miniMap.fitBounds(bounds, {           // auto‑zoom & center exactly
+          padding: [8, 8],                    // px margin around markers
+          maxZoom: 16                         // won’t zoom in closer than this
+        });
+      };
+
+      // initial fit
+      fitMap();
+
+      // whenever the thumbnail div resizes, re‑fit
+      new ResizeObserver(fitMap).observe(overviewTile);
     });
-  };
-
-  // initial fit
-  fitMap();
-
-  // 6. whenever the thumbnail div resizes, re‑fit
-  new ResizeObserver(fitMap).observe(overviewTile);
-});
-
   }
 
   // Render individual camera images

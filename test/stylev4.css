@@ -599,7 +599,7 @@ html, body {
   width:            10px;
   height:           10px;
   background-color: #ff7800;
-  border:           .5px solid #ffffff;
+  border:           .5px solid #090909;
   border-radius:    50%;
   box-shadow:       0 0 2px rgb(255, 255, 255);
 }
@@ -607,6 +607,13 @@ html, body {
 .leaflet-tooltip:after {
   display: none !important;
 }
+
+.leaflet-tooltip .glass-popup-content img {
+  border: 2px solid #ff7800 !important;
+  border-radius: 8px !important;
+  box-sizing: border-box;
+}
+
 
 
 
