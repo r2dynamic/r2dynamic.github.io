@@ -13,14 +13,18 @@ import {
   updateMaintenanceStationDropdown,
   updateRouteOptions
 } from './dropdowns.js';
+
 import { renderGallery } from './gallery.js';
+
 import {
   setupModalMapToggle,
   setupModalCleanup,
-  setupLongPressShare
+  setupLongPressShare,
+  setupOverviewModal
 } from './modal.js';
-import { setupOverviewModal } from './modal.js';
+
 import { setupNearestCameraButton, autoSortByLocation } from './geolocation.js';
+
 import {
   setupSearchListener,
   setupRefreshButton,
@@ -28,6 +32,7 @@ import {
   setupDropdownHide,
   setupModalLinks
 } from './events.js';
+
 import {
   revealMainContent,
   fadeOutSplash,
@@ -67,40 +72,39 @@ window.resetFilters = resetFilters;
 window.applyFiltersFromURL = applyFiltersFromURL;
 window.copyURLToClipboard = copyURLToClipboard;
 
-
 /**
- * Initializes cameras and routes, then sets up the Other Filters submenu.
+ * Initializes cameras and routes, then sets up the app UI.
  */
 async function initializeApp() {
   // 1. Load cameras & routes
-  window.camerasList  = await loadCameras();
+  window.camerasList   = await loadCameras();
   window.curatedRoutes = await loadRoutes();
 
-  // 2. Build your dropdowns from the full lists
+  // 2. Build dropdowns
   updateRegionDropdown();
   updateCountyDropdown();
   updateCityDropdown();
   updateMaintenanceStationDropdown();
   updateRouteOptions();
 
-  // 3. Read any bookmarkable URL parameters **before** rendering…
-  applyFiltersFromURL();  // sets window.selectedRegion, etc. :contentReference[oaicite:0]{index=0}:contentReference[oaicite:1]{index=1}
+  // 3. Apply URL filters before rendering
+  applyFiltersFromURL();
 
-  // 4. …then render everything using those initial values
-  filterImages();         // runs refreshGallery(), which calls updateURLParameters :contentReference[oaicite:2]{index=2}:contentReference[oaicite:3]{index=3}
+  // 4. Render gallery based on initial filters
+  filterImages();
 }
 
-
-// --- DOMContentLoaded: kick off the app ---
+// Kick off the app when DOM is ready
 document.addEventListener('DOMContentLoaded', () => {
   initializeApp();
 
+  // Geolocation-based sorting
   setupNearestCameraButton();
-  // Auto-sort by last known location if permission was granted
   if (localStorage.getItem('locationAllowed') === 'true') {
     autoSortByLocation();
   }
 
+  // UI Controls
   setupRefreshButton();
   setupSearchListener();
   setupDropdownHide();
@@ -109,20 +113,21 @@ document.addEventListener('DOMContentLoaded', () => {
   setupModalMapToggle();
   setupModalCleanup();
   setupOverviewModal();
+  setupCopyUrlButton();
 
-  // Splash screen logic with fallback
+  // Splash screen logic with fallback timers
   const splash = document.getElementById('splashScreen');
   if (splash) {
     const dv = document.getElementById('desktopVideo');
     if (dv) {
       dv.addEventListener('playing', () => setTimeout(fadeOutSplash, 2300));
-      dv.addEventListener('error', () => setTimeout(fadeOutSplash, 2000));
+      dv.addEventListener('error',   () => setTimeout(fadeOutSplash, 2000));
     }
-    // Always hide splash after maximum 3 seconds
+    // Always hide splash after 3 seconds
     setTimeout(fadeOutSplash, 3000);
   }
 
-  // Set up image share long-press
+  // Long-press image share handlers
   setupLongPressShare('.aspect-ratio-box img');
   setupLongPressShare('#imageModal img');
 
@@ -132,12 +137,4 @@ document.addEventListener('DOMContentLoaded', () => {
       const el = document.getElementById(id);
       if (el) bootstrap.Collapse.getOrCreateInstance(el, { toggle: false }).hide();
     });
-
-
-
-document.addEventListener('DOMContentLoaded', () => {
-  initializeApp();
-
-  setupCopyUrlButton();
-});
 });

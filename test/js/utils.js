@@ -1,5 +1,4 @@
-// utils.js
-// General helper functions
+// utils.js - General helper functions
 
 /**
  * Converts degrees to radians.
@@ -44,15 +43,15 @@ export function debounce(func, delay) {
 }
 
 /**
- * Calculates distance between two touch points.
- * @param {Touch} t1 - First touch point.
- * @param {Touch} t2 - Second touch point.
+ * Calculates distance between two pointer/touch points.
+ * @param {{clientX: number, clientY: number}} p1 - First point.
+ * @param {{clientX: number, clientY: number}} p2 - Second point.
  * @returns {number} Distance in pixels.
  */
-export function getDistance(t1, t2) {
-  const dx = t1.clientX - t2.clientX;
-  const dy = t1.clientY - t2.clientY;
-  return Math.sqrt(dx * dx + dy * dy);
+export function getDistance(p1, p2) {
+  const dx = p1.clientX - p2.clientX;
+  const dy = p1.clientY - p2.clientY;
+  return Math.hypot(dx, dy);
 }
 
 /**
@@ -63,21 +62,35 @@ export function getDistance(t1, t2) {
 export function copyToClipboard(text) {
   if (navigator.clipboard) {
     return navigator.clipboard.writeText(text);
-  } else {
-    const tmp = document.createElement('input');
-    document.body.append(tmp);
-    tmp.value = text;
-    tmp.select();
-    document.execCommand('copy');
-    tmp.remove();
-    return Promise.resolve();
   }
+  const tmp = document.createElement('input');
+  document.body.append(tmp);
+  tmp.value = text;
+  tmp.select();
+  document.execCommand('copy');
+  tmp.remove();
+  return Promise.resolve();
 }
 
 /**
- * Copies the current URL to clipboard.
+ * Copies the current page URL to the clipboard.
  * @returns {Promise<void>}
  */
 export function copyURLToClipboard() {
   return copyToClipboard(window.location.href);
+}
+
+/**
+ * Wraps Geolocation API in a Promise.
+ * @param {PositionOptions} [options] - Geolocation options.
+ * @returns {Promise<GeolocationPosition>}
+ */
+export function getCurrentPosition(options) {
+  return new Promise((resolve, reject) => {
+    if (!navigator.geolocation) {
+      reject(new Error('Geolocation not supported'));
+    } else {
+      navigator.geolocation.getCurrentPosition(resolve, reject, options);
+    }
+  });
 }

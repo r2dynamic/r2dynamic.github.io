@@ -1,7 +1,6 @@
-import { renderGallery, updateCameraCount } from './gallery.js';
+// ui.js - UI helper functions moved out of main.js
 
-// ui.js
-// UI helper functions moved out of main.js for shared use
+import { renderGallery, updateCameraCount } from './gallery.js';
 
 /**
  * Reveals the main content by applying fade-in styles.
@@ -33,12 +32,12 @@ export function fadeOutSplash() {
  */
 export function updateURLParameters() {
   const params = new URLSearchParams();
-  if (window.selectedRegion)             params.set('region', selectedRegion);
-  if (window.selectedCounty)             params.set('county', selectedCounty);
-  if (window.selectedCity)               params.set('city', selectedCity);
-  if (window.selectedRoute !== 'All')    params.set('route', selectedRoute);
-  if (window.searchQuery)                params.set('search', searchQuery);
-  if (window.selectedMaintenanceStation) params.set('maintenance', selectedMaintenanceStation);
+  if (window.selectedRegion)             params.set('region', window.selectedRegion);
+  if (window.selectedCounty)             params.set('county', window.selectedCounty);
+  if (window.selectedCity)               params.set('city', window.selectedCity);
+  if (window.selectedRoute && window.selectedRoute !== 'All')    params.set('route', window.selectedRoute);
+  if (window.searchQuery)                params.set('search', window.searchQuery);
+  if (window.selectedMaintenanceStation) params.set('maintenance', window.selectedMaintenanceStation);
   window.history.replaceState({}, '', `${window.location.pathname}?${params}`);
 }
 
@@ -48,7 +47,10 @@ export function updateURLParameters() {
 export function updateSelectedFilters() {
   const cont   = document.getElementById('selectedFilters');
   const splash = document.getElementById('splashScreen');
-  if (cont && splash && splash.style.display !== 'none') {
+  if (!cont) return;
+
+  // Hide badges while splash is visible
+  if (splash && splash.style.display !== 'none') {
     cont.style.display = 'none';
     return;
   }
@@ -64,13 +66,13 @@ export function updateSelectedFilters() {
     return d;
   }
 
-  if (window.selectedRegion)             badges.append(createBadge('fas fa-map',    `Region: ${selectedRegion}`));
-  if (window.selectedCounty)             badges.append(createBadge('fas fa-building', `County: ${selectedCounty}`));
-  if (window.selectedCity)               badges.append(createBadge('fas fa-city',   `City: ${selectedCity}`));
-  if (window.selectedMaintenanceStation) badges.append(createBadge('fas fa-tools',  `Maintenance: ${selectedMaintenanceStation}`));
-  if (window.selectedRoute !== 'All')    badges.append(createBadge('fas fa-road',   `Route: ${selectedRoute}`));
-  if (window.searchQuery)                badges.append(createBadge('fas fa-search', `Search: ${searchQuery}`));
-  if (window.selectedOtherFilter)        badges.append(createBadge('fas fa-sliders-h', selectedOtherFilter));
+  if (window.selectedRegion)             badges.append(createBadge('fas fa-map',    `Region: ${window.selectedRegion}`));
+  if (window.selectedCounty)             badges.append(createBadge('fas fa-building', `County: ${window.selectedCounty}`));
+  if (window.selectedCity)               badges.append(createBadge('fas fa-city',   `City: ${window.selectedCity}`));
+  if (window.selectedMaintenanceStation) badges.append(createBadge('fas fa-tools',  `Maintenance: ${window.selectedMaintenanceStation}`));
+  if (window.selectedRoute && window.selectedRoute !== 'All')    badges.append(createBadge('fas fa-road',   `Route: ${window.selectedRoute}`));
+  if (window.searchQuery)                badges.append(createBadge('fas fa-search', `Search: ${window.searchQuery}`));
+  if (window.selectedOtherFilter)        badges.append(createBadge('fas fa-sliders-h', `${window.selectedOtherFilter}`));
 
   cont.append(badges);
 
@@ -79,7 +81,7 @@ export function updateSelectedFilters() {
     window.selectedCounty ||
     window.selectedCity ||
     window.selectedMaintenanceStation ||
-    (window.selectedRoute !== 'All') ||
+    (window.selectedRoute && window.selectedRoute !== 'All') ||
     window.searchQuery ||
     window.selectedOtherFilter;
 
@@ -87,18 +89,20 @@ export function updateSelectedFilters() {
     const actions = document.createElement('div');
     actions.className = 'action-buttons';
 
+    // Reset Filters Button
     const rb = document.createElement('button');
     rb.className = 'reset-button';
     rb.title = 'Reset Filters';
     rb.innerHTML = '<i class="fas fa-undo"></i>';
-    rb.onclick = window.resetFilters;
+    rb.addEventListener('click', () => window.resetFilters());
     actions.append(rb);
 
+    // Copy Link Button
     const cb = document.createElement('button');
     cb.className = 'reset-button';
     cb.title = 'Copy Link';
     cb.innerHTML = '<i class="fas fa-link"></i>';
-    cb.onclick = () => window.copyURLToClipboard().then(() => alert('URL copied!'));
+    cb.addEventListener('click', () => window.copyURLToClipboard().then(() => alert('URL copied!')));
     actions.append(cb);
 
     cont.append(actions);
@@ -119,7 +123,8 @@ export function resetFilters() {
   window.selectedMaintenanceStation = '';
   window.selectedOtherFilter = '';
   window.searchQuery = '';
-  document.getElementById('searchInput').value = '';
+  const searchInput = document.getElementById('searchInput');
+  if (searchInput) searchInput.value = '';
   window.updateRegionDropdown();
   window.updateCountyDropdown();
   window.updateCityDropdown();
@@ -140,11 +145,11 @@ export function applyFiltersFromURL() {
   if (params.has('route'))       window.selectedRoute              = params.get('route');
   if (params.has('search')) {
     window.searchQuery = params.get('search');
-    document.getElementById('searchInput').value = window.searchQuery;
+    const input = document.getElementById('searchInput');
+    if (input) input.value = window.searchQuery;
   }
   if (params.has('maintenance')) window.selectedMaintenanceStation = params.get('maintenance');
 }
-
 
 /**
  * Refreshes the gallery based on the provided cameras array:
@@ -160,28 +165,23 @@ export function refreshGallery(cameras) {
   updateSelectedFilters();
   updateURLParameters();
 }
-// js/ui.js
+
 /**
  * Copies the current window.location.href into the clipboard,
  * using the async Clipboard API if available, or a textarea + execCommand fallback.
+ * @returns {Promise<void>}
  */
 export function copyURLToClipboard() {
   const url = window.location.href;
-
-  // Modern async API (requires secure context / http:// or localhost)
   if (navigator.clipboard && window.isSecureContext) {
     return navigator.clipboard.writeText(url);
   }
-
-  // Fallback (for file:// or older browsers)
   const textarea = document.createElement('textarea');
   textarea.value = url;
-  // Move element out of viewport so it’s not visible
   textarea.style.position = 'absolute';
   textarea.style.left = '-9999px';
   document.body.appendChild(textarea);
   textarea.select();
-
   return new Promise((resolve, reject) => {
     try {
       document.execCommand('copy');
@@ -193,6 +193,3 @@ export function copyURLToClipboard() {
     }
   });
 }
-
-
-
