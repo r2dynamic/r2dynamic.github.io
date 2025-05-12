@@ -1,14 +1,20 @@
-// geolocation.js
+// js/geolocation.js
 
 import { computeDistance } from './utils.js';
-import { renderGallery, updateCameraCount } from './gallery.js';
+import { renderGallery, updateCameraCount, showImage } from './gallery.js';
 import { updateSelectedFilters, updateURLParameters } from './ui.js';
 
+const geoOptions = {
+  enableHighAccuracy: true,
+  timeout: 15000,
+  maximumAge: 0
+};
+
 /**
- * Sort cameras by proximity to the given coordinates and refresh UI.
+ * Sort cameras by proximity, then refresh everything exactly like our old monolith did.
  */
 function sortAndDisplayByProximity(lat, lng) {
-  const sortedCams = window.camerasList
+  const sorted = window.camerasList
     .map(cam => ({
       cam,
       distance: computeDistance(lat, lng, cam.Latitude, cam.Longitude)
@@ -16,49 +22,58 @@ function sortAndDisplayByProximity(lat, lng) {
     .sort((a, b) => a.distance - b.distance)
     .map(item => item.cam);
 
-  window.visibleCameras = sortedCams;
+  window.visibleCameras = sorted;
+  window.currentIndex   = 0;
+
   updateCameraCount();
-  renderGallery(sortedCams);
-  window.currentIndex = 0;
+  renderGallery(sorted);
+
+  // exactly as before, show the very first image
+  if (sorted.length) showImage(0);
+
   updateSelectedFilters();
   updateURLParameters();
 }
 
 /**
- * Initialize the "Nearest Camera" button to sort on user click.
+ * Wire up the “Nearest Camera” button exactly as in your pre‑modular code,
+ * with user‑facing alerts on permission errors.
  */
 export function setupNearestCameraButton() {
   const btn = document.getElementById('nearestButton');
   if (!btn) return;
-  btn.addEventListener('click', async () => {
+  btn.addEventListener('click', () => {
     if (!navigator.geolocation) {
-      console.warn('Geolocation not supported in this browser.');
-      return;
+      return alert('Geolocation not supported in this browser.');
     }
-    try {
-      const pos = await new Promise((res, rej) =>
-        navigator.geolocation.getCurrentPosition(res, rej)
-      );
-      const { latitude: lat, longitude: lng } = pos.coords;
-      sortAndDisplayByProximity(lat, lng);
-    } catch (err) {
-      console.warn('Error obtaining geolocation:', err);
-    }
+    navigator.geolocation.getCurrentPosition(
+      pos => {
+        const { latitude: lat, longitude: lng } = pos.coords;
+        sortAndDisplayByProximity(lat, lng);
+      },
+      err => alert('Location error: ' + err.message),
+      geoOptions
+    );
   });
 }
 
 /**
- * Automatically sort cameras by location if permission was previously granted.
+ * On page load, if they’ve already granted, auto‑sort just like before.
  */
 export function autoSortByLocation() {
-  if (!navigator.geolocation) return;
-  navigator.geolocation.getCurrentPosition(
-    pos => {
-      const { latitude: lat, longitude: lng } = pos.coords;
-      sortAndDisplayByProximity(lat, lng);
-    },
-    err => {
-      console.warn('Auto-sort geolocation error:', err);
-    }
-  );
+  if (!navigator.geolocation || !navigator.permissions) return;
+  navigator.permissions
+    .query({ name: 'geolocation' })
+    .then(res => {
+      if (res.state === 'granted') {
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            const { latitude: lat, longitude: lng } = pos.coords;
+            sortAndDisplayByProximity(lat, lng);
+          },
+          () => {/* silent fail */},
+          geoOptions
+        );
+      }
+    });
 }

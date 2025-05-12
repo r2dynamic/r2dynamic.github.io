@@ -302,7 +302,7 @@ export function setupOverviewModal() {
 
     const coords = cams.map(c => [c.Latitude, c.Longitude]);
     const bounds = L.latLngBounds(coords);
-    map = L.map('overviewMap', { attributionControl:true, zoomControl:false, dragging:true, scrollWheelZoom:true });
+    map = L.map('overviewMap', { attributionControl:true, zoomControl:false, dragging:true, doubleClickZoom: true, scrollWheelZoom:true });
 
       // Base + overlays
     const CartoDB_DarkMatterNoLabels = L.tileLayer(
@@ -314,7 +314,7 @@ export function setupOverviewModal() {
     const Stadia_StamenTerrainLines = L.tileLayer(
       'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
         minZoom:0, maxZoom:18,
-        attribution: '&copy; OpenStreetMap contributors',
+        attribution: '&copy; OpenStreetMap',
         ext:'png'
       }
     ).addTo(map);
