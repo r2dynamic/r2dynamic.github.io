@@ -100,9 +100,7 @@ document.addEventListener('DOMContentLoaded', () => {
 
   // Geolocation-based sorting
   setupNearestCameraButton();
-  if (localStorage.getItem('locationAllowed') === 'true') {
-    autoSortByLocation();
-  }
+  autoSortByLocation();
 
   // UI Controls
   setupRefreshButton();
