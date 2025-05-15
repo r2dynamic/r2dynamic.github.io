@@ -41,28 +41,18 @@ function sortAndDisplayByProximity(lat, lng) {
  */
 export function setupNearestCameraButton() {
   const btn = document.getElementById('nearestButton');
-  console.log('[geo] setupNearestCameraButton, btn=', btn);
-  if (!btn) return console.error('[geo] ❌ nearestButton not found');
-
+  if (!btn) return;
   btn.addEventListener('click', () => {
-    console.log('[geo] 🔘 nearestButton clicked');
     if (!navigator.geolocation) {
-      console.warn('[geo] navigator.geolocation unsupported');
-      return alert('Your browser doesn’t support geolocation.');
+      return alert('Geolocation not supported in this browser.');
     }
-
-    console.log('[geo] requestPosition…');
     navigator.geolocation.getCurrentPosition(
       pos => {
-        console.log('[geo] ✅ got position:', pos.coords);
-        alert(`Got position:\nlat=${pos.coords.latitude}\nlng=${pos.coords.longitude}\naccuracy=${pos.coords.accuracy}m`);
-        sortAndDisplayByProximity(pos.coords.latitude, pos.coords.longitude);
+        const { latitude: lat, longitude: lng } = pos.coords;
+        sortAndDisplayByProximity(lat, lng);
       },
-      err => {
-        console.error('[geo] ❌ error callback:', err);
-        alert(`Location error (${err.code}): ${err.message}`);
-      },
-      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
+      err => alert('Location error: ' + err.message),
+      geoOptions
     );
   });
 }
