@@ -41,18 +41,28 @@ function sortAndDisplayByProximity(lat, lng) {
  */
 export function setupNearestCameraButton() {
   const btn = document.getElementById('nearestButton');
-  if (!btn) return;
+  console.log('[geo] setupNearestCameraButton, btn=', btn);
+  if (!btn) return console.error('[geo] ❌ nearestButton not found');
+
   btn.addEventListener('click', () => {
+    console.log('[geo] 🔘 nearestButton clicked');
     if (!navigator.geolocation) {
-      return alert('Geolocation not supported in this browser.');
+      console.warn('[geo] navigator.geolocation unsupported');
+      return alert('Your browser doesn’t support geolocation.');
     }
+
+    console.log('[geo] requestPosition…');
     navigator.geolocation.getCurrentPosition(
       pos => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        sortAndDisplayByProximity(lat, lng);
+        console.log('[geo] ✅ got position:', pos.coords);
+        alert(`Got position:\nlat=${pos.coords.latitude}\nlng=${pos.coords.longitude}\naccuracy=${pos.coords.accuracy}m`);
+        sortAndDisplayByProximity(pos.coords.latitude, pos.coords.longitude);
       },
-      err => alert('Location error: ' + err.message),
-      geoOptions
+      err => {
+        console.error('[geo] ❌ error callback:', err);
+        alert(`Location error (${err.code}): ${err.message}`);
+      },
+      { enableHighAccuracy: true, timeout: 15000, maximumAge: 0 }
     );
   });
 }
