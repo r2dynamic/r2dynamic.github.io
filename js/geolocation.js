@@ -58,27 +58,35 @@ export function setupNearestCameraButton() {
 }
 
 
+function getAndSort() {
+  navigator.geolocation.getCurrentPosition(
+    pos => sortAndDisplayByProximity(pos.coords.latitude, pos.coords.longitude),
+    () => {/* fail silently */},
+    geoOptions
+  );
+}
+
 export function autoSortByLocation() {
-  // if the browser supports Permissions API…
-  if (navigator.permissions) {
+  // 1) If Permissions API works, use it
+  if (navigator.permissions?.query) {
     navigator.permissions
       .query({ name: 'geolocation' })
       .then(result => {
-        // only if the user has ALREADY granted permission…
         if (result.state === 'granted') {
-          navigator.geolocation.getCurrentPosition(
-            pos => {
-              const { latitude: lat, longitude: lng } = pos.coords;
-              sortAndDisplayByProximity(lat, lng);
-            },
-            () => { /* silently fail—no UI or prompt */ },
-            geoOptions
-          );
-        }
-        // if state is "prompt" or "denied", do nothing (no prompt)
+          getAndSort();
+        } 
+        // else prompt/denied: do nothing (no auto‑prompt)
       })
       .catch(() => {
-        // Permissions API not supported — leave it alone
+        // 2) If .query() rejects, fallback to your flag
+        if (localStorage.getItem('locationAllowed') === 'true') {
+          getAndSort();
+        }
       });
+  } 
+  // 3) If Permissions API missing (e.g. iOS Safari),
+  //    rely solely on your stored flag:
+  else if (localStorage.getItem('locationAllowed') === 'true') {
+    getAndSort();
   }
 }
