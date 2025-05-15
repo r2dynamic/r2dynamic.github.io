@@ -1,6 +1,6 @@
 // sw.js - Service Worker
 
-const CACHE_VERSION = 'v1';
+const CACHE_VERSION = 'v1.1';
 const PRECACHE_NAME = `wpa-precache-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `wpa-runtime-${CACHE_VERSION}`;
 
@@ -24,7 +24,8 @@ const PRECACHE_URLS = [
   '/js/events.js',
   '/js/ui.js',
   '/images/mobileSplash.webp',
-  '/Icongridbackground3.png'
+  '/Icongridbackground3.png',
+  '/desktop-splash.mp4'
 ];
 
 // On install, pre-cache key resources

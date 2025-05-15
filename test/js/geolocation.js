@@ -6,7 +6,7 @@ import { updateSelectedFilters, updateURLParameters } from './ui.js';
 
 const geoOptions = {
   enableHighAccuracy: true,
-  timeout: 15000,
+  timeout: 5000,
   maximumAge: 0
 };
 
