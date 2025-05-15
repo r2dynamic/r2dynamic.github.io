@@ -489,3 +489,139 @@ html, body {
   font-size: 0.75rem;
   margin: 0.25rem;
 }
+
+/* Overview Thumbnail in Gallery */
+.aspect-ratio-box.overview-map {
+  position: relative;
+  overflow: hidden;
+  border-radius: 8px;
+}
+.aspect-ratio-box.overview-map #overview-tile {
+  position: absolute;
+  inset: 0;
+}
+
+/* Overview Map Modal Styling */
+#overviewMapModal.modal.show .modal-dialog {
+  margin: 0 auto !important;
+  max-width: 90vw !important;
+  max-height: 90vh !important;
+  width: 90vw !important;
+  height: 90vh !important;
+}
+
+/* Stack content vertically and fill dialog */
+#overviewMapModal .modal-content {
+  display: flex;
+  flex-direction: column;
+  height: 100% !important;
+  background: rgba(255,255,255,0.1);
+  backdrop-filter: blur(10px);
+  border-radius: 1rem;
+  overflow: hidden;
+}
+
+/* Header */
+#overviewMapModal .modal-header {
+  flex: 0 0 auto;
+  border-bottom: none;
+  justify-content: center;
+  background: rgba(255,255,255,0.2);
+  padding: none;
+}
+#overviewMapModal .modal-title {
+  margin: 0;
+  text-align: center;
+  font-size: 1.25rem;
+  color: #ffffff;
+}
+
+/* Body: flex container for the map */
+#overviewMapModal .modal-body {
+  flex: 1 1 auto;
+  display: flex !important;
+  flex-direction: column;
+  padding: 0;
+  min-height: 0; /* allow flex shrink */
+  overflow: hidden;
+}
+
+/* Map container full size */
+#overviewMap {
+  flex: 1 1 auto;
+  width: 100%;
+  height: 100%;
+  min-height: 0;
+}
+
+/* Footer */
+#overviewMapModal .modal-footer {
+  flex: 0 0 auto;
+  max-height: auto;
+  max-width: auto;
+  border-radius: 6px;
+  border-top: none;
+  justify-content: center;
+  padding: none;
+ 
+}
+/* ─────────────────────────────────────────────────
+   T O O L T I P   I M A G E   S T Y L I N G
+   ───────────────────────────────────────────────── */
+
+/* ────────── TOOLTIP CONTAINER ────────── */
+.leaflet-tooltip {
+  background: none       !important;
+  border: none           !important;
+  box-shadow: none       !important;
+  padding: 0             !important;
+}
+
+/* keep Leaflet’s default arrow positioning (do NOT override ::before) */
+
+/* ensure the inner wrapper has no extra padding or background */
+.leaflet-tooltip .leaflet-tooltip-content {
+  background: none       !important;
+  border: none           !important;
+  padding: 0             !important;
+  margin: 0              !important;
+}
+
+/* ─────── IMAGE SIZING & RATIO ─────── */
+.leaflet-tooltip img {
+  display: block         !important; /* kill inline gap */
+  width: 120px           !important;
+  aspect-ratio: 16 / 9   !important;
+  border-radius: 8px     !important;
+}
+.custom-marker {
+  width:            10px;
+  height:           10px;
+  background-color: #ff7800;
+  border:           .5px solid #ffffff;
+  border-radius:    50%;
+  box-shadow:       0 0 2px rgb(255, 255, 255);
+}
+.leaflet-tooltip:before,
+.leaflet-tooltip:after {
+  display: none !important;
+}
+
+.leaflet-tooltip .glass-popup-content img {
+  border: 2px solid #ff7800 !important;
+  border-radius: 8px !important;
+  box-sizing: border-box;
+}
+
+
+@keyframes pulse {
+  0%   { transform: scale(1); opacity: 0.8; }
+  50%  { transform: scale(1.4); opacity: 0; }
+  100% { transform: scale(1); opacity: 0; }
+}
+
+
+
+
+
+

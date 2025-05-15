@@ -1,62 +1,90 @@
-const CACHE_NAME = 'udot-cameras-cache-v12.2';
-const OFFLINE_URL = 'offline.html';
-const FILES_TO_CACHE = [
-  '/',
+// sw.js - Service Worker
+
+const CACHE_VERSION = 'v1.1';
+const PRECACHE_NAME = `wpa-precache-${CACHE_VERSION}`;
+const RUNTIME_CACHE = `wpa-runtime-${CACHE_VERSION}`;
+
+// List of resources to precache
+const PRECACHE_URLS = [
+  '/', 
   '/index.html',
-  '/stylev4.css',
-  '/main.js',
-  '/routes.json',
   '/manifest.json',
-  '/images/mobileSplash.png',
-  '/offline.html',
+  '/stylev4.css',
+  '/routes.json',
+  '/cameras.json',
+  '/cameraData.js',
+  '/js/main.js',
+  '/js/utils.js',
+  '/js/dataLoader.js',
+  '/js/filters.js',
+  '/js/dropdowns.js',
+  '/js/gallery.js',
+  '/js/modal.js',
+  '/js/geolocation.js',
+  '/js/events.js',
+  '/js/ui.js',
+  '/images/mobileSplash.webp',
   '/Icongridbackground3.png',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css',
-  'https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css',
-  'https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js'
+  '/desktop-splash.mp4'
 ];
 
-self.addEventListener('install', (event) => {
-  console.log('[ServiceWorker] Install');
+// On install, pre-cache key resources
+self.addEventListener('install', event => {
   event.waitUntil(
-    caches.open(CACHE_NAME)
-      .then((cache) => {
-        console.log('[ServiceWorker] Caching app shell');
-        return cache.addAll(FILES_TO_CACHE);
-      })
+    caches.open(PRECACHE_NAME)
+      .then(cache => cache.addAll(PRECACHE_URLS))
+      .then(self.skipWaiting())
   );
-  self.skipWaiting();
 });
 
-self.addEventListener('activate', (event) => {
-  console.log('[ServiceWorker] Activate');
+// On activate, clean up old caches
+self.addEventListener('activate', event => {
   event.waitUntil(
-    caches.keys().then((keyList) => {
-      return Promise.all(keyList.map((key) => {
-        if(key !== CACHE_NAME) {
-          console.log('[ServiceWorker] Removing old cache', key);
-          return caches.delete(key);
-        }
-      }));
-    })
+    caches.keys().then(keys => 
+      Promise.all(
+        keys.filter(key => key !== PRECACHE_NAME && key !== RUNTIME_CACHE)
+            .map(key => caches.delete(key))
+      )
+    ).then(() => self.clients.claim())
   );
-  self.clients.claim();
 });
 
-self.addEventListener('fetch', (event) => {
+// Fetch handler: serve cached resources, with network fallback & runtime caching
+self.addEventListener('fetch', event => {
+  // Only handle GET requests
   if (event.request.method !== 'GET') return;
+
+  const requestURL = new URL(event.request.url);
+
+  // Always serve precached assets for same-origin requests that match
+  if (PRECACHE_URLS.includes(requestURL.pathname)) {
+    event.respondWith(
+      caches.match(event.request).then(cached => cached || fetch(event.request))
+    );
+    return;
+  }
+
+  // Runtime caching for images
+  if (requestURL.pathname.startsWith('/images/') ||
+      /\.(png|jpg|jpeg|gif|webp|svg)$/.test(requestURL.pathname)) {
+    event.respondWith(
+      caches.open(RUNTIME_CACHE).then(cache =>
+        cache.match(event.request).then(cached => {
+          if (cached) return cached;
+          return fetch(event.request).then(response => {
+            // Cache a clone for future
+            cache.put(event.request, response.clone());
+            return response;
+          });
+        })
+      )
+    );
+    return;
+  }
+
+  // Fallback to network, with cache fallback on failure
   event.respondWith(
     fetch(event.request)
-      .then((response) => {
-        const responseClone = response.clone();
-        caches.open(CACHE_NAME).then((cache) => {
-          cache.put(event.request, responseClone);
-        });
-        return response;
-      })
-      .catch(() => {
-        return caches.match(event.request)
-          .then((response) => response || caches.match(OFFLINE_URL));
-      })
+      .catch(() => caches.match(event.request))
   );
 });
