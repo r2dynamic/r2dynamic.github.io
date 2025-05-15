@@ -95,11 +95,10 @@ async function initializeApp() {
 }
 
 // Kick off the app when DOM is ready
-document.addEventListener('DOMContentLoaded', () => {
-  initializeApp()
-    .then(() => {
-      setupNearestCameraButton();
-      autoSortByLocation();
+document.addEventListener('DOMContentLoaded', async () => {
+  await initializeApp();
+  setupNearestCameraButton();
+  autoSortByLocation();
 
   // UI Controls
   setupRefreshButton();
@@ -111,9 +110,7 @@ document.addEventListener('DOMContentLoaded', () => {
   setupModalCleanup();
   setupOverviewModal();
   setupCopyUrlButton();
-      })
-    .catch(err => console.error('Initialization failed:', err));
-
+  
   // Splash screen logic with fallback timers
   const splash = document.getElementById('splashScreen');
   if (splash) {

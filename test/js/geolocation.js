@@ -57,23 +57,28 @@ export function setupNearestCameraButton() {
   });
 }
 
-/**
- * On page load, if they’ve already granted, auto‑sort just like before.
- */
+
 export function autoSortByLocation() {
-  if (!navigator.geolocation || !navigator.permissions) return;
-  navigator.permissions
-    .query({ name: 'geolocation' })
-    .then(res => {
-      if (res.state === 'granted') {
-        navigator.geolocation.getCurrentPosition(
-          pos => {
-            const { latitude: lat, longitude: lng } = pos.coords;
-            sortAndDisplayByProximity(lat, lng);
-          },
-          () => {/* silent fail */},
-          geoOptions
-        );
-      }
-    });
+  // if the browser supports Permissions API…
+  if (navigator.permissions) {
+    navigator.permissions
+      .query({ name: 'geolocation' })
+      .then(result => {
+        // only if the user has ALREADY granted permission…
+        if (result.state === 'granted') {
+          navigator.geolocation.getCurrentPosition(
+            pos => {
+              const { latitude: lat, longitude: lng } = pos.coords;
+              sortAndDisplayByProximity(lat, lng);
+            },
+            () => { /* silently fail—no UI or prompt */ },
+            geoOptions
+          );
+        }
+        // if state is "prompt" or "denied", do nothing (no prompt)
+      })
+      .catch(() => {
+        // Permissions API not supported — leave it alone
+      });
+  }
 }
