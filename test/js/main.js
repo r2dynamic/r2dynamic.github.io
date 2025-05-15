@@ -97,8 +97,17 @@ async function initializeApp() {
 // Kick off the app when DOM is ready
 document.addEventListener('DOMContentLoaded', async () => {
   await initializeApp();
+
   setupNearestCameraButton();
-  autoSortByLocation();
+
+  // Only auto‑sort by location if the user did NOT supply any URL filters:
+  const params = new URLSearchParams(window.location.search);
+  if ([...params.keys()].length === 0) {
+    autoSortByLocation();
+  }
+
+ 
+  setupRefreshButton();
 
   // UI Controls
   setupRefreshButton();
