@@ -1,26 +1,20 @@
 // js/geolocation.js
-
 import { computeDistance } from './utils.js';
 import { renderGallery, updateCameraCount, showImage } from './gallery.js';
 import { updateSelectedFilters, updateURLParameters } from './ui.js';
 
 const geoOptions = {
   enableHighAccuracy: true,
-  timeout: 5000,
-  maximumAge: 0
+  timeout:        5000,
+  maximumAge:     0
 };
 
-/**
- * Sort cameras by proximity, then refresh everything exactly like our old monolith did.
- */
+/** shared helper from before */
 function sortAndDisplayByProximity(lat, lng) {
   const sorted = window.camerasList
-    .map(cam => ({
-      cam,
-      distance: computeDistance(lat, lng, cam.Latitude, cam.Longitude)
-    }))
+    .map(cam => ({ cam, distance: computeDistance(lat, lng, cam.Latitude, cam.Longitude) }))
     .sort((a, b) => a.distance - b.distance)
-    .map(item => item.cam);
+    .map(x => x.cam);
 
   window.visibleCameras = sorted;
   window.currentIndex   = 0;
@@ -28,17 +22,12 @@ function sortAndDisplayByProximity(lat, lng) {
   updateCameraCount();
   renderGallery(sorted);
 
-  // exactly as before, show the very first image
   if (sorted.length) showImage(0);
-
   updateSelectedFilters();
   updateURLParameters();
 }
 
-/**
- * Wire up the “Nearest Camera” button exactly as in your pre‑modular code,
- * with user‑facing alerts on permission errors.
- */
+/** exactly as before—sets the “allowed” flag on success */
 export function setupNearestCameraButton() {
   const btn = document.getElementById('nearestButton');
   if (!btn) return;
@@ -48,8 +37,8 @@ export function setupNearestCameraButton() {
     }
     navigator.geolocation.getCurrentPosition(
       pos => {
-        const { latitude: lat, longitude: lng } = pos.coords;
-        sortAndDisplayByProximity(lat, lng);
+        localStorage.setItem('locationAllowed', 'true');
+        sortAndDisplayByProximity(pos.coords.latitude, pos.coords.longitude);
       },
       err => alert('Location error: ' + err.message),
       geoOptions
@@ -57,36 +46,28 @@ export function setupNearestCameraButton() {
   });
 }
 
-
-function getAndSort() {
+/**
+ * Only auto-sort if:
+ *  1. No URL filters are present (you already handle that in main.js),
+ *  2. And the user has previously clicked “Nearest Camera” (flag is true).
+ */
+export function autoSortByLocation() {
+  if (localStorage.getItem('locationAllowed') !== 'true') {
+    // never prompt on load
+    return;
+  }
+  if (!navigator.geolocation) {
+    console.warn('Geolocation unsupported');
+    return;
+  }
   navigator.geolocation.getCurrentPosition(
-    pos => sortAndDisplayByProximity(pos.coords.latitude, pos.coords.longitude),
-    () => {/* fail silently */},
+    pos => {
+      sortAndDisplayByProximity(pos.coords.latitude, pos.coords.longitude);
+    },
+    err => {
+      console.warn('Auto-sort failed:', err);
+      // but fail silently—no alert
+    },
     geoOptions
   );
-}
-
-export function autoSortByLocation() {
-  // 1) If Permissions API works, use it
-  if (navigator.permissions?.query) {
-    navigator.permissions
-      .query({ name: 'geolocation' })
-      .then(result => {
-        if (result.state === 'granted') {
-          getAndSort();
-        } 
-        // else prompt/denied: do nothing (no auto‑prompt)
-      })
-      .catch(() => {
-        // 2) If .query() rejects, fallback to your flag
-        if (localStorage.getItem('locationAllowed') === 'true') {
-          getAndSort();
-        }
-      });
-  } 
-  // 3) If Permissions API missing (e.g. iOS Safari),
-  //    rely solely on your stored flag:
-  else if (localStorage.getItem('locationAllowed') === 'true') {
-    getAndSort();
-  }
 }
