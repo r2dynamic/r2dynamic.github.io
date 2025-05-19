@@ -30,7 +30,8 @@ import {
   setupRefreshButton,
   setupSizeSlider,
   setupDropdownHide,
-  setupModalLinks
+  setupModalLinks,
+  setupOtherFiltersListener
 } from './events.js';
 
 import {
@@ -114,6 +115,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupSearchListener();
   setupDropdownHide();
   setupModalLinks();
+  setupOtherFiltersListener();
   setupSizeSlider();
   setupModalMapToggle();
   setupModalCleanup();

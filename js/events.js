@@ -147,3 +147,23 @@ export function setupModalLinks() {
     })
   );
 }
+
+
+/** Attach click handlers for “Other Filters” submenu items */
+export function setupOtherFiltersListener() {
+  document
+    .querySelectorAll('#otherFiltersMenu .dropdown-item')
+    .forEach(item => {
+      item.addEventListener('click', e => {
+        e.preventDefault();
+        // Set the global and re-filter
+        window.selectedOtherFilter = item.dataset.value;
+        filterImages();
+        updateURLParameters();
+        // Close the submenu
+        bootstrap.Collapse
+          .getOrCreateInstance(document.getElementById('otherFiltersOptions'))
+          .hide();
+      });
+    });
+}
