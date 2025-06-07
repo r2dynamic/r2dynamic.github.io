@@ -69,7 +69,9 @@ export function setupLongPressShare(sel) {
   const threshold = 500;
   document.querySelectorAll(sel).forEach(img => {
     let timer;
-    img.addEventListener('contextmenu', e => e.preventDefault());
+    if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
+  img.addEventListener('contextmenu', e => e.preventDefault());
+}
     img.addEventListener('touchstart', () => {
       timer = setTimeout(() => shareImageFile(img.src, img.dataset.cameraInfo || ''), threshold);
     });
