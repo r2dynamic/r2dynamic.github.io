@@ -490,15 +490,19 @@ html, body {
   margin: 0.25rem;
 }
 
-/* Overview Thumbnail in Gallery */
+
+
 .aspect-ratio-box.overview-map {
   position: relative;
   overflow: hidden;
+  border: 2px solid #ff7800;
+  box-sizing: border-box;
   border-radius: 8px;
 }
 .aspect-ratio-box.overview-map #overview-tile {
   position: absolute;
   inset: 0;
+
 }
 
 /* Overview Map Modal Styling */
@@ -595,8 +599,8 @@ html, body {
   border-radius: 8px     !important;
 }
 .custom-marker {
-  width:            10px;
-  height:           10px;
+  width:            8px;
+  height:           8px;
   background-color: #ff7800;
   border:           .5px solid #ffffff;
   border-radius:    50%;
@@ -609,6 +613,7 @@ html, body {
 
 .leaflet-tooltip .glass-popup-content img {
   border: 2px solid #ff7800 !important;
+  border:           .5px solid #ffffff;
   border-radius: 8px !important;
   box-sizing: border-box;
 }
@@ -622,6 +627,14 @@ html, body {
 
 
 
+.user-dot-marker {
+  background: #2186f6;
+  border: 3px solid #ffffff;
+  border-radius: 50%;
+  width: 10px;
+  height: 10px;
+  box-shadow: 0 0 8px #1257aa55;
+}
 
 
 

@@ -1,4 +1,3 @@
-// modal.js
 import { debounce } from './utils.js';
 
 // DOM references
@@ -7,7 +6,6 @@ const modalBody           = document.getElementById('modalBody');
 const modalImageContainer = document.getElementById('modalImageContainer');
 let mapDisplayed          = false;
 
-// 1) Toggle embedded Google Map iframe in image modal
 export function setupModalMapToggle() {
   if (!mapButton) return;
   mapButton.addEventListener('click', () => {
@@ -38,7 +36,6 @@ export function setupModalMapToggle() {
   });
 }
 
-// 2) Cleanup embedded map when image modal closes
 export function setupModalCleanup() {
   document.getElementById('imageModal')
     .addEventListener('hidden.bs.modal', () => {
@@ -49,7 +46,6 @@ export function setupModalCleanup() {
     });
 }
 
-// 3) Long‑press sharing
 export async function shareImageFile(url, info = "") {
   try {
     const res   = await fetch(url);
@@ -70,8 +66,8 @@ export function setupLongPressShare(sel) {
   document.querySelectorAll(sel).forEach(img => {
     let timer;
     if ('ontouchstart' in window || navigator.maxTouchPoints > 0) {
-  img.addEventListener('contextmenu', e => e.preventDefault());
-}
+      img.addEventListener('contextmenu', e => e.preventDefault());
+    }
     img.addEventListener('touchstart', () => {
       timer = setTimeout(() => shareImageFile(img.src, img.dataset.cameraInfo || ''), threshold);
     });
@@ -79,31 +75,38 @@ export function setupLongPressShare(sel) {
   });
 }
 
-// 4) Overview modal with dynamic connectors and overlay layers
+// ---- OVERVIEW MODAL ----
 export function setupOverviewModal() {
   const smallIcon = L.divIcon({ className: 'custom-marker', iconSize: [12,12], iconAnchor: [6,6], tooltipAnchor: [0,10] });
+  const userDotIcon = L.divIcon({
+    className: 'user-dot-marker',
+    iconSize: [20, 20],
+    iconAnchor: [10, 10]
+  });
 
   const MAX_TOOLTIPS    = 20;
   const THUMB_WIDTH     = 120;
   const ARROW_HALF      = 6;
   const MARKER_RAD      = 8;
-  const MIN_ANCHOR_PX   = 5; // minimum 5px anchor length
+  const MIN_ANCHOR_PX   = 10; // changed from 5 to 10
   const ZOOM_OPEN       = 13;
   const ZOOM_COLLIDE    = 14;
 
   let map;
   const markers = [];
   const openTips = [];
+  let userMarker = null;
 
   function intersects(a,b) {
     return !(b.left > a.right || b.right < a.left || b.top > a.bottom || b.bottom < a.top);
   }
 
   function makeHtml(cam) {
-    return `<div class=\"glass-popup-content\"><img src=\"${cam.Views[0].Url}\"/></div>`;
+    return `<div class="glass-popup-content"><img src="${cam.Views[0].Url}"/></div>`;
   }
 
   function clearTooltip(marker) {
+    if (!marker || !marker.unbindTooltip) return;
     marker.unbindTooltip();
     marker.sticky = false;
     marker._autoOpened = false;
@@ -120,16 +123,15 @@ export function setupOverviewModal() {
   }
 
   function repositionTooltip(marker) {
+    if (!marker || !marker.getLatLng) return;
     clearTooltip(marker);
     const html = makeHtml(marker.cam);
 
-    // build marker boxes
     const boxes = markers.map(m => {
       const p = map.latLngToContainerPoint(m.getLatLng());
       return { left: p.x - MARKER_RAD, top: p.y - MARKER_RAD, right: p.x + MARKER_RAD, bottom: p.y + MARKER_RAD };
     });
 
-    // candidate placements
     const candidates = [
       { dir:'top',    offset:[0, -MARKER_RAD] },
       { dir:'bottom', offset:[0,  MARKER_RAD] },
@@ -141,7 +143,6 @@ export function setupOverviewModal() {
       { dir:'bottom', offset:[ (THUMB_WIDTH/2 - ARROW_HALF),  MARKER_RAD] }
     ];
 
-    // measure placements
     const measured = candidates.map(c => {
       const tmp = L.tooltip({ direction:c.dir, offset:c.offset, permanent:true, interactive:false, opacity:1 })
         .setLatLng(marker.getLatLng())
@@ -152,32 +153,29 @@ export function setupOverviewModal() {
       return { ...c, rect: r };
     });
 
-    // pick non-colliding or default
     const chosen = measured.find(c => {
       if (boxes.some(b => intersects(b, c.rect))) return false;
       for (let ot of openTips) {
+        if (!ot.getTooltip) continue;
         const r2 = ot.getTooltip().getElement().getBoundingClientRect();
         if (intersects(c.rect, r2)) return false;
       }
       return true;
     }) || measured[0];
 
-    // enforce minimum anchor length on the initial offset
+    // enforce minimum anchor length of 10px
     let [ox, oy] = chosen.offset;
-    const minOffset = MARKER_RAD + MIN_ANCHOR_PX;
+    const minOffset = Math.max(MARKER_RAD + MIN_ANCHOR_PX, 10);
     const norm = Math.hypot(ox, oy);
     if (norm < minOffset) {
-      // scale up the offset vector to meet the minimum
       const factor = minOffset / (norm || minOffset);
       ox *= factor;
       oy *= factor;
     }
-    const finalOffset = [ox, oy];
 
-    // bind tooltip
     marker.bindTooltip(html, {
       direction:   chosen.dir,
-      offset:      chosen.offset,
+      offset:      [ox, oy], // use adjusted offset
       permanent:   true,
       interactive: true,
       className:   'glass-popup',
@@ -187,7 +185,6 @@ export function setupOverviewModal() {
     marker.sticky = true;
     openTips.push(marker);
 
-    // compute container points
     const markerCP = map.latLngToContainerPoint(marker.getLatLng());
     function computeTipCP() {
       const tt = marker.getTooltip().getElement().getBoundingClientRect();
@@ -202,7 +199,6 @@ export function setupOverviewModal() {
       return L.point(px, py);
     }
 
-    // initial tip cp, enforce minimum
     let tipCP = computeTipCP();
     let vec   = tipCP.subtract(markerCP);
     let dist  = markerCP.distanceTo(tipCP);
@@ -212,17 +208,15 @@ export function setupOverviewModal() {
     }
     const tipLL = map.containerPointToLatLng(tipCP);
 
-    // draw connector
     const poly  = L.polyline([ marker.getLatLng(), tipLL ], { color:'#ff7800', weight:4, interactive:false }).addTo(map);
 
-    // Enlarge tooltip image on long press / hold, bring to front, and pan to fit
+    // Tooltip/anchor updates on map move/zoom
     const tooltip = marker.getTooltip();
     const tooltipEl = tooltip.getElement();
     const imgEl = tooltipEl.querySelector('img');
     if (imgEl) {
       imgEl.style.transition = 'transform 0.2s ease';
       imgEl.style.transformOrigin = 'center center';
-      // prevent closing on click
       imgEl.addEventListener('click', e => e.stopPropagation());
 
       function panToFit() {
@@ -248,7 +242,6 @@ export function setupOverviewModal() {
         else if (posBottom > mapRect.height) dy = posBottom - mapRect.height;
         if (dx || dy) map.panBy([dx, dy], { animate: false });
       }
-
       ['mousedown','touchstart'].forEach(evt =>
         imgEl.addEventListener(evt, e => {
           e.stopPropagation();
@@ -292,13 +285,34 @@ export function setupOverviewModal() {
   }, 300);
 
   const modal = document.getElementById('overviewMapModal');
-  modal.addEventListener('shown.bs.modal', () => {
-    // Update modal title to current route name
-    document.getElementById('overviewMapModalLabel').textContent = window.selectedRoute || 'Route Overview';
+modal.addEventListener('shown.bs.modal', () => {
+  // --- SET PROPER MODAL TITLE ---
+  let label = "Overview Map";
+  if (window.currentGalleryFilterType === 'route' && window.selectedRoute && window.selectedRoute !== 'All') {
+    label = window.selectedRoute;
+  } else if (window.currentGalleryFilterType === 'region' && window.selectedRegion) {
+    label = `Region: ${window.selectedRegion}`;
+  } else if (window.currentGalleryFilterType === 'county' && window.selectedCounty) {
+    label = `County: ${window.selectedCounty}`;
+  } else if (window.currentGalleryFilterType === 'city' && window.selectedCity) {
+    label = `City: ${window.selectedCity}`;
+  } else if (window.currentGalleryFilterType === 'maintenance' && window.selectedMaintenanceStation) {
+    label = `Maintenance: ${window.selectedMaintenanceStation}`;
+  } else if (window.currentGalleryFilterType === 'search' && window.searchQuery) {
+    label = `Search: ${window.searchQuery}`;
+  } else if (window.currentGalleryFilterType === 'other' && window.selectedOtherFilter) {
+    label = `${window.selectedOtherFilter}`;
+  } else if (window.currentGalleryFilterType === 'nearest' && window.isNearestFilterActive) {
+    label = `Nearest Cameras`;
+  } else if (window.selectedRoute && window.selectedRoute !== 'All') {
+    label = window.selectedRoute;
+  }
+  document.getElementById('overviewMapModalLabel').textContent = label;
 
     if (map) { map.remove(); map = null; }
     markers.length = 0;
     openTips.length = 0;
+    if (userMarker) { userMarker.remove(); userMarker = null; }
     const cams = window.visibleCameras || [];
     if (!cams.length) return;
 
@@ -306,14 +320,13 @@ export function setupOverviewModal() {
     const bounds = L.latLngBounds(coords);
     map = L.map('overviewMap', { attributionControl:true, zoomControl:false, dragging:true, doubleClickZoom: true, scrollWheelZoom:true });
 
-      // Base + overlays
-    const CartoDB_DarkMatterNoLabels = L.tileLayer(
+    L.tileLayer(
       'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
         attribution: '&copy; Esri',
         subdomains: 'abcd', maxZoom:20
       }
     ).addTo(map);
-    const Stadia_StamenTerrainLines = L.tileLayer(
+    L.tileLayer(
       'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
         minZoom:0, maxZoom:18,
         attribution: '&copy; OpenStreetMap',
@@ -344,6 +357,14 @@ export function setupOverviewModal() {
       });
     });
 
+    // --- USER DOT: show if available ---
+    if (window.currentGalleryFilterType === 'nearest' && window.nearestUserLocation) {
+      userMarker = L.marker(
+        [window.nearestUserLocation.lat, window.nearestUserLocation.lng],
+        { icon: userDotIcon, interactive: false }
+      ).addTo(map);
+    }
+
     map.off('moveend'); map.on('moveend', openInView);
     map.off('zoomend'); map.on('zoomend', () => {
       const z = map.getZoom();
@@ -354,11 +375,15 @@ export function setupOverviewModal() {
     document.getElementById('openAllTips').onclick  = () => markers.forEach(m => !m.sticky && m.fire('click'));
     document.getElementById('closeAllTips').onclick = () => openTips.slice().forEach(clearTooltip);
 
-    map.invalidateSize(); map.fitBounds(bounds, { padding:[10,10], maxZoom:12 });
+    map.invalidateSize();
+    map.fitBounds(bounds, { padding:[10,10], maxZoom:12 });
   });
 
   modal.addEventListener('hidden.bs.modal', () => {
     openTips.slice().forEach(clearTooltip);
+    if (userMarker) { userMarker.remove(); userMarker = null; }
     if (map) { map.remove(); map = null; }
   });
 }
+
+

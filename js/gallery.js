@@ -1,7 +1,53 @@
-// gallery.js (Revised to display mini overview map in the gallery with CartoDB + Stamen overlays)
+// gallery.js (mini map for all filtered views, 50 nearest, zoom-in on user for nearest only)
 const galleryContainer   = document.getElementById('imageGallery');
 const cameraCountElement = document.getElementById('cameraCount');
 let currentIndex = 0;
+
+/**
+ * Determines the current filter context for gallery.
+ * Returns an object:
+ *   { isFiltered, type, label, nearest: {lat, lng} or null }
+ */
+function getGalleryFilterContext() {
+  let type = null, label = "Overview", nearest = null, isFiltered = false;
+
+  if (window.isNearestFilterActive && window.nearestUserLocation) {
+    type = "nearest";
+    label = "Nearest Cameras";
+    nearest = window.nearestUserLocation;
+    isFiltered = true;
+  } else if (window.selectedRoute && window.selectedRoute !== 'All') {
+    type = "route";
+    label = window.selectedRoute;
+    isFiltered = true;
+  } else if (window.selectedRegion) {
+    type = "region";
+    label = "Region Overview";
+    isFiltered = true;
+  } else if (window.selectedCounty) {
+    type = "county";
+    label = "County Overview";
+    isFiltered = true;
+  } else if (window.selectedCity) {
+    type = "city";
+    label = "City Overview";
+    isFiltered = true;
+  } else if (window.selectedMaintenanceStation) {
+    type = "maintenance";
+    label = "Maintenance Overview";
+    isFiltered = true;
+  } else if (window.selectedOtherFilter) {
+    type = "other";
+    label = window.selectedOtherFilter;
+    isFiltered = true;
+  } else if (window.searchQuery) {
+    type = "search";
+    label = "Search Results";
+    isFiltered = true;
+  }
+
+  return { isFiltered, type, label, nearest };
+}
 
 /**
  * Renders an array of camera objects into the gallery.
@@ -10,8 +56,18 @@ let currentIndex = 0;
 export function renderGallery(cameras) {
   galleryContainer.innerHTML = '';
 
-  // Route overview map
-  if (window.selectedRoute && window.selectedRoute !== 'All') {
+  // Determine filter context
+  const filterCtx = getGalleryFilterContext();
+  window.currentGalleryFilterType = filterCtx.type || ""; // For use in modal
+
+  // For "Nearest Cameras": only show top 50
+  let camsToShow = cameras;
+  if (filterCtx.type === "nearest") {
+    camsToShow = cameras.slice(0, 50);
+  }
+
+  // Insert mini overview map cell for all filtered gallery views (except default unfiltered)
+  if (filterCtx.isFiltered && camsToShow.length > 0) {
     const overviewCell = document.createElement('div');
     overviewCell.className = 'col';
     overviewCell.innerHTML = `
@@ -23,15 +79,26 @@ export function renderGallery(cameras) {
     `;
     galleryContainer.append(overviewCell);
 
-    // Initialize the mini overview map
+    // Initialize the mini overview map after DOM insertion
     const overviewTile = overviewCell.querySelector('#overview-tile');
-
     requestAnimationFrame(() => {
-      // 1. build coords & bounds
-      const coords = window.visibleCameras.map(cam => [cam.Latitude, cam.Longitude]);
+      // Build coordinates and bounds for visible cameras
+      const coords = camsToShow.map(cam => [cam.Latitude, cam.Longitude]);
       const bounds = L.latLngBounds(coords);
 
-      // 2. init map
+      // Set map center for nearest cameras (user location)
+      let mapCenter = null;
+      if (filterCtx.type === "nearest" && filterCtx.nearest) {
+        mapCenter = [filterCtx.nearest.lat, filterCtx.nearest.lng];
+      }
+
+      // Destroy any previous map in this div
+      if (overviewTile._miniMapInstance) {
+        overviewTile._miniMapInstance.remove();
+        overviewTile._miniMapInstance = null;
+      }
+
+      // Init map
       const miniMap = L.map(overviewTile, {
         attributionControl: false,
         zoomControl:      false,
@@ -40,8 +107,9 @@ export function renderGallery(cameras) {
         doubleClickZoom:  false,
         touchZoom:        true
       });
+      overviewTile._miniMapInstance = miniMap;
 
-      // 3. add CartoDB DarkMatter base
+      // Add base and overlay tile layers
       const darkBase = L.tileLayer(
         'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
           attribution: '&copy; Esri',
@@ -50,7 +118,6 @@ export function renderGallery(cameras) {
         }
       ).addTo(miniMap);
 
-      // 4. add Stamen terrain line overlay
       const terrainLines = L.tileLayer(
         'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
            attribution: '&copy; Esri',
@@ -59,37 +126,51 @@ export function renderGallery(cameras) {
         }
       ).addTo(miniMap);
 
-      // 5. add markers
-      coords.forEach(([lat, lng]) => {
-        L.circleMarker([lat, lng], {
-          radius:      2,
-          fillColor:   '#ff7800',
+
+
+// Now add your new markers, and they will appear with the current JS style:
+coords.forEach(([lat, lng]) => {
+  L.circleMarker([lat, lng], {
+    radius:      3,            
+    fillColor:   '#ff7800',
+    color:       '#ffffff',
+    weight:      .75,
+    opacity:     1,
+    fillOpacity: 1
+  }).addTo(miniMap);
+});
+
+
+
+
+      // For nearest cameras, add user location as blue dot
+      if (filterCtx.type === "nearest" && filterCtx.nearest) {
+        L.circleMarker([filterCtx.nearest.lat, filterCtx.nearest.lng], {
+          radius:      6,
+          fillColor:   '#2186f6',
           color:       '#ffffff',
-          weight:      .5,
+          weight:      2,
           opacity:     1,
           fillOpacity: 1
         }).addTo(miniMap);
-      });
+      }
 
-      // 6. helper to size & fit
+      // Helper to size & fit
       const fitMap = () => {
-        miniMap.invalidateSize();             // recalc container dims
-        miniMap.fitBounds(bounds, {           // auto‑zoom & center exactly
-          padding: [8, 8],                    // px margin around markers
-          maxZoom: 16                         // won’t zoom in closer than this
-        });
+        miniMap.invalidateSize();
+        if (filterCtx.type === "nearest" && mapCenter) {
+          miniMap.setView(mapCenter, 14); // Strong zoom-in on user
+        } else if (coords.length > 0) {
+          miniMap.fitBounds(bounds, { padding: [8, 8], maxZoom: 16 });
+        }
       };
-
-      // initial fit
       fitMap();
-
-      // whenever the thumbnail div resizes, re‑fit
       new ResizeObserver(fitMap).observe(overviewTile);
     });
   }
 
-  // Render individual camera images
-  cameras.forEach((camera, i) => {
+  // Render the rest of the camera images in the gallery
+  camsToShow.forEach((camera, i) => {
     const col = document.createElement('div');
     col.classList.add('col');
     const arb = document.createElement('div');

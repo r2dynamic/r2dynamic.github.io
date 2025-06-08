@@ -2,6 +2,7 @@
 
 import { filterImages } from './filters.js';
 import { updateURLParameters } from './ui.js';
+import { clearNearestCamerasMode } from './geolocation.js';
 
 /**
  * Returns filtered cameras based on global selected* settings.
@@ -41,6 +42,7 @@ export function updateRegionDropdown() {
   a0.textContent = 'All Regions';
   a0.addEventListener('click', e => {
     e.preventDefault();
+    clearNearestCamerasMode();
     window.selectedRegion = '';
     updateCountyDropdown();
     updateCityDropdown();
@@ -62,6 +64,7 @@ export function updateRegionDropdown() {
     a.textContent = val;
     a.addEventListener('click', e => {
       e.preventDefault();
+      clearNearestCamerasMode();
       window.selectedRegion = val;
       updateCountyDropdown();
       updateCityDropdown();
@@ -93,6 +96,7 @@ export function updateCountyDropdown() {
   a0.textContent = 'All Counties';
   a0.addEventListener('click', e => {
     e.preventDefault();
+    clearNearestCamerasMode();
     window.selectedCounty = '';
     updateRegionDropdown();
     updateCityDropdown();
@@ -113,6 +117,7 @@ export function updateCountyDropdown() {
     a.textContent = val;
     a.addEventListener('click', e => {
       e.preventDefault();
+      clearNearestCamerasMode();
       window.selectedCounty = val;
       updateRegionDropdown();
       updateCityDropdown();
@@ -144,6 +149,7 @@ export function updateCityDropdown() {
   a0.textContent = 'All Cities';
   a0.addEventListener('click', e => {
     e.preventDefault();
+    clearNearestCamerasMode();
     window.selectedCity = '';
     updateRegionDropdown();
     updateCountyDropdown();
@@ -164,6 +170,7 @@ export function updateCityDropdown() {
     a.textContent = val;
     a.addEventListener('click', e => {
       e.preventDefault();
+      clearNearestCamerasMode();
       window.selectedCity = val;
       updateRegionDropdown();
       updateCountyDropdown();
@@ -201,6 +208,7 @@ export function updateMaintenanceStationDropdown() {
   a0.textContent = 'All Stations';
   a0.addEventListener('click', e => {
     e.preventDefault();
+    clearNearestCamerasMode();
     window.selectedMaintenanceStation = '';
     updateRegionDropdown();
     updateCountyDropdown();
@@ -221,6 +229,7 @@ export function updateMaintenanceStationDropdown() {
     a.textContent = val;
     a.addEventListener('click', e => {
       e.preventDefault();
+      clearNearestCamerasMode();
       window.selectedMaintenanceStation = val;
       updateRegionDropdown();
       updateCountyDropdown();
@@ -251,6 +260,7 @@ export function updateRouteOptions() {
   a0.textContent = 'All Routes';
   a0.addEventListener('click', e => {
     e.preventDefault();
+    clearNearestCamerasMode();
     window.selectedRoute = 'All';
     filterImages();
     updateURLParameters();
@@ -269,6 +279,7 @@ export function updateRouteOptions() {
     a.textContent = label;
     a.addEventListener('click', e => {
       e.preventDefault();
+      clearNearestCamerasMode();
       window.selectedRoute = label;
       filterImages();
       updateURLParameters();
@@ -277,4 +288,3 @@ export function updateRouteOptions() {
     menu.append(li);
   });
 }
-
