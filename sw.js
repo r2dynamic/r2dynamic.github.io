@@ -1,6 +1,6 @@
 // sw.js - Service Worker
 
-const CACHE_VERSION = 'v2.4';
+const CACHE_VERSION = 'v20';
 const PRECACHE_NAME = `wpa-precache-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `wpa-runtime-${CACHE_VERSION}`;
 
@@ -9,7 +9,7 @@ const PRECACHE_URLS = [
   '/', 
   '/index.html',
   '/manifest.json',
-  '/stylev4.css',
+  '/stylev5.css',
   '/routes.json',
   '/cameras.json',
   '/cameraData.js',
