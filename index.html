@@ -1,24 +1,16 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-EEMGV1LKN1"></script>
-  <script>
-    window.dataLayer = window.dataLayer || [];
-    function gtag(){dataLayer.push(arguments);}
-    gtag('js', new Date());
-    gtag('config', 'G-EEMGV1LKN1');
-  </script>
   <meta charset="UTF-8" />
-  <!-- The viewport-fit=cover makes sure your PWA can cover the full screen on devices with notches -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+  <title>UDOT Cameras</title>
+  <meta name="description" 
+      content="View and explore UDOT Traffic cameras. Live images from freeway and traffic cameras across Utah to monitor traffic and weather." />
   <meta property="og:title" content="UDOT Cameras">
-  <meta property="og:description" content="Interact with UDOT Cameras in a grid format">
+  <meta property="og:description" content="View and explore UDOT Traffic cameras. Live images from freeway and traffic cameras across Utah to monitor traffic and weather.">
   <meta property="og:image" content="https://udotcameras.com/Icongridbackground3.png">
   <meta property="og:url" content="https://udotcameras.com">
-  <!-- Favicon -->
   <link rel="icon" href="/camIcon1.png" type="image/png">
-  <!-- PWA Manifest & Theme Color -->
   <link rel="manifest" href="manifest.json">
   <meta name="theme-color" content="#4C4E52">
   <!-- External CSS -->
@@ -26,8 +18,7 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="stylev5.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
-  <title>UDOT Cameras</title>
-
+  
   <!-- first load rbush -->
 <script src="https://unpkg.com/rbush@3.0.1/rbush.min.js"></script>
 <!-- then load LabelGun -->
@@ -36,14 +27,22 @@
 <script type="module" src="js/main.js"></script>
 
     <!-- Leaflet for Route Overview Map -->
-   
-    <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
+  <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
-
-
+    <!-- Google tag (gtag.js) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-EEMGV1LKN1"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){dataLayer.push(arguments);}
+    gtag('js', new Date());
+    gtag('config', 'G-EEMGV1LKN1');
+  </script>
 
 </head>
 <body>
+  <header>
+  <h1 class="sr-only">UDOT Traffic Cameras</h1>
+</header>
   <!-- Splash Screen -->
   <div id="splashScreen" class="splash-screen">
     <!-- Desktop Splash Video -->
