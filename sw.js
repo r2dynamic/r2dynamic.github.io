@@ -1,12 +1,12 @@
 // sw.js - Service Worker
 
-const CACHE_VERSION = 'v32';
+const CACHE_VERSION = 'v33';
 const PRECACHE_NAME = `wpa-precache-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `wpa-runtime-${CACHE_VERSION}`;
 
 // List of resources to precache
 const PRECACHE_URLS = [
-  '/', 
+  '/',
   '/index.html',
   '/stylev11.css',
   '/manifest.json',
@@ -29,51 +29,75 @@ const PRECACHE_URLS = [
   '/desktop-splash.mp4'
 ];
 
-// On install, pre-cache key resources
+// Install - pre-cache assets
 self.addEventListener('install', event => {
+  console.log('SW installing, version:', CACHE_VERSION);
   event.waitUntil(
     caches.open(PRECACHE_NAME)
       .then(cache => cache.addAll(PRECACHE_URLS))
-      .then(self.skipWaiting())
+      .then(() => self.skipWaiting())
   );
 });
 
-// On activate, clean up old caches
+// Activate - clean up old caches
 self.addEventListener('activate', event => {
+  console.log('SW activating, version:', CACHE_VERSION);
   event.waitUntil(
-    caches.keys().then(keys => 
+    caches.keys().then(keys =>
       Promise.all(
-        keys.filter(key => key !== PRECACHE_NAME && key !== RUNTIME_CACHE)
-            .map(key => caches.delete(key))
+        keys
+          .filter(key => key !== PRECACHE_NAME && key !== RUNTIME_CACHE)
+          .map(oldKey => caches.delete(oldKey))
       )
     ).then(() => self.clients.claim())
   );
 });
 
-// Fetch handler: serve cached resources, with network fallback & runtime caching
+// Fetch - network-first for shell, cache-first for others
 self.addEventListener('fetch', event => {
-  // Only handle GET requests
   if (event.request.method !== 'GET') return;
+  const url = new URL(event.request.url);
 
-  const requestURL = new URL(event.request.url);
-
-  // Always serve precached assets for same-origin requests that match
-  if (PRECACHE_URLS.includes(requestURL.pathname)) {
+  // Network-first for core shell files (HTML/JS/CSS)
+  if (
+    url.origin === location.origin &&
+    (url.pathname === '/' ||
+     url.pathname.endsWith('.html') ||
+     url.pathname.endsWith('.js')   ||
+     url.pathname.endsWith('.css'))
+  ) {
     event.respondWith(
-      caches.match(event.request).then(cached => cached || fetch(event.request))
+      fetch(event.request)
+        .then(networkResponse => {
+          caches.open(PRECACHE_NAME)
+            .then(cache => cache.put(event.request, networkResponse.clone()));
+          return networkResponse;
+        })
+        .catch(() => caches.match(event.request))
+    );
+    return;
+  }
+
+  // Cache-first for precached assets
+  if (url.origin === location.origin && PRECACHE_URLS.includes(url.pathname)) {
+    event.respondWith(
+      caches.match(event.request)
+            .then(cached => cached || fetch(event.request))
     );
     return;
   }
 
   // Runtime caching for images
-  if (requestURL.pathname.startsWith('/images/') ||
-      /\.(png|jpg|jpeg|gif|webp|svg)$/.test(requestURL.pathname)) {
+  if (
+    url.origin === location.origin &&
+    (url.pathname.startsWith('/images/') ||
+     /\.(png|jpg|jpeg|gif|webp|svg)$/.test(url.pathname))
+  ) {
     event.respondWith(
       caches.open(RUNTIME_CACHE).then(cache =>
         cache.match(event.request).then(cached => {
           if (cached) return cached;
           return fetch(event.request).then(response => {
-            // Cache a clone for future
             cache.put(event.request, response.clone());
             return response;
           });
@@ -83,9 +107,8 @@ self.addEventListener('fetch', event => {
     return;
   }
 
-  // Fallback to network, with cache fallback on failure
+  // Fallback to network, then cache
   event.respondWith(
-    fetch(event.request)
-      .catch(() => caches.match(event.request))
+    fetch(event.request).catch(() => caches.match(event.request))
   );
 });
