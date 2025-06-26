@@ -4,50 +4,75 @@ const cameraCountElement = document.getElementById('cameraCount');
 let currentIndex = 0;
 
 /**
- * Determines the current filter context for gallery.
- * Returns an object:
- *   { isFiltered, type, label, nearest: {lat, lng} or null }
+ * Determines the current filter context for the gallery,
+ * including custom multi-segment routes.
+ * @returns {{ isFiltered: boolean, type: string, label: string, nearest: {lat:number,lng:number}|null }}
  */
 function getGalleryFilterContext() {
-  let type = null, label = "Overview", nearest = null, isFiltered = false;
+  let type       = null;
+  let label      = "Overview";
+  let nearest    = null;
+  let isFiltered = false;
 
-  if (window.isNearestFilterActive && window.nearestUserLocation) {
-    type = "nearest";
-    label = "Nearest Cameras";
-    nearest = window.nearestUserLocation;
+  // Custom multi-segment route takes highest priority
+  if (window.customRouteFormData?.length) {
+    type       = "multiRoute";
+    label      = "Custom Route";
     isFiltered = true;
-  } else if (window.selectedRoute && window.selectedRoute !== 'All') {
-    type = "route";
-    label = window.selectedRoute;
+  }
+  // Nearest-camera mode
+  else if (window.isNearestFilterActive && window.nearestUserLocation) {
+    type       = "nearest";
+    label      = "Nearest Cameras";
+    nearest    = window.nearestUserLocation;
     isFiltered = true;
-  } else if (window.selectedRegion) {
-    type = "region";
-    label = "Region Overview";
+  }
+  // Single curated route
+  else if (window.selectedRoute && window.selectedRoute !== 'All') {
+    type       = "route";
+    label      = window.selectedRoute;
     isFiltered = true;
-  } else if (window.selectedCounty) {
-    type = "county";
-    label = "County Overview";
+  }
+  // Region overview
+  else if (window.selectedRegion) {
+    type       = "region";
+    label      = "Region Overview";
     isFiltered = true;
-  } else if (window.selectedCity) {
-    type = "city";
-    label = "City Overview";
+  }
+  // County overview
+  else if (window.selectedCounty) {
+    type       = "county";
+    label      = "County Overview";
     isFiltered = true;
-  } else if (window.selectedMaintenanceStation) {
-    type = "maintenance";
-    label = "Maintenance Overview";
+  }
+  // City overview
+  else if (window.selectedCity) {
+    type       = "city";
+    label      = "City Overview";
     isFiltered = true;
-  } else if (window.selectedOtherFilter) {
-    type = "other";
-    label = window.selectedOtherFilter;
+  }
+  // Maintenance-station overview
+  else if (window.selectedMaintenanceStation) {
+    type       = "maintenance";
+    label      = "Maintenance Overview";
     isFiltered = true;
-  } else if (window.searchQuery) {
-    type = "search";
-    label = "Search Results";
+  }
+  // Any other filter (e.g. Inactive Cameras)
+  else if (window.selectedOtherFilter) {
+    type       = "other";
+    label      = window.selectedOtherFilter;
+    isFiltered = true;
+  }
+  // Free-text search
+  else if (window.searchQuery) {
+    type       = "search";
+    label      = "Search Results";
     isFiltered = true;
   }
 
   return { isFiltered, type, label, nearest };
 }
+
 
 /**
  * Renders an array of camera objects into the gallery.
@@ -119,7 +144,7 @@ export function renderGallery(cameras) {
       ).addTo(miniMap);
 
       const terrainLines = L.tileLayer(
-        'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+        'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
            attribution: '&copy; Esri',
           minZoom: 0,
           maxZoom: 18

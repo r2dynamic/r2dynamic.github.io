@@ -1,3 +1,4 @@
+// js/modal.js
 import { debounce } from './utils.js';
 
 // DOM references
@@ -327,7 +328,7 @@ modal.addEventListener('shown.bs.modal', () => {
       }
     ).addTo(map);
     L.tileLayer(
-      'http://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
+      'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
         minZoom:0, maxZoom:18,
         attribution: '&copy; OpenStreetMap',
         ext:'png'

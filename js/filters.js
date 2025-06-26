@@ -1,4 +1,5 @@
-// filters.js
+// js/filters.js
+
 import { refreshGallery } from './ui.js';
 import { updateSelectedFilters, updateURLParameters } from './ui.js';
 
@@ -45,7 +46,6 @@ export function filterImages() {
     return;
   }
 
-  // main filtering logic
   filtered = cameras.filter(cam => {
     if (cam.Views?.[0]?.Status === 'Disabled') return false;
     const txt = `${cam.SignalID || ''} ${cam.Location || ''}`.toLowerCase();
@@ -70,7 +70,7 @@ export function filterImages() {
            matchesCity;
   });
 
-  // optional route-based sorting
+  // Optional route-based sorting (unchanged)
   if (window.selectedRoute !== 'All') {
     const routeObj = routes.find(r => (r.displayName || r.name) === window.selectedRoute);
     if (routeObj) {
@@ -101,6 +101,5 @@ export function filterImages() {
     }
   }
 
-  // render the updated list
   refreshGallery(filtered);
 }

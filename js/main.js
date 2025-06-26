@@ -3,8 +3,21 @@
 
 import { loadCameras, loadRoutes } from './dataLoader.js';
 import { filterImages } from './filters.js';
-import { setupCopyUrlButton } from './events.js';
+import {
+  setupCopyUrlButton,
+  setupSearchListener,
+  setupRefreshButton,
+  setupSizeSlider,
+  setupDropdownHide,
+  setupModalLinks,
+  setupOtherFiltersListener
+} from './events.js';
 import { copyURLToClipboard } from './utils.js';
+import { setupCustomRouteBuilder } from './customRoute.js';
+import {
+  initAutoLocationFilterWithTimeout,
+  setupLocateButton
+} from './geolocation.js';
 
 import {
   updateRegionDropdown,
@@ -14,25 +27,12 @@ import {
   updateRouteOptions
 } from './dropdowns.js';
 
-import { renderGallery } from './gallery.js';
-
 import {
   setupModalMapToggle,
   setupModalCleanup,
   setupLongPressShare,
   setupOverviewModal
 } from './modal.js';
-
-import { setupNearestCameraButton, autoSortByLocation } from './geolocation.js';
-
-import {
-  setupSearchListener,
-  setupRefreshButton,
-  setupSizeSlider,
-  setupDropdownHide,
-  setupModalLinks,
-  setupOtherFiltersListener
-} from './events.js';
 
 import {
   revealMainContent,
@@ -44,37 +44,37 @@ import {
 } from './ui.js';
 
 // --- Global State ---
-window.selectedRegion = '';
-window.selectedCounty = '';
-window.selectedCity = '';
+window.selectedRegion             = '';
+window.selectedCounty             = '';
+window.selectedCity               = '';
 window.selectedMaintenanceStation = '';
-window.selectedRoute = 'All';
-window.selectedOtherFilter = '';
-window.searchQuery = '';
+window.selectedRoute              = 'All';
+window.selectedOtherFilter        = '';
+window.searchQuery                = '';
 
-window.camerasList = [];
-window.curatedRoutes = [];
+window.camerasList    = [];
+window.curatedRoutes  = [];
 window.visibleCameras = [];
-window.currentIndex = 0;
+window.currentIndex   = 0;
 
-// Expose core functions on window
-window.filterImages = filterImages;
-window.updateRegionDropdown = updateRegionDropdown;
-window.updateCountyDropdown = updateCountyDropdown;
-window.updateCityDropdown = updateCityDropdown;
+// Expose core functions on window for other modules
+window.filterImages               = filterImages;
+window.updateRegionDropdown       = updateRegionDropdown;
+window.updateCountyDropdown       = updateCountyDropdown;
+window.updateCityDropdown         = updateCityDropdown;
 window.updateMaintenanceStationDropdown = updateMaintenanceStationDropdown;
-window.updateRouteOptions = updateRouteOptions;
-
-window.revealMainContent = revealMainContent;
-window.fadeOutSplash = fadeOutSplash;
-window.updateURLParameters = updateURLParameters;
-window.updateSelectedFilters = updateSelectedFilters;
-window.resetFilters = resetFilters;
-window.applyFiltersFromURL = applyFiltersFromURL;
-window.copyURLToClipboard = copyURLToClipboard;
+window.updateRouteOptions         = updateRouteOptions;
+window.revealMainContent          = revealMainContent;
+window.fadeOutSplash              = fadeOutSplash;
+window.updateURLParameters        = updateURLParameters;
+window.updateSelectedFilters      = updateSelectedFilters;
+window.resetFilters               = resetFilters;
+window.applyFiltersFromURL        = applyFiltersFromURL;
+window.copyURLToClipboard         = copyURLToClipboard;
 
 /**
- * Initializes cameras and routes, then sets up the app UI.
+ * Initializes cameras and routes, then applies any URL filters
+ * before rendering the gallery and dropdowns.
  */
 async function initializeApp() {
   // 1. Load cameras & routes
@@ -91,26 +91,33 @@ async function initializeApp() {
   // 3. Apply URL filters before rendering
   applyFiltersFromURL();
 
-  // 4. Render gallery based on initial filters
-  filterImages();
-}
-
-// Kick off the app when DOM is ready
-document.addEventListener('DOMContentLoaded', async () => {
-  await initializeApp();
-
-  setupNearestCameraButton();
-
-  // Only auto‑sort by location if the user did NOT supply any URL filters:
-  const params = new URLSearchParams(window.location.search);
-  if ([...params.keys()].length === 0) {
-    autoSortByLocation();
+  // 4. Render gallery (unless multiRoute is handling it)
+  const params   = new URLSearchParams(window.location.search);
+  const hasMulti = params.has('multiRoute');
+  if (!hasMulti) {
+    filterImages();
   }
 
- 
-  setupRefreshButton();
+  // 5. Sync badges/UI
+  updateSelectedFilters();
+}
 
-  // UI Controls
+// Kick off the app when the DOM is ready
+document.addEventListener('DOMContentLoaded', async () => {
+  // 1) Core data + UI setup
+  await initializeApp();
+
+  // 2) Always bind the Nearest-Cameras button
+  setupLocateButton();
+
+  // 3) Auto‐filter by location ONLY if NO URL params present
+  const urlParams = new URLSearchParams(window.location.search);
+  if ([...urlParams.keys()].length === 0) {
+    // Run silent init under splash with a 5s max wait
+    initAutoLocationFilterWithTimeout(5000);
+  }
+
+  // 4) Other UI Controls
   setupRefreshButton();
   setupSearchListener();
   setupDropdownHide();
@@ -121,8 +128,9 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupModalCleanup();
   setupOverviewModal();
   setupCopyUrlButton();
-  
-  // Splash screen logic with fallback timers
+  setupCustomRouteBuilder();
+
+  // 5) Splash screen logic
   const splash = document.getElementById('splashScreen');
   if (splash) {
     const dv = document.getElementById('desktopVideo');
@@ -130,18 +138,25 @@ document.addEventListener('DOMContentLoaded', async () => {
       dv.addEventListener('playing', () => setTimeout(fadeOutSplash, 2300));
       dv.addEventListener('error',   () => setTimeout(fadeOutSplash, 2000));
     }
-    // Always hide splash after 3 seconds
+    // always hide the splash after 3s max
     setTimeout(fadeOutSplash, 3000);
   }
 
-  // Long-press image share handlers
+  // 6) Long-press share setup
   setupLongPressShare('.aspect-ratio-box img');
   setupLongPressShare('#imageModal img');
 
-  // Hide all collapse panels initially
-  ['regionOptions','countyOptions','cityOptions','maintenanceOptions','otherFiltersOptions']
-    .forEach(id => {
-      const el = document.getElementById(id);
-      if (el) bootstrap.Collapse.getOrCreateInstance(el, { toggle: false }).hide();
-    });
+  // 7) Collapse all filter panels at start
+  [
+    'regionOptions',
+    'countyOptions',
+    'cityOptions',
+    'maintenanceOptions',
+    'otherFiltersOptions'
+  ].forEach(id => {
+    const el = document.getElementById(id);
+    if (el) {
+      bootstrap.Collapse.getOrCreateInstance(el, { toggle: false }).hide();
+    }
+  });
 });
