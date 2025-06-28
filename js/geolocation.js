@@ -96,8 +96,14 @@ export function initAutoLocationFilter() {
       return resolve();
     }
 
-    // returning visitor → check browser state
-    if (navigator.permissions) {
+    // returning visitor → check if geolocation API is available
+    if (!navigator.geolocation) {
+      loadDefaultGallery();
+      return resolve();
+    }
+
+    // If Permissions API is available, try to query state
+    if (navigator.permissions && navigator.permissions.query) {
       try {
         const status = await navigator.permissions.query({ name: 'geolocation' });
         if (status.state === 'granted') {
@@ -113,18 +119,46 @@ export function initAutoLocationFilter() {
             geoOptions
           );
         } else {
-          // would prompt or denied → fallback
-          loadDefaultGallery();
-          resolve();
+          // permission was denied or prompt; fallback to direct call
+          navigator.geolocation.getCurrentPosition(
+            pos => {
+              activateNearestCamerasMode(pos.coords.latitude, pos.coords.longitude);
+              resolve();
+            },
+            () => {
+              loadDefaultGallery();
+              resolve();
+            },
+            geoOptions
+          );
         }
       } catch {
-        loadDefaultGallery();
-        resolve();
+        // Permissions API un-usable (e.g. iOS WebKit) → try direct geolocation
+        navigator.geolocation.getCurrentPosition(
+          pos => {
+            activateNearestCamerasMode(pos.coords.latitude, pos.coords.longitude);
+            resolve();
+          },
+          () => {
+            loadDefaultGallery();
+            resolve();
+          },
+          geoOptions
+        );
       }
     } else {
-      // no Permissions API → fallback
-      loadDefaultGallery();
-      resolve();
+      // no Permissions API → direct geolocation
+      navigator.geolocation.getCurrentPosition(
+        pos => {
+          activateNearestCamerasMode(pos.coords.latitude, pos.coords.longitude);
+          resolve();
+        },
+        () => {
+          loadDefaultGallery();
+          resolve();
+        },
+        geoOptions
+      );
     }
   });
 }
