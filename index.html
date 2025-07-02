@@ -25,6 +25,7 @@
   <!-- then load LabelGun -->
   <script src="https://unpkg.com/labelgun@6.0.0/lib/labelgun.js"></script>
   <!-- finally your app code -->
+  <script type="module" src="js/otherFilters.js"></script>
   <script type="module" src="js/main.js"></script>
 
   <!-- Leaflet for Route Overview Map -->
@@ -117,18 +118,32 @@
               <!-- Options dynamically populated -->
             </ul>
           </div>
-        </div> 
-        <!-- Other Filters Sub‑Dropdown -->
-        <div class="mt-2">
-          <button class="dropdown-toggle button" type="button" data-bs-toggle="collapse" data-bs-target="#otherFiltersOptions" aria-expanded="false" aria-controls="otherFiltersOptions" style="width:100%; text-align:left;">
-            <i class="fas fa-sliders-h"></i> Other Filters
-          </button>
-          <div class="collapse" id="otherFiltersOptions">
-            <ul class="list-unstyled m-0" id="otherFiltersMenu">
-              <li><a class="dropdown-item" href="#" data-value="Inactive Cameras">Inactive Cameras</a></li>
-            </ul>
-          </div>
         </div>
+
+        <!-- Other Filters Sub-Dropdown -->
+<div class="mt-2">
+  <button
+    class="dropdown-toggle button"
+    type="button"
+    data-bs-toggle="collapse"
+    data-bs-target="#otherFiltersOptions"
+    aria-expanded="false"
+    aria-controls="otherFiltersOptions"
+    style="width:100%; text-align:left;"
+  >
+    <i class="fas fa-sliders-h"></i> Other Filters
+  </button>
+
+  <div class="collapse" id="otherFiltersOptions">
+    <ul class="list-unstyled m-0" id="otherFiltersMenu">
+      <!--  ← no <li> here — otherFilters.js will inject one for each entry in your config -->
+    </ul>
+  </div>
+</div> 
+
+        
+
+
       </div>
     </div>
 
@@ -332,9 +347,31 @@
     </div>
   </div>
 
+  <!-- Weather Modal -->
+<div class="modal fade" id="weatherModal" tabindex="-1" aria-labelledby="weatherModalLabel" aria-hidden="true">
+  <div class="modal-dialog modal-xl modal-dialog-centered">
+    <div class="modal-content bg-dark text-white">
+      <div class="modal-header border-0">
+        <h5 class="modal-title" id="weatherModalLabel">Springdale Weather</h5>
+        <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal"></button>
+      </div>
+      <div class="modal-body p-0">
+        <iframe 
+          src="https://embed.windy.com/embed.html?type=map&location=coordinates&metricRain=in&metricTemp=°F&metricWind=mph&zoom=11&overlay=rain&product=ecmwf&level=surface&lat=37.108&lon=-113.024&message=true" 
+          frameborder="0" 
+          style="width:100%; height:80vh; border:none;">
+        </iframe>
+      </div>
+    </div>
+  </div>
+</div>
+
+
   <!-- External JavaScript Files -->
   <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
   <script src="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/js/all.min.js"></script>
+
+
 
   <script>
   (function(){
@@ -376,6 +413,8 @@
     });
   }
 </script>
+
+  
 
 </body>
 </html>

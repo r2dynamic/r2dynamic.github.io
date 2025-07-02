@@ -1,0 +1,188 @@
+{
+  "CamerasList": [
+    
+    {
+      "Id": "Not available",
+      "Source": "Not available",
+      "SourceId": "Not available",
+      "Roadway": "Not available",
+      "RoadwayOption1": "Not available",
+      "MilepostOption1": "Not available",
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Not available",
+      "CountyBoundary": "Not available",
+      "Region": "Not available",
+      "MaintenanceStationOption1": "Not available",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=37.003107,-111.498499",
+      "ArcGISURL": "Not available",
+      "Direction": "Not available",
+      "Latitude": 37.003107,
+      "Longitude": -111.498499,
+      "Location": "Stateline Auxiliary Launch Ramp",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": "Not available",
+          "Url": "https://www.nps.gov/webcams-glca/ww3.jpg",
+          "Status": "Not available",
+          "Description": "Not available"
+        }  
+      ]
+    },
+        {
+      "Id": "Not available",
+      "Source": "Not available",
+      "SourceId": "Not available",
+      "Roadway": "Not available",
+      "RoadwayOption1": "Not available",
+      "MilepostOption1": "Not available",
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Not available",
+      "CountyBoundary": "Not available",
+      "Region": "Not available",
+      "MaintenanceStationOption1": "Not available",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=36.995649,-111.486222",
+      "ArcGISURL": "Not available",
+      "Direction": "Not available",
+      "Latitude": 36.995649,
+      "Longitude": -111.486222,
+      "Location": "Wahweap Main Launch Ramp",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": "Not available",
+          "Url": "https://www.nps.gov/webcams-glca/ww2.jpg",
+          "Status": "Not available",
+          "Description": "Not available"
+        }  
+      ]
+    },
+        {
+      "Id": "Not available",
+      "Source": "Not available",
+      "SourceId": "Not available",
+      "Roadway": "Not available",
+      "RoadwayOption1": "Not available",
+      "MilepostOption1": "Not available",
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Not available",
+      "CountyBoundary": "Not available",
+      "Region": "Not available",
+      "MaintenanceStationOption1": "Not available",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=36.882701,-111.587614",
+      "ArcGISURL": "Not available",
+      "Direction": "Not available",
+      "Latitude": 36.882701,
+      "Longitude": -111.587614,
+      "Location": "Paria Overlook",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": "Not available",
+          "Url": "https://www.nps.gov/webcams-glca/po1.jpg",
+          "Status": "Not available",
+          "Description": "Not available"
+        }  
+      ]
+    },
+    {
+      "Id": "Not available",
+      "Source": "Not available",
+      "SourceId": "Not available",
+      "Roadway": "Not available",
+      "RoadwayOption1": "Not available",
+      "MilepostOption1": "Not available",
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Not available",
+      "CountyBoundary": "Not available",
+      "Region": "Not available",
+      "MaintenanceStationOption1": "Not available",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=36.895014,-111.445046",
+      "ArcGISURL": "Not available",
+      "Direction": "Not available",
+      "Latitude": 36.895014,
+      "Longitude": -111.445046,
+      "Location": "SR-98 @Coppermine Rd, Page AZ",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": "Not available",
+          "Url": "https://az511.gov/map/Cctv/737?t=1751396790",
+          "Status": "Not available",
+          "Description": "Not available"
+        }  
+      ]
+    },
+    {
+      "Id": 12319,
+      "Source": "ADX",
+      "SourceId": "104412",
+      "Roadway": "SR 276",
+      "RoadwayOption1": "276P",
+      "MilepostOption1": 21.146,
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Not available",
+      "CountyBoundary": "Garfield",
+      "Region": 4,
+      "MaintenanceStationOption1": "4467 - Hanksville",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=37.75644,-110.65277",
+      "ArcGISURL": "https://uplan.maps.arcgis.com/apps/webappviewer/index.html?id=07c3dc8429ca42c4b4066e383631681f&find=37.75644,-110.65277",
+      "Direction": "South",
+      "Latitude": 37.75644,
+      "Longitude": -110.65277,
+      "Location": "SR-276 SB @  Milepost 21.14, GA",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": 12319,
+          "Url": "https://www.udottraffic.utah.gov/map/Cctv/12319",
+          "Status": "Enabled",
+          "Description": ""
+        }
+      ]
+    },
+    {
+      "Id": 12131,
+      "Source": "ADX",
+      "SourceId": "104451",
+      "Roadway": "US 89",
+      "RoadwayOption1": "89P",
+      "MilepostOption1": 35.694,
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Not available",
+      "CountyBoundary": "Kane",
+      "Region": 4,
+      "MaintenanceStationOption1": "4472 - Kanab",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=37.14454,-112.06985",
+      "ArcGISURL": "https://uplan.maps.arcgis.com/apps/webappviewer/index.html?id=07c3dc8429ca42c4b4066e383631681f&find=37.14454,-112.06985",
+      "Direction": "East",
+      "Latitude": 37.14454,
+      "Longitude": -112.06985,
+      "Location": "US-89 @ Milepost 35.7, KN",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": 12131,
+          "Url": "https://www.udottraffic.utah.gov/map/Cctv/12131",
+          "Status": "Enabled",
+          "Description": ""
+        }
+      ]
+    }
+        
+        
+        
+ ]
+}

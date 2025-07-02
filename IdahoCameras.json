@@ -1,0 +1,96 @@
+{
+  "CamerasList": [
+    
+    {
+      "Id": "Not available",
+      "Source": "Not available",
+      "SourceId": "Not available",
+      "Roadway": "I-15",
+      "RoadwayOption1": "15",
+      "MilepostOption1": 2.5,
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Not available",
+      "CountyBoundary": "Not available",
+      "Region": "Not available",
+      "MaintenanceStationOption1": "Not available",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=42.0364,-112.2107",
+      "ArcGISURL": "Not available",
+      "Direction": "Not available",
+      "Latitude": 42.0364,
+      "Longitude": -112.2107,
+      "Location": "I-15 Samaria",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": "Not available",
+          "Url": "https://511.idaho.gov/map/Cctv/259?t=1751162735",
+          "Status": "Not available",
+          "Description": "Not available"
+        }
+      ]
+    },
+        {
+      "Id": "Not available",
+      "Source": "Not available",
+      "SourceId": "Not available",
+      "Roadway": "I-15",
+      "RoadwayOption1": "15",
+      "MilepostOption1": 24,
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Not available",
+      "CountyBoundary": "Not available",
+      "Region": "Not available",
+      "MaintenanceStationOption1": "Not available",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=42.3428,-112.2274",
+      "ArcGISURL": "Not available",
+      "Direction": "Not available",
+      "Latitude": 42.3428,
+      "Longitude": -112.2274,
+      "Location": "I-15 Malad Summit",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": "Not available",
+          "Url": "https://511.idaho.gov/map/Cctv/556?t=1751163067",
+          "Status": "Not available",
+          "Description": "Not available"
+        }
+      ]
+    },
+        {
+      "Id": "Not available",
+      "Source": "Not available",
+      "SourceId": "Not available",
+      "Roadway": "I-15",
+      "RoadwayOption1": "15",
+      "MilepostOption1": 41.65,
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Not available",
+      "CountyBoundary": "Not available",
+      "Region": "Not available",
+      "MaintenanceStationOption1": "Not available",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=42.5837,-112.1857",
+      "ArcGISURL": "Not available",
+      "Direction": "Not available",
+      "Latitude": 42.5837,
+      "Longitude": -112.1857,
+      "Location": "I-15 Marsh Valley",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": "Not available",
+          "Url": "https://511.idaho.gov/map/Cctv/622?t=1751163441",
+          "Status": "Not available",
+          "Description": "Not available"
+        }
+      ]
+    }
+        
+ ]
+}

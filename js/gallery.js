@@ -78,21 +78,29 @@ function getGalleryFilterContext() {
  * Renders an array of camera objects into the gallery.
  * @param {Array} cameras
  */
+// gallery.js
+
 export function renderGallery(cameras) {
   galleryContainer.innerHTML = '';
 
-  // Determine filter context
-  const filterCtx = getGalleryFilterContext();
-  window.currentGalleryFilterType = filterCtx.type || ""; // For use in modal
+  // 0) Normalize legacy vs. new format
+  // If the first item has no .type, we assume it's a raw camera array.
+  const unified = Array.isArray(cameras) && cameras.length && cameras[0].type
+    ? cameras
+    : cameras.map(camObj => ({ type: 'camera', camera: camObj }));
 
-  // For "Nearest Cameras": only show top 50
-  let camsToShow = cameras;
-  if (filterCtx.type === "nearest") {
-    camsToShow = cameras.slice(0, 50);
+  // 1) Determine filter context
+  const filterCtx = getGalleryFilterContext();
+  window.currentGalleryFilterType = filterCtx.type || '';
+
+  // 2) For “nearest” only show top 50
+  let itemsToShow = unified;
+  if (filterCtx.type === 'nearest') {
+    itemsToShow = unified.slice(0, 50);
   }
 
-  // Insert mini overview map cell for all filtered gallery views (except default unfiltered)
-  if (filterCtx.isFiltered && camsToShow.length > 0) {
+  // 3) Insert mini‐overview map for any filtered view
+  if (filterCtx.isFiltered && itemsToShow.length > 0) {
     const overviewCell = document.createElement('div');
     overviewCell.className = 'col';
     overviewCell.innerHTML = `
@@ -104,26 +112,24 @@ export function renderGallery(cameras) {
     `;
     galleryContainer.append(overviewCell);
 
-    // Initialize the mini overview map after DOM insertion
+    // Build the mini‐map only from actual cameras:
     const overviewTile = overviewCell.querySelector('#overview-tile');
     requestAnimationFrame(() => {
-      // Build coordinates and bounds for visible cameras
-      const coords = camsToShow.map(cam => [cam.Latitude, cam.Longitude]);
+      const coords = itemsToShow
+        .filter(item => item.type === 'camera')
+        .map(item => [item.camera.Latitude, item.camera.Longitude]);
       const bounds = L.latLngBounds(coords);
 
-      // Set map center for nearest cameras (user location)
       let mapCenter = null;
-      if (filterCtx.type === "nearest" && filterCtx.nearest) {
+      if (filterCtx.type === 'nearest' && filterCtx.nearest) {
         mapCenter = [filterCtx.nearest.lat, filterCtx.nearest.lng];
       }
 
-      // Destroy any previous map in this div
       if (overviewTile._miniMapInstance) {
         overviewTile._miniMapInstance.remove();
         overviewTile._miniMapInstance = null;
       }
 
-      // Init map
       const miniMap = L.map(overviewTile, {
         attributionControl: false,
         zoomControl:      false,
@@ -134,42 +140,28 @@ export function renderGallery(cameras) {
       });
       overviewTile._miniMapInstance = miniMap;
 
-      // Add base and overlay tile layers
-      const darkBase = L.tileLayer(
-        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
-          attribution: '&copy; Esri',
-          subdomains: 'abcd',
-          maxZoom: 20
-        }
+      L.tileLayer(
+        'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+        { attribution: '&copy; Esri', subdomains: 'abcd', maxZoom: 20 }
       ).addTo(miniMap);
 
-      const terrainLines = L.tileLayer(
-        'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}', {
-           attribution: '&copy; Esri',
-          minZoom: 0,
-          maxZoom: 18
-        }
+      L.tileLayer(
+        'https://services.arcgisonline.com/arcgis/rest/services/Canvas/World_Dark_Gray_Reference/MapServer/tile/{z}/{y}/{x}',
+        { attribution: '&copy; Esri', minZoom: 0, maxZoom: 18 }
       ).addTo(miniMap);
 
+      coords.forEach(([lat, lng]) => {
+        L.circleMarker([lat, lng], {
+          radius:      3,
+          fillColor:   '#ff7800',
+          color:       '#ffffff',
+          weight:      0.75,
+          opacity:     1,
+          fillOpacity: 1
+        }).addTo(miniMap);
+      });
 
-
-// Now add your new markers, and they will appear with the current JS style:
-coords.forEach(([lat, lng]) => {
-  L.circleMarker([lat, lng], {
-    radius:      3,            
-    fillColor:   '#ff7800',
-    color:       '#ffffff',
-    weight:      .75,
-    opacity:     1,
-    fillOpacity: 1
-  }).addTo(miniMap);
-});
-
-
-
-
-      // For nearest cameras, add user location as blue dot
-      if (filterCtx.type === "nearest" && filterCtx.nearest) {
+      if (filterCtx.type === 'nearest' && filterCtx.nearest) {
         L.circleMarker([filterCtx.nearest.lat, filterCtx.nearest.lng], {
           radius:      6,
           fillColor:   '#2186f6',
@@ -180,11 +172,10 @@ coords.forEach(([lat, lng]) => {
         }).addTo(miniMap);
       }
 
-      // Helper to size & fit
       const fitMap = () => {
         miniMap.invalidateSize();
-        if (filterCtx.type === "nearest" && mapCenter) {
-          miniMap.setView(mapCenter, 14); // Strong zoom-in on user
+        if (filterCtx.type === 'nearest' && mapCenter) {
+          miniMap.setView(mapCenter, 14);
         } else if (coords.length > 0) {
           miniMap.fitBounds(bounds, { padding: [8, 8], maxZoom: 16 });
         }
@@ -194,28 +185,50 @@ coords.forEach(([lat, lng]) => {
     });
   }
 
-  // Render the rest of the camera images in the gallery
-  camsToShow.forEach((camera, i) => {
+  // 4) Render each tile (forecast or camera)
+  itemsToShow.forEach((item, i) => {
     const col = document.createElement('div');
     col.classList.add('col');
-    const arb = document.createElement('div');
-    arb.classList.add('aspect-ratio-box');
-    const anc = document.createElement('a');
-    anc.href = '#';
-    anc.setAttribute('data-bs-toggle', 'modal');
-    anc.setAttribute('data-bs-target', '#imageModal');
-    anc.addEventListener('click', e => { e.preventDefault(); showImage(i); });
-    const img = document.createElement('img');
-    img.loading = 'lazy';
-    img.src     = camera.Views[0].Url;
-    img.alt     = `Camera at ${camera.Location}`;
-    img.dataset.cameraInfo = `Location: ${camera.Location}\nUrl: ${camera.Views[0].Url}`;
-    anc.append(img);
-    arb.append(anc);
-    col.append(arb);
+
+    if (item.type === 'forecast') {
+      // Forecast tile
+      col.innerHTML = `
+        <div class="aspect-ratio-box forecast-item">
+          ${item.html}
+        </div>`;
+    } else {
+      // Camera tile
+      const cam = item.camera;
+      const arb = document.createElement('div');
+      arb.classList.add('aspect-ratio-box');
+
+      const anc = document.createElement('a');
+      anc.href = '#';
+      anc.setAttribute('data-bs-toggle', 'modal');
+      anc.setAttribute('data-bs-target', '#imageModal');
+      anc.addEventListener('click', e => {
+        e.preventDefault();
+        showImage(i);
+      });
+
+      const img = document.createElement('img');
+      img.loading = 'lazy';
+      img.src     = cam.Views[0].Url;
+      img.alt     = `Camera at ${cam.Location}`;
+      img.dataset.cameraInfo = `Location: ${cam.Location}\nUrl: ${cam.Views[0].Url}`;
+
+      anc.append(img);
+      arb.append(anc);
+      col.append(arb);
+    }
+
     galleryContainer.append(col);
   });
 }
+
+
+
+
 
 /**
  * Updates the camera count display.
@@ -232,7 +245,9 @@ export function showImage(index) {
   document.querySelectorAll('.aspect-ratio-box.selected')
     .forEach(el => el.classList.remove('selected'));
   currentIndex = index;
-  const cam = window.visibleCameras[index];
+  const item = window.visibleCameras[index];
+  if (item.type !== 'camera') return;
+  const cam = item.camera;
   const modalImage = document.getElementById('imageModal').querySelector('img');
   const modalTitle = document.querySelector('.modal-title');
   modalImage.src         = cam.Views[0].Url;

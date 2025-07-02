@@ -1,6 +1,6 @@
 // sw.js - Service Worker
 
-const CACHE_VERSION = 'v36';
+const CACHE_VERSION = 'v37';
 const PRECACHE_NAME = `wpa-precache-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `wpa-runtime-${CACHE_VERSION}`;
 
@@ -22,6 +22,7 @@ const PRECACHE_URLS = [
   '/js/gallery.js',
   '/js/modal.js',
   '/js/customRoute.js',
+  '/js/otherFilters.js',
   '/js/events.js',
   '/js/ui.js',
   '/images/mobileSplash.webp',

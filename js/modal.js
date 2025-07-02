@@ -314,11 +314,15 @@ modal.addEventListener('shown.bs.modal', () => {
     markers.length = 0;
     openTips.length = 0;
     if (userMarker) { userMarker.remove(); userMarker = null; }
-    const cams = window.visibleCameras || [];
-    if (!cams.length) return;
+    const cams = (window.visibleCameras || [])
+  .filter(item => item.type === 'camera')
+  .map(item => item.camera);
+if (!cams.length) return;
 
-    const coords = cams.map(c => [c.Latitude, c.Longitude]);
-    const bounds = L.latLngBounds(coords);
+// Build bounds from camera coords
+const coords = cams.map(c => [c.Latitude, c.Longitude]);
+const bounds = L.latLngBounds(coords);
+ 
     map = L.map('overviewMap', { attributionControl:true, zoomControl:false, dragging:true, doubleClickZoom: true, scrollWheelZoom:true });
 
     L.tileLayer(
@@ -336,7 +340,8 @@ modal.addEventListener('shown.bs.modal', () => {
     ).addTo(map);
 
     cams.forEach(cam => {
-      const m = L.marker([cam.Latitude, cam.Longitude], { icon: smallIcon }).addTo(map);
+  const m = L.marker([cam.Latitude, cam.Longitude], { icon: smallIcon }).addTo(map);
+  m.cam = cam;
       m.cam = cam; m.sticky = false;
       markers.push(m);
       let hover = null;

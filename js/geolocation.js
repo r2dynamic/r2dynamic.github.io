@@ -2,8 +2,7 @@
 // Handles “Nearest Cameras” mode, one-time permission prompt, and silent startup under your splash.
 
 import { computeDistance } from './utils.js';
-import { renderGallery, updateCameraCount } from './gallery.js';
-import { updateSelectedFilters, updateURLParameters } from './ui.js';
+import { refreshGallery } from './ui.js';
 import { filterImages } from './filters.js';
 
 const STORAGE_KEY = 'udot-location-allowed';
@@ -39,14 +38,8 @@ function activateNearestCamerasMode(lat, lng) {
   window.selectedOtherFilter        = '';
   window.searchQuery                = '';
 
-  const sorted = getCamerasSortedByProximity(lat, lng);
-  window.visibleCameras = sorted.slice(0, 50);
-  window.currentIndex   = 0;
-
-  updateCameraCount();
-  renderGallery(window.visibleCameras);
-  updateSelectedFilters();
-  updateURLParameters();
+  const sorted = getCamerasSortedByProximity(lat, lng).slice(0, 50);
+  refreshGallery(sorted);
 }
 
 /** Clears Nearest-Cameras mode flags. */

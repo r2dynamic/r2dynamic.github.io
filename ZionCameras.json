@@ -1,0 +1,187 @@
+{
+  "CamerasList": [
+    
+    {
+      "Id": "Not available",
+      "Source": "Not available",
+      "SourceId": "Not available",
+      "Roadway": "Not available",
+      "RoadwayOption1": "Not available",
+      "MilepostOption1": "Not available",
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Not available",
+      "CountyBoundary": "Not available",
+      "Region": "Not available",
+      "MaintenanceStationOption1": "Not available",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=37.200152,-112.987221",
+      "ArcGISURL": "Not available",
+      "Direction": "Not available",
+      "Latitude": 37.200152,
+      "Longitude": -112.987221,
+      "Location": "Zion National Park",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": "Not available",
+          "Url": "https://www.nps.gov/webcams-zion/camera2.jpg?1751166323263",
+          "Status": "Not available",
+          "Description": "Not available"
+        }  
+      ]
+    },
+        {
+      "Id": "Not available",
+      "Source": "Not available",
+      "SourceId": "Not available",
+      "Roadway": "Not available",
+      "RoadwayOption1": "Not available",
+      "MilepostOption1": "Not available",
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Not available",
+      "CountyBoundary": "Not available",
+      "Region": "Not available",
+      "MaintenanceStationOption1": "Not available",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=37.201868,-112.988372",
+      "ArcGISURL": "Not available",
+      "Direction": "Not available",
+      "Latitude": 37.201868,
+      "Longitude": -112.988372,
+      "Location": "Zion South Gate Entrance",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": "Not available",
+          "Url": "https://www.nps.gov/webcams-zion/southgate.jpg?1751224454444",
+          "Status": "Not available",
+          "Description": "Not available"
+        }  
+      ]
+    },
+        {
+      "Id": 11097,
+      "Source": "ADX",
+      "SourceId": "103628",
+      "Roadway": "SR 9",
+      "RoadwayOption1": "9P",
+      "MilepostOption1": 29.83,
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Springdale",
+      "CountyBoundary": "Washington",
+      "Region": 4,
+      "MaintenanceStationOption1": "4473 - Purgatory",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=37.1667,-113.01348",
+      "ArcGISURL": "https://uplan.maps.arcgis.com/apps/webappviewer/index.html?id=07c3dc8429ca42c4b4066e383631681f&find=37.1667,-113.01348",
+      "Direction": "North",
+      "Latitude": 37.1667,
+      "Longitude": -113.01348,
+      "Location": "Zion Park Blvd / SR-9 @ 2400 S, SDL                                                                 ",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": 11097,
+          "Url": "https://www.udottraffic.utah.gov/map/Cctv/11097",
+          "Status": "Enabled",
+          "Description": ""
+        }
+      ]
+    },
+        {
+      "Id": 11272,
+      "Source": "ADX",
+      "SourceId": "103627",
+      "Roadway": "SR 9",
+      "RoadwayOption1": "9P",
+      "MilepostOption1": 30.618,
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Springdale",
+      "CountyBoundary": "Washington",
+      "Region": 4,
+      "MaintenanceStationOption1": "4473 - Purgatory",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=37.17704,-113.00914",
+      "ArcGISURL": "https://uplan.maps.arcgis.com/apps/webappviewer/index.html?id=07c3dc8429ca42c4b4066e383631681f&find=37.17704,-113.00914",
+      "Direction": "North",
+      "Latitude": 37.17704,
+      "Longitude": -113.00914,
+      "Location": "Zion Park Blvd / SR-9 @ Quail Ridge Rd, SDL                                                         ",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": 11272,
+          "Url": "https://www.udottraffic.utah.gov/map/Cctv/11272",
+          "Status": "Enabled",
+          "Description": ""
+        }
+      ]
+    },
+        {
+      "Id": 11829,
+      "Source": "ADX",
+      "SourceId": "103629",
+      "Roadway": "SR 9",
+      "RoadwayOption1": "9P",
+      "MilepostOption1": 32.16,
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Springdale",
+      "CountyBoundary": "Washington",
+      "Region": 4,
+      "MaintenanceStationOption1": "4473 - Purgatory",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=37.19393,-112.99307",
+      "ArcGISURL": "https://uplan.maps.arcgis.com/apps/webappviewer/index.html?id=07c3dc8429ca42c4b4066e383631681f&find=37.19393,-112.99307",
+      "Direction": "North",
+      "Latitude": 37.19393,
+      "Longitude": -112.99307,
+      "Location": "Zion Park Blvd / SR-9 @ Lion Blvd, SDL                                                              ",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": 11829,
+          "Url": "https://www.udottraffic.utah.gov/map/Cctv/11829",
+          "Status": "Enabled",
+          "Description": ""
+        }
+      ]
+    },
+        {
+      "Id": 11758,
+      "Source": "ADX",
+      "SourceId": "103630",
+      "Roadway": "SR 9",
+      "RoadwayOption1": "9P",
+      "MilepostOption1": 32.475,
+      "RoadwayOption2": "Not available",
+      "MilepostOption2": "Not available",
+      "MunicipalBoundary": "Springdale",
+      "CountyBoundary": "Washington",
+      "Region": 4,
+      "MaintenanceStationOption1": "4473 - Purgatory",
+      "MaintenanceStationOption2": "Not available",
+      "GoogleMapsURL": "https://www.google.com/maps?q=37.19817,-112.99126",
+      "ArcGISURL": "https://uplan.maps.arcgis.com/apps/webappviewer/index.html?id=07c3dc8429ca42c4b4066e383631681f&find=37.19817,-112.99126",
+      "Direction": "North",
+      "Latitude": 37.19817,
+      "Longitude": -112.99126,
+      "Location": "Zion Park Blvd / SR-9 @ 200 S, SDL                                                                  ",
+      "SortOrder": 0,
+      "Views": [
+        {
+          "Id": 11758,
+          "Url": "https://www.udottraffic.utah.gov/map/Cctv/11758",
+          "Status": "Enabled",
+          "Description": ""
+        }
+      ]
+    }
+        
+        
+ ]
+}

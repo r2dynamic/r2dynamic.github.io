@@ -2,16 +2,18 @@
 // Entry point: orchestrates module imports and initializes the app
 
 import { loadCameras, loadRoutes } from './dataLoader.js';
-import { filterImages } from './filters.js';
+import { filterImages }             from './filters.js';
+import { renderOtherFiltersMenu, applyOtherFilter } from './otherFilters.js';
+
 import {
   setupCopyUrlButton,
   setupSearchListener,
   setupRefreshButton,
   setupSizeSlider,
   setupDropdownHide,
-  setupModalLinks,
-  setupOtherFiltersListener
-} from './events.js';
+  setupModalLinks
+} from './events.js';  // removed setupOtherFiltersListener here
+
 import { copyURLToClipboard } from './utils.js';
 import { setupCustomRouteBuilder } from './customRoute.js';
 import {
@@ -88,17 +90,34 @@ async function initializeApp() {
   updateMaintenanceStationDropdown();
   updateRouteOptions();
 
-  // 3. Apply URL filters before rendering
+  // 3. Build & bind Other-Filters menu
+  const menuRoot = document.getElementById('otherFiltersMenu');
+  renderOtherFiltersMenu(menuRoot);
+  menuRoot.querySelectorAll('.dropdown-item').forEach(item => {
+    item.addEventListener('click', async e => {
+      e.preventDefault();
+      window.selectedOtherFilter = item.dataset.value;
+      await applyOtherFilter(window.selectedOtherFilter);
+      updateURLParameters();
+      bootstrap.Collapse.getOrCreateInstance(
+        document.getElementById('otherFiltersOptions')
+      ).hide();
+    });
+  });
+
+  // 4. Apply URL filters before initial render
   applyFiltersFromURL();
 
-  // 4. Render gallery (unless multiRoute is handling it)
-  const params   = new URLSearchParams(window.location.search);
-  const hasMulti = params.has('multiRoute');
-  if (!hasMulti) {
-    filterImages();
+  // 5. Initial gallery render
+  if (window.selectedOtherFilter) {
+    await applyOtherFilter(window.selectedOtherFilter);
+  } else {
+    const params   = new URLSearchParams(window.location.search);
+    const hasMulti = params.has('multiRoute');
+    if (!hasMulti) filterImages();
   }
 
-  // 5. Sync badges/UI
+  // 6. Sync badges/UI
   updateSelectedFilters();
 }
 
@@ -113,8 +132,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 3) Auto‐filter by location ONLY if NO URL params present
   const urlParams = new URLSearchParams(window.location.search);
   if ([...urlParams.keys()].length === 0) {
-    // Run silent init under splash with a 5s max wait
-    initAutoLocationFilterWithTimeout(5000);
+    await initAutoLocationFilterWithTimeout(5000);
   }
 
   // 4) Other UI Controls
@@ -122,7 +140,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupSearchListener();
   setupDropdownHide();
   setupModalLinks();
-  setupOtherFiltersListener();
+  // setupOtherFiltersListener();  <-- removed this call
   setupSizeSlider();
   setupModalMapToggle();
   setupModalCleanup();
@@ -138,15 +156,10 @@ document.addEventListener('DOMContentLoaded', async () => {
       dv.addEventListener('playing', () => setTimeout(fadeOutSplash, 2300));
       dv.addEventListener('error',   () => setTimeout(fadeOutSplash, 2000));
     }
-    // always hide the splash after 3s max
     setTimeout(fadeOutSplash, 3000);
   }
 
-  // 6) Long-press share setup
-  setupLongPressShare('.aspect-ratio-box img');
-  setupLongPressShare('#imageModal img');
-
-  // 7) Collapse all filter panels at start
+  // 6) Collapse all filter panels at start
   [
     'regionOptions',
     'countyOptions',
@@ -159,4 +172,8 @@ document.addEventListener('DOMContentLoaded', async () => {
       bootstrap.Collapse.getOrCreateInstance(el, { toggle: false }).hide();
     }
   });
+
+  // 7) Long-press share setup
+  setupLongPressShare('.aspect-ratio-box img');
+  setupLongPressShare('#imageModal img');
 });

@@ -40,11 +40,7 @@ export function filterImages() {
   const routes  = window.curatedRoutes;
   let filtered;
 
-  if (window.selectedOtherFilter === 'Inactive Cameras') {
-    filtered = cameras.filter(cam => cam.Views?.[0]?.Status === 'Disabled');
-    refreshGallery(filtered);
-    return;
-  }
+
 
   filtered = cameras.filter(cam => {
     if (cam.Views?.[0]?.Status === 'Disabled') return false;

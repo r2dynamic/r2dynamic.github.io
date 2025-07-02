@@ -149,7 +149,7 @@ export function setupModalLinks() {
 }
 
 
-/** Attach click handlers for “Other Filters” submenu items */
+/** Attach click handlers for “Other Filters” submenu items 
 export function setupOtherFiltersListener() {
   document
     .querySelectorAll('#otherFiltersMenu .dropdown-item')
@@ -166,4 +166,4 @@ export function setupOtherFiltersListener() {
           .hide();
       });
     });
-}
+}*/
