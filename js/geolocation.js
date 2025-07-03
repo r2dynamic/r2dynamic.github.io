@@ -112,18 +112,9 @@ export function initAutoLocationFilter() {
             geoOptions
           );
         } else {
-          // permission was denied or prompt; fallback to direct call
-          navigator.geolocation.getCurrentPosition(
-            pos => {
-              activateNearestCamerasMode(pos.coords.latitude, pos.coords.longitude);
-              resolve();
-            },
-            () => {
-              loadDefaultGallery();
-              resolve();
-            },
-            geoOptions
-          );
+          // permission was denied or prompt; do NOT call getCurrentPosition, just load default gallery
+          loadDefaultGallery();
+          resolve();
         }
       } catch {
         // Permissions API un-usable (e.g. iOS WebKit) → try direct geolocation

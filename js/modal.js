@@ -392,4 +392,24 @@ const bounds = L.latLngBounds(coords);
   });
 }
 
+// ---- WEATHER MODAL ----
+export function setupWeatherModal() {
+  const modal = document.getElementById('weatherModal');
+  if (!modal) return;
+
+  modal.addEventListener('show.bs.modal', () => {
+    const iframe = modal.querySelector('iframe');
+    if (iframe && window.currentWindyUrl) {
+      iframe.src = window.currentWindyUrl;
+    }
+  });
+
+  modal.addEventListener('hidden.bs.modal', () => {
+    const iframe = modal.querySelector('iframe');
+    if (iframe) {
+      iframe.src = '';
+    }
+  });
+}
+
 

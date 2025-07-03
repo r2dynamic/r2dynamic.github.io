@@ -33,7 +33,8 @@ import {
   setupModalMapToggle,
   setupModalCleanup,
   setupLongPressShare,
-  setupOverviewModal
+  setupOverviewModal,
+  setupWeatherModal
 } from './modal.js';
 
 import {
@@ -145,6 +146,7 @@ document.addEventListener('DOMContentLoaded', async () => {
   setupModalMapToggle();
   setupModalCleanup();
   setupOverviewModal();
+  setupWeatherModal();
   setupCopyUrlButton();
   setupCustomRouteBuilder();
 

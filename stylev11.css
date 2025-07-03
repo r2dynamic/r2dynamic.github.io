@@ -201,15 +201,20 @@ html, body {
   width: 100%;
   box-sizing: border-box;
   transform: translateZ(0);
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 .header-controls .button {
-  max-width: auto;
+  max-width: none;
+  min-width: 40px;
   height: 30px;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  flex-shrink: 1;
+  flex-shrink: 0;
+  will-change: transform;
+  backface-visibility: hidden;
 }
 
 /* General Button Styling */

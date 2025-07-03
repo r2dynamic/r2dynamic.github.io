@@ -206,9 +206,13 @@ export async function applyOtherFilter(name) {
 
   // 4) update the Windy.com iframe in your #weatherModal
   if (cfg.windyParams) {
+    const url = buildWindyUrl(cfg.windyParams);
+    window.currentWindyUrl = url;
     const iframe = document.querySelector('#weatherModal iframe');
     if (iframe) {
-      iframe.src = buildWindyUrl(cfg.windyParams);
+      iframe.src = url;
     }
+  } else {
+    window.currentWindyUrl = '';
   }
 }
