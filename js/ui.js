@@ -1,7 +1,7 @@
 // js/ui.js
 // UI helper functions with integrated custom route & other-filters support
 
-import { renderGallery, updateCameraCount } from './gallery.js';
+import { renderGallery, updateCameraCount, resetImageSizeOverride } from './gallery.js';
 import {
   serializeSegments,
   parseMultiRouteFromURL,
@@ -176,6 +176,7 @@ export function resetFilters() {
   window.updateCityDropdown();
   window.updateMaintenanceStationDropdown();
   window.filterImages();
+  resetImageSizeOverride(); // Reset image size override on reset
   window.updateSelectedFilters();
   window.updateURLParameters();
 }

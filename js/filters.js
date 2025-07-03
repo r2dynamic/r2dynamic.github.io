@@ -1,7 +1,7 @@
 // js/filters.js
 
 import { refreshGallery } from './ui.js';
-import { updateSelectedFilters, updateURLParameters } from './ui.js';
+import { resetImageSizeOverride } from './gallery.js';
 
 /**
  * Determines if a camera falls on a given single route segment.
@@ -98,4 +98,5 @@ export function filterImages() {
   }
 
   refreshGallery(filtered);
+  resetImageSizeOverride(); // Reset image size override on filter change
 }

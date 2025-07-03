@@ -86,6 +86,7 @@ export function setupSizeSlider() {
     const v = parseInt(sizeSlider.value, 10);
     const n = Math.max(v, MIN_IMAGE_SIZE);
     galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${n}px, 1fr))`;
+    window.userImageSizeOverride = true;
     clearTimeout(sizeSlider.autoHideTimeout);
     sizeSlider.autoHideTimeout = setTimeout(() => sizeSliderContainer.classList.remove('active'), 3000);
   });

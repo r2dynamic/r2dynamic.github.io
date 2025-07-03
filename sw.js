@@ -1,6 +1,6 @@
 // sw.js - Service Worker
 
-const CACHE_VERSION = 'v38.2';
+const CACHE_VERSION = 'v39.3';
 const PRECACHE_NAME = `wpa-precache-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `wpa-runtime-${CACHE_VERSION}`;
 
@@ -70,8 +70,12 @@ self.addEventListener('fetch', event => {
     event.respondWith(
       fetch(event.request)
         .then(networkResponse => {
-          caches.open(PRECACHE_NAME)
-            .then(cache => cache.put(event.request, networkResponse.clone()));
+          // Only cache if response is ok and type is basic (from our origin)
+          if (networkResponse && networkResponse.ok && networkResponse.type === 'basic') {
+            const responseClone = networkResponse.clone();
+            caches.open(PRECACHE_NAME)
+              .then(cache => cache.put(event.request, responseClone));
+          }
           return networkResponse;
         })
         .catch(() => caches.match(event.request))

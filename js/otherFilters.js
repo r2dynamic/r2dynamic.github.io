@@ -152,6 +152,8 @@ export const otherFiltersConfig = [
       level:     'surface',
       lat:       37.057,
       lon:       -111.358,
+      detailLat: 37.057,
+      detailLon: -111.358,
       message:   true,
       marker:    true
     }

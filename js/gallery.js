@@ -99,6 +99,15 @@ export function renderGallery(cameras) {
     itemsToShow = unified.slice(0, 50);
   }
 
+  // --- Dynamic image size application ---
+  const sizeSlider = document.getElementById('sizeSlider');
+  const galleryWidth = galleryContainer.offsetWidth || window.innerWidth;
+  let dynamicSize = calculateDynamicImageSize(itemsToShow.length, galleryWidth);
+  if (!userImageSizeOverride && sizeSlider) {
+    sizeSlider.value = dynamicSize;
+    galleryContainer.style.gridTemplateColumns = `repeat(auto-fit, minmax(${dynamicSize}px, 1fr))`;
+  }
+
   // 3) Insert mini‐overview map for any filtered view
   if (filterCtx.isFiltered && itemsToShow.length > 0) {
     const overviewCell = document.createElement('div');
@@ -117,7 +126,8 @@ export function renderGallery(cameras) {
     requestAnimationFrame(() => {
       const coords = itemsToShow
         .filter(item => item.type === 'camera')
-        .map(item => [item.camera.Latitude, item.camera.Longitude]);
+        .map(item => [item.camera.Latitude, item.camera.Longitude])
+        .filter(([lat, lng]) => typeof lat === 'number' && typeof lng === 'number' && !isNaN(lat) && !isNaN(lng));
       const bounds = L.latLngBounds(coords);
 
       let mapCenter = null;
@@ -226,9 +236,28 @@ export function renderGallery(cameras) {
   });
 }
 
+// --- Dynamic image size logic ---
+let userImageSizeOverride = false;
 
-
-
+function calculateDynamicImageSize(imageCount, containerWidth) {
+  // On mobile, default to 120px (restores previous sizing)
+  if (window.innerWidth <= 600) return 180;
+  if (imageCount <= 3) {
+    const maxImg = Math.min(420, Math.floor(containerWidth / imageCount) - 8);
+    return Math.max(260, maxImg);
+  } else if (imageCount <= 10) {
+    const maxImg = Math.min(600, Math.floor(containerWidth / imageCount) - 8);
+    return Math.max(340, maxImg);
+  } else if (imageCount <= 15) {
+    const maxImg = Math.min(480, Math.floor(containerWidth / imageCount) - 8);
+    return Math.max(280, maxImg);
+  } else if (imageCount <= 25) {
+    const maxImg = Math.min(380, Math.floor(containerWidth / imageCount) - 8);
+    return Math.max(220, maxImg);
+  }
+  // For more images, use default 200px
+  return 200;
+}
 
 /**
  * Updates the camera count display.
@@ -256,4 +285,9 @@ export function showImage(index) {
   modalImage.dataset.longitude = cam.Longitude;
   document.querySelectorAll('.aspect-ratio-box')[index]
     .classList.add('selected');
+}
+
+// Expose a reset for the override flag
+export function resetImageSizeOverride() {
+  userImageSizeOverride = false;
 }
