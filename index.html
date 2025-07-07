@@ -18,6 +18,8 @@
   <link rel="stylesheet" href="https://unpkg.com/leaflet/dist/leaflet.css" />
   <link rel="stylesheet" href="stylev11.css">
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
+  <!-- LottieFiles player for animated weather icons -->
+  <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
   <title>UDOT Cameras</title>
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <!-- first load rbush -->
@@ -32,13 +34,14 @@
   <script src="https://unpkg.com/leaflet/dist/leaflet.js"></script>
 
   <!-- Google tag (gtag.js) -->
-  <script async src="https://www.googletagmanager.com/gtag/js?id=G-EEMGV1LKN1"></script>
+    <script async src="https://www.googletagmanager.com/gtag/js?id=G-EEMGV1LKN1"></script>
   <script>
     window.dataLayer = window.dataLayer || [];
     function gtag(){dataLayer.push(arguments);}
     gtag('js', new Date());
     gtag('config', 'G-EEMGV1LKN1');
   </script>
+
 </head>
 <body>
   <!-- Splash Screen -->
@@ -341,6 +344,7 @@
         <div class="modal-footer justify-content-end">
           <button id="openAllTips" type="button" class="button">Open All</button>
           <button id="closeAllTips" type="button" class="button">Close All</button>
+          <button id="toggleAutoTooltips" class="button" type="button" aria-pressed="true">Auto Open/Close: ON</button>
           <button type="button" class="btn-close btn-close-white" data-bs-dismiss="modal" aria-label="Close"></button>
         </div>
       </div>

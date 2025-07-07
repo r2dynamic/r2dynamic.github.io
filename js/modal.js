@@ -371,15 +371,71 @@ const bounds = L.latLngBounds(coords);
       ).addTo(map);
     }
 
-    map.off('moveend'); map.on('moveend', openInView);
-    map.off('zoomend'); map.on('zoomend', () => {
+    // --- Attach/detach logic for auto-tooltips ---
+    function onMoveEnd() {
+      if (autoTooltipsEnabled) openInView();
+    }
+    function onZoomEnd() {
+      if (!autoTooltipsEnabled) return openTips.slice().forEach(clearTooltip);
       const z = map.getZoom();
       if (z >= ZOOM_OPEN) openInView(); else openTips.slice().forEach(clearTooltip);
       if (z >= ZOOM_COLLIDE) collisionPass();
-    });
+    }
+    function attachAutoTooltipListeners() {
+      map.on('moveend', onMoveEnd);
+      map.on('zoomend', onZoomEnd);
+    }
+    function detachAutoTooltipListeners() {
+      map.off('moveend', onMoveEnd);
+      map.off('zoomend', onZoomEnd);
+    }
 
-    document.getElementById('openAllTips').onclick  = () => markers.forEach(m => !m.sticky && m.fire('click'));
-    document.getElementById('closeAllTips').onclick = () => openTips.slice().forEach(clearTooltip);
+    let autoTooltipsEnabled = true;
+    const toggleBtn = document.getElementById('toggleAutoTooltips');
+    if (toggleBtn) {
+      function updateToggleBtn() {
+        toggleBtn.textContent = 'Auto Open/Close: ' + (autoTooltipsEnabled ? 'ON' : 'OFF');
+        toggleBtn.setAttribute('aria-pressed', autoTooltipsEnabled ? 'true' : 'false');
+        if (autoTooltipsEnabled) {
+          toggleBtn.classList.remove('off');
+        } else {
+          toggleBtn.classList.add('off');
+        }
+      }
+      updateToggleBtn();
+      toggleBtn.onclick = () => {
+        autoTooltipsEnabled = !autoTooltipsEnabled;
+        updateToggleBtn();
+        if (autoTooltipsEnabled) {
+          attachAutoTooltipListeners();
+          openInView();
+        } else {
+          detachAutoTooltipListeners();
+          openTips.slice().forEach(clearTooltip);
+        }
+      };
+      // Initial state: listeners attached
+      attachAutoTooltipListeners();
+    }
+    // --- Open All / Close All buttons always override auto logic ---
+    const openAllBtn = document.getElementById('openAllTips');
+    const closeAllBtn = document.getElementById('closeAllTips');
+    if (openAllBtn) {
+      openAllBtn.onclick = () => {
+        markers.forEach(m => {
+          if (!m.sticky) m.fire('click');
+          m._pinned = true;
+        });
+        detachAutoTooltipListeners();
+      };
+    }
+    if (closeAllBtn) {
+      closeAllBtn.onclick = () => {
+        openTips.slice().forEach(clearTooltip);
+        markers.forEach(m => { m._pinned = false; });
+        detachAutoTooltipListeners();
+      };
+    }
 
     map.invalidateSize();
     map.fitBounds(bounds, { padding:[10,10], maxZoom:12 });
