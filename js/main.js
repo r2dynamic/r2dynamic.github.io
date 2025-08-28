@@ -120,6 +120,15 @@ async function initializeApp() {
 
   // 6. Sync badges/UI
   updateSelectedFilters();
+  
+  // Debug route matching if in development
+  if (window.location.hostname === 'localhost' || window.location.hostname === '127.0.0.1') {
+    setTimeout(() => {
+      if (window.debugRouteMatching) {
+        window.debugRouteMatching();
+      }
+    }, 1000);
+  }
 }
 
 // Kick off the app when the DOM is ready

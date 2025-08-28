@@ -35,11 +35,25 @@ let renderTimer    = null; // for debouncing
 // Test if a camera lies on a given segment
 // ─────────────────────────────────────────────────────────────────────────────
 function isCameraOnSegment(cam, seg) {
-  let mp = cam.RoadwayOption1 === seg.name
-         ? cam.MilepostOption1
-         : cam.RoadwayOption2 === seg.name
-           ? cam.MilepostOption2
-           : null;
+  // Normalize route names for comparison (same logic as filters.js)
+  const normalizeRoute = (routeName) => {
+    if (!routeName) return null;
+    let normalized = routeName.replace(/^0+/, ''); // Remove leading zeros
+    normalized = normalized.replace(/[PN]$/, 'P'); // Standardize to P suffix
+    return normalized;
+  };
+  
+  const targetRoute = normalizeRoute(seg.name);
+  const route1 = normalizeRoute(cam.RoadwayOption1);
+  const route2 = normalizeRoute(cam.RoadwayOption2);
+  
+  let mp = null;
+  if (route1 === targetRoute) {
+    mp = cam.MilepostOption1;
+  } else if (route2 === targetRoute) {
+    mp = cam.MilepostOption2;
+  }
+  
   if (mp == null || isNaN(mp)) return false;
   let lo = seg.mpMin, hi = seg.mpMax;
   if (lo != null && hi != null && lo > hi) [lo, hi] = [hi, lo];
@@ -453,12 +467,27 @@ export function applyCustomRouteFilter() {
   const ps = new URLSearchParams(window.location.search);
   ps.set('multiRoute', ms);
   window.history.replaceState({}, '', `${window.location.pathname}?${ps}`);
+  
   const all = window.customRouteFormData.flatMap(seg =>
     (window.camerasList||[])
       .filter(cam=>isCameraOnSegment(cam,seg))
       .sort((a,b)=>{
-        const ma = a.RoadwayOption1===seg.name ? a.MilepostOption1 : a.MilepostOption2;
-        const mb = b.RoadwayOption1===seg.name ? b.MilepostOption1 : b.MilepostOption2;
+        // Use the same normalization logic as filtering
+        const normalizeRoute = (routeName) => {
+          if (!routeName) return null;
+          let normalized = routeName.replace(/^0+/, ''); // Remove leading zeros
+          normalized = normalized.replace(/[PN]$/, 'P'); // Standardize to P suffix
+          return normalized;
+        };
+        
+        const targetRoute = normalizeRoute(seg.name);
+        const route1A = normalizeRoute(a.RoadwayOption1);
+        const route2A = normalizeRoute(a.RoadwayOption2);
+        const route1B = normalizeRoute(b.RoadwayOption1);
+        const route2B = normalizeRoute(b.RoadwayOption2);
+        
+        const ma = route1A === targetRoute ? a.MilepostOption1 : a.MilepostOption2;
+        const mb = route1B === targetRoute ? b.MilepostOption1 : b.MilepostOption2;
         return seg.mpMin<seg.mpMax ? ma-mb : mb-ma;
       })
   );
