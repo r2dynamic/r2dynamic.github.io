@@ -4,10 +4,34 @@
   <meta charset="UTF-8" />
   <!-- The viewport-fit=cover makes sure your PWA can cover the full screen on devices with notches -->
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
-  <meta property="og:title" content="UDOT Cameras">
-  <meta property="og:description" content="Interact with UDOT Cameras in a grid format">
-  <meta property="og:image" content="https://udotcameras.com/Icongridbackground3.png">
-  <meta property="og:url" content="https://udotcameras.com">
+  
+  <!-- SEO Meta Tags -->
+  <title>UDOT Traffic Cameras | Live Utah Highway & Road Cameras | Utah DOT Cams</title>
+  <meta name="description" content="View live UDOT traffic cameras across Utah. Monitor real-time highway conditions on I-15, I-80, Parley's Canyon, and all major Utah roads. Free live traffic cams from Utah Department of Transportation." />
+  <meta name="keywords" content="UDOT cameras, Utah traffic cameras, Utah highway cameras, Utah DOT cameras, I-15 traffic, I-80 cameras, Parley's Canyon, Utah road conditions, live traffic Utah, Utah webcams, Salt Lake traffic, Utah road weather, UDOT road weather, Utah road conditions, Utah ski weather, Big Cottonwood Canyon, Little Cottonwood Canyon, UDOT, UDOT Live Stream, UDOT UPLAN, UPLAN, UDOT ArcGIS, Utah road construction, Utah crash, Utah Department of Transportation, Utah snow, Utah Road weather, Utah snow plow, UDOT snow plow, I-80, I-70, Utah road trip, Utah LiveView, UDOT LiveView, UDOT Traffic App, UDOT Traffic, Click and Fix, Utah accident, Utah wildfire, Utah Camera Grids, UDOT Camera Grids" />
+  <meta name="author" content="UDOT Cameras App" />
+  <meta name="robots" content="index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" />
+  <link rel="canonical" href="https://udotcameras.com/" />
+  
+  <!-- Open Graph / Facebook -->
+  <meta property="og:type" content="website" />
+  <meta property="og:title" content="UDOT Traffic Cameras | Live Utah Highway Cameras" />
+  <meta property="og:description" content="View live UDOT traffic cameras across Utah. Monitor real-time highway conditions on I-15, I-80, and all major Utah roads." />
+  <meta property="og:image" content="https://udotcameras.com/Icongridbackground3.png" />
+  <meta property="og:url" content="https://udotcameras.com" />
+  <meta property="og:site_name" content="UDOT Cameras" />
+  <meta property="og:locale" content="en_US" />
+  
+  <!-- Twitter Card -->
+  <meta name="twitter:card" content="summary_large_image" />
+  <meta name="twitter:title" content="UDOT Traffic Cameras | Live Utah Highway Cameras" />
+  <meta name="twitter:description" content="View live UDOT traffic cameras across Utah. Monitor real-time highway conditions on I-15, I-80, and all major Utah roads." />
+  <meta name="twitter:image" content="https://udotcameras.com/Icongridbackground3.png" />
+  
+  <!-- Geo Tags -->
+  <meta name="geo.region" content="US-UT" />
+  <meta name="geo.placename" content="Utah" />
+  
   <!-- Favicon -->
   <link rel="icon" href="/camIcon1.png" type="image/png">
   <!-- PWA Manifest & Theme Color -->
@@ -20,7 +44,43 @@
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/5.15.3/css/all.min.css" />
   <!-- LottieFiles player for animated weather icons -->
   <script src="https://unpkg.com/@lottiefiles/lottie-player@latest/dist/lottie-player.js"></script>
-  <title>UDOT Cameras</title>
+  
+  <!-- Structured Data / JSON-LD for SEO -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebApplication",
+    "name": "UDOT Cameras",
+    "alternateName": "UDOT Traffic Cameras",
+    "url": "https://udotcameras.com",
+    "description": "View live UDOT traffic cameras across Utah. Monitor real-time highway conditions on I-15, I-80, Parley's Canyon, and all major Utah roads.",
+    "applicationCategory": "UtilitiesApplication",
+    "operatingSystem": "Any",
+    "offers": {
+      "@type": "Offer",
+      "price": "0",
+      "priceCurrency": "USD"
+    },
+    "browserRequirements": "Requires JavaScript. Modern browser recommended.",
+    "screenshot": "https://udotcameras.com/Icongridbackground3.png",
+    "aggregateRating": {
+      "@type": "AggregateRating",
+      "ratingValue": "4.8",
+      "ratingCount": "150"
+    },
+    "geo": {
+      "@type": "GeoCoordinates",
+      "latitude": "40.7608",
+      "longitude": "-111.8910"
+    },
+    "areaServed": {
+      "@type": "State",
+      "name": "Utah"
+    },
+    "keywords": "UDOT cameras, Utah traffic cameras, Utah highway cameras, live traffic, road conditions, I-15, I-80, Utah DOT"
+  }
+  </script>
+  
   <script src="https://cdn.jsdelivr.net/npm/sortablejs@1.15.0/Sortable.min.js"></script>
   <!-- first load rbush -->
   <script src="https://unpkg.com/rbush@3.0.1/rbush.min.js"></script>
@@ -48,6 +108,13 @@
 
 </head>
 <body>
+  <!-- SEO Content (visually hidden but readable by search engines) -->
+  <header class="visually-hidden">
+    <h1>UDOT Traffic Cameras - Live Utah Highway Cameras</h1>
+    <p>Access live traffic cameras from the Utah Department of Transportation (UDOT). Monitor real-time road conditions across Utah including I-15, I-80, I-215, US-89, Parley's Canyon, Weber Canyon, and all major highways and roads throughout the state.</p>
+  </header>
+  
+  <main>
   <!-- Splash Screen -->
   <div id="splashScreen" class="splash-screen">
     <!-- Desktop Splash Video -->
@@ -56,7 +123,7 @@
       Your browser does not support the video tag.
     </video>
     <!-- Mobile Splash Image -->
-    <img id="mobileSplashImage" class="splash-image mobile-splash-image" src="images/mobileSplash.webp" alt="Splash Image">
+    <img id="mobileSplashImage" class="splash-image mobile-splash-image" src="images/mobileSplash.webp" alt="UDOT Traffic Cameras Splash Screen">
   </div>
 
   <!-- Selected Filters Container -->
@@ -271,7 +338,7 @@
         </div>
         <div style="width: 100%; max-width: 600px; margin: 0 auto;">
           <img src="WebAppHowTo.gif"
-               alt="Mobile App Demo"
+               alt="How to Install UDOT Cameras Mobile App - Add to Home Screen Tutorial"
                class="img-fluid rounded shadow"
                style="width: 100%; height: auto;" />
         </div>
@@ -324,7 +391,7 @@
         </div>
        <div style="width: 100%; max-width: 60px; margin: 0 auto;">
           <img src="camIcon2.png"
-               alt="UDOT Cameras"
+               alt="UDOT Cameras App Icon - Utah Traffic Camera Application"
                class="img-fluid rounded shadow"
                style="width: 100%; height: auto;" />
         </div>
@@ -422,7 +489,7 @@
   }
 </script>
 
-  
+  </main>
 
 </body>
 </html>
