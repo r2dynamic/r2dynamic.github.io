@@ -1,6 +1,6 @@
 // sw.js - Service Worker
 
-const CACHE_VERSION = 'v44';
+const CACHE_VERSION = 'v45';
 const PRECACHE_NAME = `wpa-precache-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `wpa-runtime-${CACHE_VERSION}`;
 
@@ -28,7 +28,7 @@ const PRECACHE_URLS = [
   '/js/ui.js',
   '/js/weatherLottieMap.js',
   '/js/maps.js',
-  '/images/mobileSplash.gif',
+  '/images/mobileSplashh.gif',
   '/Icongridbackground3.png',
   '/desktop-splash.mp4'
 ];
