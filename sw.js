@@ -28,7 +28,7 @@ const PRECACHE_URLS = [
   '/js/ui.js',
   '/js/weatherLottieMap.js',
   '/js/maps.js',
-  '/images/mobileSplashh.gif',
+  '/images/mobileSplash.gif',
   '/Icongridbackground3.png',
   '/desktop-splash.mp4'
 ];
