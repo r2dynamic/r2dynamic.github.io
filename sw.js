@@ -1,6 +1,6 @@
 // sw.js - Service Worker
 
-const CACHE_VERSION = 'v46';
+const CACHE_VERSION = 'v102';
 const PRECACHE_NAME = `wpa-precache-${CACHE_VERSION}`;
 const RUNTIME_CACHE = `wpa-runtime-${CACHE_VERSION}`;
 
@@ -8,9 +8,9 @@ const RUNTIME_CACHE = `wpa-runtime-${CACHE_VERSION}`;
 const PRECACHE_URLS = [
   '/',
   '/index.html',
-  '/lottie-player.html',
   '/stylev11.css',
   '/manifest.json',
+  '/gifLogo.gif',
   '/routes.json',
   '/cameras.geojson',
   '/cameraData.js',
@@ -26,11 +26,12 @@ const PRECACHE_URLS = [
   '/js/otherFilters.js',
   '/js/events.js',
   '/js/ui.js',
-  '/js/weatherLottieMap.js',
   '/js/maps.js',
+  '/js/mobileCarousel.js',
   '/images/mobileSplash.gif',
-  '/Icongridbackground3.png',
-  '/desktop-splash.mp4'
+  '/desktop-splash.mp4',
+  '/images/mobileSplash.webp',
+  '/Icongridbackground3.png'
 ];
 
 // Install - pre-cache assets

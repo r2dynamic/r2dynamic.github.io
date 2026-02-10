@@ -9,6 +9,26 @@ import {
 } from './customRoute.js';
 import { applyOtherFilter } from './otherFilters.js';
 
+function updateIssueDisclaimer() {
+  const el = document.getElementById('issueDisclaimer');
+  if (!el) return;
+  const splash = document.getElementById('splashScreen');
+  // Always hide while the splash is visible to avoid overlaying the intro screen.
+  if (splash && splash.style.display !== 'none') {
+    el.textContent = '';
+    el.style.display = 'none';
+    return;
+  }
+
+  if (window.selectedIssueFilter) {
+    el.textContent = 'Experimental feature: Images ran through a machine vision classification on 2/8/26.In the future it will be every 24 hours.';
+    el.style.display = 'block';
+  } else {
+    el.textContent = '';
+    el.style.display = 'none';
+  }
+}
+
 /**
  * Reveal the main UI once the splash is done.
  */
@@ -30,6 +50,7 @@ export function fadeOutSplash() {
   setTimeout(()=>{
     splash.style.display = 'none';
     updateSelectedFilters();
+    updateIssueDisclaimer();
   },1000);
 }
 
@@ -46,7 +67,14 @@ export function updateURLParameters() {
     return;
   }
 
-  // 2) other-filters
+  // 2) dashboard
+  if (window.isDashboardOpen) {
+    params.set('dashboard', 'true');
+    window.history.replaceState({},'',`${window.location.pathname}?${params}`);
+    return;
+  }
+
+  // 3) other-filters
   if (window.selectedOtherFilter) {
     params.set('other', window.selectedOtherFilter);
     window.history.replaceState({},'',`${window.location.pathname}?${params}`);
@@ -58,6 +86,7 @@ export function updateURLParameters() {
   if (window.selectedCounty)             params.set('county', window.selectedCounty);
   if (window.selectedCity)               params.set('city', window.selectedCity);
   if (window.selectedRoute && window.selectedRoute!=='All') params.set('route', window.selectedRoute);
+  if (window.selectedIssueFilter)        params.set('issue', window.selectedIssueFilter);
   if (window.searchQuery)                params.set('search', window.searchQuery);
   if (window.selectedMaintenanceStation) params.set('maintenance', window.selectedMaintenanceStation);
 
@@ -86,6 +115,23 @@ export function updateSelectedFilters() {
     d.innerHTML = `<i class="${icon}"></i> ${txt}`;
     return d;
   };
+
+  // dashboard badge
+  if (window.isDashboardOpen) {
+    badges.append(makeBadge('fas fa-chart-line', 'Dashboard'));
+    cont.append(badges);
+    const actions = document.createElement('div');
+    actions.className = 'action-buttons';
+    const copyBtn = document.createElement('button');
+    copyBtn.className = 'reset-button';
+    copyBtn.title = 'Copy Link';
+    copyBtn.innerHTML = '<i class="fas fa-link"></i>';
+    copyBtn.addEventListener('click', () => window.copyURLToClipboard().then(() => alert('URL copied!')));
+    actions.append(copyBtn);
+    cont.append(actions);
+    cont.style.display = 'flex';
+    return;
+  }
 
   // custom-route badges
   if (window.customRouteFormData?.length) {
@@ -120,6 +166,10 @@ export function updateSelectedFilters() {
   if (window.selectedCity)               badges.append(makeBadge('fas fa-city',   `City: ${window.selectedCity}`));
   if (window.selectedMaintenanceStation) badges.append(makeBadge('fas fa-tools',  `Maintenance: ${window.selectedMaintenanceStation}`));
   if (window.selectedRoute && window.selectedRoute!=='All') badges.append(makeBadge('fas fa-road', `Route: ${window.selectedRoute}`));
+  if (window.selectedIssueFilter) {
+    const lbl = window.issueFilterLabels?.[window.selectedIssueFilter] || window.selectedIssueFilter;
+    badges.append(makeBadge('fas fa-exclamation-triangle', `Image Issue: ${lbl}`));
+  }
   if (window.searchQuery)                badges.append(makeBadge('fas fa-search',`Search: ${window.searchQuery}`));
   if (window.selectedOtherFilter)        badges.append(makeBadge('fas fa-sliders-h',window.selectedOtherFilter));
 
@@ -130,6 +180,7 @@ export function updateSelectedFilters() {
               window.selectedCity ||
               window.selectedMaintenanceStation ||
               (window.selectedRoute && window.selectedRoute!=='All') ||
+              window.selectedIssueFilter ||
               window.searchQuery ||
               window.selectedOtherFilter;
 
@@ -165,8 +216,13 @@ export function resetFilters() {
   window.selectedRoute              = 'All';
   window.selectedMaintenanceStation = '';
   window.selectedOtherFilter        = '';
+  window.selectedIssueFilter        = '';
   window.searchQuery                = '';
   window.customRouteFormData        = [];
+
+  // Hide issue overlay
+  const issueOv = document.getElementById('issueOverlay');
+  if (issueOv) issueOv.style.display = 'none';
 
   const inp = document.getElementById('searchInput');
   if (inp) inp.value = '';
@@ -179,6 +235,7 @@ export function resetFilters() {
   resetImageSizeOverride(); // Reset image size override on reset
   window.updateSelectedFilters();
   window.updateURLParameters();
+  updateIssueDisclaimer();
 }
 
 /**
@@ -196,6 +253,7 @@ export function refreshGallery(cameras) {
   renderGallery(unified);
   updateSelectedFilters();
   updateURLParameters();
+  updateIssueDisclaimer();
 }
 
 /**
@@ -231,6 +289,15 @@ export async function applyFiltersFromURL() {
     return;
   }
 
+  if (params.has('dashboard')) {
+    window.isDashboardOpen = true;
+    setTimeout(() => {
+      const dashboardModal = new bootstrap.Modal(document.getElementById('cameraIssuesDashboard'));
+      dashboardModal.show();
+    }, 500);
+    return;
+  }
+
   if (params.has('other')) {
     window.selectedOtherFilter = params.get('other');
     await applyOtherFilter(window.selectedOtherFilter);
@@ -241,6 +308,12 @@ export async function applyFiltersFromURL() {
   if (params.has('county'))      window.selectedCounty             = params.get('county');
   if (params.has('city'))        window.selectedCity               = params.get('city');
   if (params.has('route'))       window.selectedRoute              = params.get('route');
+  if (params.has('issue'))       window.selectedIssueFilter        = params.get('issue');
+  // Show issue overlay when loaded from URL
+  if (window.selectedIssueFilter && window.UNDER_CONSTRUCTION) {
+    const el = document.getElementById('issueOverlay');
+    if (el) el.style.display = 'flex';
+  }
   if (params.has('search')) {
     window.searchQuery = params.get('search');
     const inp = document.getElementById('searchInput');

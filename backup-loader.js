@@ -8,8 +8,8 @@
 export async function getCamerasListWithFallback() {
   try {
     // Try new GeoJSON format first
-    console.log('Attempting to load cameras.geojson...');
-    const response = await fetch('cameras.geojson');
+    console.log('Attempting to load cctv_locations_processed_classified.geojson...');
+    const response = await fetch('cctv_locations_processed_classified.geojson');
     
     if (response.ok) {
       const data = await response.json();

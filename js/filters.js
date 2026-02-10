@@ -3,6 +3,34 @@
 import { refreshGallery } from './ui.js';
 import { resetImageSizeOverride } from './gallery.js';
 
+function matchesIssueFilter(cam) {
+  if (!window.selectedIssueFilter) return true;
+  const isDisabled = cam.Views?.[0]?.Status === 'Disabled';
+  const quality = cam._geoJsonMetadata?.quality || {};
+  const classification = quality.classification || cam.classification;
+  const poeFailure = quality.poeFailure ?? cam.poeFailure ?? false;
+  const timestampIsStale = quality.timestampIsStale ?? cam.timestampIsStale ?? false;
+
+  switch (window.selectedIssueFilter) {
+    case 'disabled':
+      return isDisabled;
+    case 'offline':
+      return classification === 'offline';
+    case 'upside_down':
+      return classification === 'upside_down';
+    case 'grayscale':
+      return classification === 'grayscale';
+    case 'old_timestamp':
+      return timestampIsStale === true && classification === 'night';
+    case 'poe_error':
+      return poeFailure === true;
+    case 'poor_road':
+      return classification === 'poor_road';
+    default:
+      return true;
+  }
+}
+
 /**
  * Determines if a camera falls on a given single route segment.
  */
@@ -70,7 +98,8 @@ export function filterImages() {
   }
 
   filtered = cameras.filter(cam => {
-    if (cam.Views?.[0]?.Status === 'Disabled') return false;
+    const isDisabled = cam.Views?.[0]?.Status === 'Disabled';
+    if (window.selectedIssueFilter !== 'disabled' && isDisabled) return false;
     
     // Enhanced search including alternative names from GeoJSON metadata
     let searchText = `${cam.SignalID || ''} ${cam.Location || ''}`;
@@ -95,12 +124,14 @@ export function filterImages() {
     const matchesRegion = !window.selectedRegion || cam.Region == window.selectedRegion;
     const matchesCounty = !window.selectedCounty || cam.CountyBoundary === window.selectedCounty;
     const matchesCity   = !window.selectedCity || cam.MunicipalBoundary === window.selectedCity;
+        const matchesIssue  = matchesIssueFilter(cam);
     return matchesSearch &&
            matchesMaintenance &&
            matchesRoute &&
            matchesRegion &&
-           matchesCounty &&
-           matchesCity;
+          matchesCounty &&
+          matchesCity &&
+          matchesIssue;
   });
 
   // Log results for debugging

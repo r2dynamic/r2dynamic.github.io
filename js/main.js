@@ -3,7 +3,8 @@
 
 import { loadCameras, loadRoutes } from './dataLoader.js';
 import { filterImages }             from './filters.js';
-import { renderOtherFiltersMenu, applyOtherFilter } from './otherFilters.js';
+// import { renderOtherFiltersMenu, applyOtherFilter } from './otherFilters.js';
+import { initDashboard } from '../Dashboard/dashboard.js';
 
 import {
   setupCopyUrlButton,
@@ -32,6 +33,7 @@ import {
 import {
   setupModalMapToggle,
   setupModalCleanup,
+  setupModalMiniMapOnShow,
   setupLongPressShare,
   setupOverviewModal,
   setupWeatherModal
@@ -46,6 +48,9 @@ import {
   applyFiltersFromURL
 } from './ui.js';
 
+// --- Under-Construction Toggle (set to false to remove all overlays) ---
+window.UNDER_CONSTRUCTION = true;
+
 // --- Global State ---
 window.selectedRegion             = '';
 window.selectedCounty             = '';
@@ -53,7 +58,18 @@ window.selectedCity               = '';
 window.selectedMaintenanceStation = '';
 window.selectedRoute              = 'All';
 window.selectedOtherFilter        = '';
+window.selectedIssueFilter        = '';
 window.searchQuery                = '';
+
+window.issueFilterLabels = {
+  disabled: 'Disabled Cameras',
+  offline: 'Offline',
+  upside_down: 'Upside Down Cameras',
+  grayscale: 'Grayscale',
+  old_timestamp: 'Old Timestamp',
+  poe_error: 'POE Error',
+  poor_road: 'Poor Road View'
+};
 
 window.camerasList    = [];
 window.curatedRoutes  = [];
@@ -75,6 +91,29 @@ window.resetFilters               = resetFilters;
 window.applyFiltersFromURL        = applyFiltersFromURL;
 window.copyURLToClipboard         = copyURLToClipboard;
 
+function showIssueOverlay(show) {
+  const el = document.getElementById('issueOverlay');
+  if (el) el.style.display = (show && window.UNDER_CONSTRUCTION) ? 'flex' : 'none';
+}
+
+function setupIssueFilterDropdown() {
+  const dropdownButton = document.getElementById('issueFilterButton');
+  const options = document.querySelectorAll('#issueFilterMenu .issue-option');
+  if (!dropdownButton || options.length === 0) return;
+
+  options.forEach(item => {
+    item.addEventListener('click', e => {
+      e.preventDefault();
+      window.selectedIssueFilter = item.dataset.value || '';
+      filterImages();
+      updateURLParameters();
+      updateSelectedFilters();
+      showIssueOverlay(!!window.selectedIssueFilter);
+      bootstrap.Dropdown.getOrCreateInstance(dropdownButton)?.hide();
+    });
+  });
+}
+
 /**
  * Initializes cameras and routes, then applies any URL filters
  * before rendering the gallery and dropdowns.
@@ -92,31 +131,31 @@ async function initializeApp() {
   updateRouteOptions();
 
   // 3. Build & bind Other-Filters menu
-  const menuRoot = document.getElementById('otherFiltersMenu');
-  renderOtherFiltersMenu(menuRoot);
-  menuRoot.querySelectorAll('.dropdown-item').forEach(item => {
-    item.addEventListener('click', async e => {
-      e.preventDefault();
-      window.selectedOtherFilter = item.dataset.value;
-      await applyOtherFilter(window.selectedOtherFilter);
-      updateURLParameters();
-      bootstrap.Collapse.getOrCreateInstance(
-        document.getElementById('otherFiltersOptions')
-      ).hide();
-    });
-  });
+  // const menuRoot = document.getElementById('otherFiltersMenu');
+  // renderOtherFiltersMenu(menuRoot);
+  // menuRoot.querySelectorAll('.dropdown-item').forEach(item => {
+  //   item.addEventListener('click', async e => {
+  //     e.preventDefault();
+  //     window.selectedOtherFilter = item.dataset.value;
+  //     await applyOtherFilter(window.selectedOtherFilter);
+  //     updateURLParameters();
+  //     bootstrap.Collapse.getOrCreateInstance(
+  //       document.getElementById('otherFiltersOptions')
+  //     ).hide();
+  //   });
+  // });
 
   // 4. Apply URL filters before initial render
   applyFiltersFromURL();
 
   // 5. Initial gallery render
-  if (window.selectedOtherFilter) {
-    await applyOtherFilter(window.selectedOtherFilter);
-  } else {
+  // if (window.selectedOtherFilter) {
+  //   await applyOtherFilter(window.selectedOtherFilter);
+  // } else {
     const params   = new URLSearchParams(window.location.search);
     const hasMulti = params.has('multiRoute');
     if (!hasMulti) filterImages();
-  }
+  // }
 
   // 6. Sync badges/UI
   updateSelectedFilters();
@@ -148,12 +187,17 @@ document.addEventListener('DOMContentLoaded', async () => {
   // 4) Other UI Controls
   setupRefreshButton();
   setupSearchListener();
+  setupIssueFilterDropdown();
   setupDropdownHide();
   setupModalLinks();
   // setupOtherFiltersListener();  <-- removed this call
   setupSizeSlider();
+  
+  // 5) Initialize Dashboard
+  initDashboard();
   setupModalMapToggle();
   setupModalCleanup();
+  setupModalMiniMapOnShow();
   setupOverviewModal();
   setupWeatherModal();
   setupCopyUrlButton();

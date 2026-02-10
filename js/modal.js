@@ -1,11 +1,26 @@
 // js/modal.js
 import { debounce } from './utils.js';
+import { initMobileCarousel, updateMobileCarousel, removeMobileCarousel } from './mobileCarousel.js';
 
 // DOM references
 const mapButton           = document.getElementById('mapButton');
 const modalBody           = document.getElementById('modalBody');
 const modalImageContainer = document.getElementById('modalImageContainer');
 let mapDisplayed          = false;
+
+// Mini-map state
+let modalMiniMap          = null;
+let modalMiniMapMarkers   = [];
+let modalMiniMapContainer = null;
+let lastMiniMapCams       = [];
+
+// Info deck state
+let infoDeckContainer     = null;
+let infoDeckCards         = [];
+let infoDeckActiveIndex   = 0;
+
+// Modal logo
+let modalLogo             = null;
 
 export function setupModalMapToggle() {
   if (!mapButton) return;
@@ -42,9 +57,540 @@ export function setupModalCleanup() {
     .addEventListener('hidden.bs.modal', () => {
       document.getElementById('modalMapContainer')?.remove();
       modalImageContainer.style.flex = '1';
-      mapButton.textContent          = 'Map';
+      if (mapButton) mapButton.textContent = 'Map';
       mapDisplayed                   = false;
+      resetModalMiniMap();
+      resetModalInfoDeck();
+      removeModalLogo();
+      removeMobileCarousel();
     });
+}
+
+export function setupModalMiniMapOnShow() {
+  const modalEl = document.getElementById('imageModal');
+  if (!modalEl) return;
+  modalEl.addEventListener('shown.bs.modal', () => {
+    ensureModalLogo();
+    // Give layout a moment, then recalc map size/view
+    requestAnimationFrame(() => refitMiniMap());
+    setTimeout(refitMiniMap, 150);
+  });
+}
+
+// ---- MODAL LOGO (center bottom) ----
+function ensureModalLogo() {
+  if (!modalBody) return;
+  if (!modalLogo) {
+    const container = document.createElement('div');
+    container.className = 'modal-logo-container';
+    
+    const logo = document.createElement('img');
+    logo.src = 'gifLogo.gif';
+    logo.alt = 'App Logo';
+    logo.className = 'modal-logo';
+    
+    const text = document.createElement('div');
+    text.className = 'modal-logo-text';
+    text.textContent = 'udotcameras.com';
+    
+    container.appendChild(logo);
+    container.appendChild(text);
+    modalBody.append(container);
+    modalLogo = container;
+  }
+}
+
+function removeModalLogo() {
+  if (modalLogo) {
+    modalLogo.remove();
+    modalLogo = null;
+  }
+}
+
+// ---- MINI OVERVIEW MAP (desktop only) ----
+function ensureMiniMap() {
+  if (!modalBody) return null;
+  if (!modalMiniMapContainer) {
+    const container = document.createElement('div');
+    container.id = 'modalMiniMap';
+    container.className = 'modal-mini-map';
+    modalBody.append(container);
+    modalMiniMapContainer = container;
+  }
+  if (!modalMiniMap) {
+    modalMiniMap = L.map(modalMiniMapContainer, {
+      attributionControl: false,
+      zoomControl: false,
+      dragging: true,
+      scrollWheelZoom: true,
+      doubleClickZoom: false,
+      touchZoom: true,
+      boxZoom: false,
+      keyboard: false
+    });
+    L.tileLayer(
+      'https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}',
+      { maxZoom: 19 }
+    ).addTo(modalMiniMap);
+    // Nudge Leaflet to recalc dimensions once the container is attached
+    requestAnimationFrame(() => modalMiniMap && modalMiniMap.invalidateSize());
+  }
+  return modalMiniMap;
+}
+
+function clearMiniMapMarkers() {
+  if (!modalMiniMap) return;
+  modalMiniMapMarkers.forEach(m => modalMiniMap.removeLayer(m));
+  modalMiniMapMarkers = [];
+  lastMiniMapCams     = [];
+}
+
+function recalcMiniMapView(cams) {
+  if (!modalMiniMap || !cams?.length) return;
+  if (cams.length === 1) {
+    modalMiniMap.setView([cams[0].lat, cams[0].lon], 14);
+  } else {
+    const bounds = L.latLngBounds(cams.map(c => [c.lat, c.lon]));
+    modalMiniMap.fitBounds(bounds, { padding: [14, 14], maxZoom: 16 });
+  }
+}
+
+function refitMiniMap() {
+  if (!lastMiniMapCams.length) return;
+  const map = ensureMiniMap();
+  if (!map) return;
+  map.invalidateSize();
+  recalcMiniMapView(lastMiniMapCams);
+}
+
+// ---- INFO DECK (bottom-left) ----
+function ensureInfoDeck() {
+  if (!modalBody) return null;
+  if (!infoDeckContainer) {
+    const container = document.createElement('div');
+    container.id = 'modalInfoDeck';
+    container.className = 'modal-info-stack';
+    container.innerHTML = `
+      <div class="info-stack-track">
+        <div class="info-card info-card--mini-map mobile-only is-active">
+          <div class="info-card__map-container" id="mobileInfoMiniMap"></div>
+        </div>
+        <div class="info-card info-card--meta">
+          <div class="info-card__columns">
+            <div class="info-card__column">
+              <div class="info-card__title">Primary Route</div>
+              <div class="info-field"><span class="label">Route:</span><span class="value" data-field="ROUTE_1"></span></div>
+              <div class="info-field"><span class="label">Alt Name A:</span><span class="value" data-field="ALT_NAME_1A"></span></div>
+              <div class="info-field"><span class="label">Alt Name B:</span><span class="value" data-field="ALT_NAME_1B"></span></div>
+              <div class="info-field"><span class="label">MP (LM):</span><span class="value" data-field="MP_LM_1"></span></div>
+              <div class="info-field"><span class="label">MP (Phys):</span><span class="value" data-field="MP_PHYS_1"></span></div>
+            </div>
+            <div class="info-card__column">
+              <div class="info-card__title">Secondary Route</div>
+              <div class="info-field"><span class="label">Route:</span><span class="value" data-field="ROUTE_2"></span></div>
+              <div class="info-field"><span class="label">Alt Name A:</span><span class="value" data-field="ALT_NAME_2A"></span></div>
+              <div class="info-field"><span class="label">Alt Name B:</span><span class="value" data-field="ALT_NAME_2B"></span></div>
+              <div class="info-field"><span class="label">MP (LM):</span><span class="value" data-field="MP_LM_2"></span></div>
+              <div class="info-field"><span class="label">MP (Phys):</span><span class="value" data-field="MP_PHYS_2"></span></div>
+            </div>
+          </div>
+          <div class="info-card__footer" data-info-footer></div>
+        </div>
+        <div class="info-card info-card--street">
+          <div class="info-card__embed" data-embed-type="street"></div>
+        </div>
+        <div class="info-card info-card--map">
+          <div class="info-card__embed" data-embed-type="map"></div>
+        </div>
+      </div>
+      <div class="info-stack-controls">
+        <button type="button" class="button ghost info-prev" aria-label="Previous info card"><i class="fas fa-chevron-left"></i></button>
+        <div class="info-stack-dots">
+          <div class="info-stack-dot active" data-card-index="0"></div>
+          <div class="info-stack-dot" data-card-index="1"></div>
+          <div class="info-stack-dot" data-card-index="2"></div>
+          <div class="info-stack-dot mobile-only" data-card-index="3"></div>
+        </div>
+        <button type="button" class="button ghost info-next" aria-label="Next info card"><i class="fas fa-chevron-right"></i></button>
+      </div>
+      <button type="button" class="info-stack-arrow info-stack-arrow-left" aria-label="Previous card">
+        <i class="fas fa-chevron-left"></i>
+      </button>
+      <button type="button" class="info-stack-arrow info-stack-arrow-right" aria-label="Next card">
+        <i class="fas fa-chevron-right"></i>
+      </button>
+    `;
+    modalBody.append(container);
+    infoDeckContainer = container;
+
+    const prev = container.querySelector('.info-prev');
+    const next = container.querySelector('.info-next');
+    if (prev) prev.addEventListener('click', () => rotateInfoDeck(-1));
+    if (next) next.addEventListener('click', () => rotateInfoDeck(1));
+    
+    // Setup overlay arrow buttons
+    const arrowLeft = container.querySelector('.info-stack-arrow-left');
+    const arrowRight = container.querySelector('.info-stack-arrow-right');
+    if (arrowLeft) arrowLeft.addEventListener('click', () => rotateInfoDeck(-1));
+    if (arrowRight) arrowRight.addEventListener('click', () => rotateInfoDeck(1));
+    
+    // On desktop, exclude mobile-only cards from the deck
+    const allCards = Array.from(container.querySelectorAll('.info-card'));
+    infoDeckCards = window.innerWidth > 768 
+      ? allCards.filter(card => !card.classList.contains('mobile-only'))
+      : allCards;
+    
+    // Setup clickable dots
+    const dots = container.querySelectorAll('.info-stack-dot');
+    dots.forEach(dot => {
+      dot.addEventListener('click', () => {
+        const index = parseInt(dot.dataset.cardIndex);
+        if (!isNaN(index)) setInfoCardState(index);
+      });
+    });
+    
+    // Setup swipe for mobile
+    setupInfoDeckSwipe(container);
+  }
+  return infoDeckContainer;
+}
+
+function setupInfoDeckSwipe(container) {
+  const track = container.querySelector('.info-stack-track');
+  if (!track) return;
+  
+  let startX = 0;
+  let startY = 0;
+  let isDragging = false;
+  
+  track.addEventListener('touchstart', (e) => {
+    startX = e.touches[0].clientX;
+    startY = e.touches[0].clientY;
+    isDragging = true;
+  }, { passive: true });
+  
+  track.addEventListener('touchmove', (e) => {
+    if (!isDragging) return;
+  }, { passive: true });
+  
+  track.addEventListener('touchend', (e) => {
+    if (!isDragging) return;
+    isDragging = false;
+    
+    const endX = e.changedTouches[0].clientX;
+    const endY = e.changedTouches[0].clientY;
+    const deltaX = endX - startX;
+    const deltaY = endY - startY;
+    
+    // Only swipe if horizontal movement is greater than vertical
+    if (Math.abs(deltaX) > Math.abs(deltaY) && Math.abs(deltaX) > 50) {
+      if (deltaX > 0) {
+        rotateInfoDeck(-1); // Swipe right = previous
+      } else {
+        rotateInfoDeck(1); // Swipe left = next
+      }
+    }
+  }, { passive: true });
+}
+
+function resetModalInfoDeck() {
+  if (infoDeckContainer) {
+    infoDeckContainer.remove();
+    infoDeckContainer = null;
+  }
+  infoDeckCards = [];
+  infoDeckActiveIndex = 0;
+}
+
+function sanitizeValue(val) {
+  if (val === undefined || val === null) return '';
+  if (typeof val === 'string' && val.trim().toUpperCase() === 'NULL') return '';
+  return String(val).trim();
+}
+
+function setInfoCardState(activeIdx) {
+  if (!infoDeckCards.length) return;
+  infoDeckActiveIndex = activeIdx;
+  const total = infoDeckCards.length;
+  const leftIdx  = (activeIdx - 1 + total) % total;
+  const rightIdx = (activeIdx + 1) % total;
+
+  infoDeckCards.forEach((card, idx) => {
+    card.classList.remove('is-active', 'is-left', 'is-right');
+    if (idx === activeIdx) card.classList.add('is-active');
+    else if (idx === leftIdx) card.classList.add('is-left');
+    else if (idx === rightIdx) card.classList.add('is-right');
+  });
+  
+  // Update dots
+  if (infoDeckContainer) {
+    const dots = infoDeckContainer.querySelectorAll('.info-stack-dot');
+    dots.forEach((dot, idx) => {
+      dot.classList.toggle('active', idx === activeIdx);
+    });
+  }
+
+  const activeCard = infoDeckCards[activeIdx];
+  const embedType = activeCard?.querySelector('.info-card__embed')?.dataset?.embedType;
+  if (embedType) maybeLoadEmbed(embedType);
+}
+
+function rotateInfoDeck(step) {
+  if (!infoDeckCards.length) return;
+  const total = infoDeckCards.length;
+  const nextIdx = (infoDeckActiveIndex + step + total) % total;
+  setInfoCardState(nextIdx);
+}
+
+function populateMetaCard(cam) {
+  if (!infoDeckContainer) return;
+  const meta = infoDeckContainer.querySelector('.info-card--meta');
+  if (!meta) return;
+
+  const geo = cam?._geoJsonMetadata || {};
+  const routes = geo.routes || {};
+  const alt = geo.altNames || {};
+  const pos = geo.positioning || {};
+
+  // Map data fields to their sources - using raw GeoJSON values
+  const fieldMap = {
+    'ROUTE_1': routes.route1Code,
+    'ALT_NAME_1A': alt.route1A,
+    'ALT_NAME_1B': alt.route1B,
+    'MP_LM_1': pos.logicalMP1,
+    'MP_PHYS_1': pos.physicalMP1,
+    'ROUTE_2': routes.route2Code,
+    'ALT_NAME_2A': alt.route2A,
+    'ALT_NAME_2B': alt.route2B,
+    'MP_LM_2': pos.logicalMP2,
+    'MP_PHYS_2': pos.physicalMP2
+  };
+
+  Object.entries(fieldMap).forEach(([field, value]) => {
+    const el = meta.querySelector(`[data-field="${field}"]`);
+    if (el) el.textContent = sanitizeValue(value);
+  });
+
+  const footer = meta.querySelector('[data-info-footer]');
+  if (footer) {
+    const parts = [
+      sanitizeValue(cam?.MunicipalBoundary),
+      sanitizeValue(cam?.CountyBoundary),
+      cam?.Region ? `Region ${cam.Region}` : ''
+    ].filter(Boolean);
+    footer.textContent = parts.join(' • ');
+  }
+}
+
+function resetEmbedCard(type, url) {
+  if (!infoDeckContainer) return;
+  const target = infoDeckContainer.querySelector(`.info-card__embed[data-embed-type="${type}"]`);
+  if (!target) return;
+  target.dataset.src = url || '';
+  target.textContent = url ? 'Tap to load' : 'Not available';
+  const existing = target.querySelector('iframe');
+  if (existing) existing.remove();
+}
+
+function maybeLoadEmbed(type) {
+  if (!infoDeckContainer) return;
+  const target = infoDeckContainer.querySelector(`.info-card__embed[data-embed-type="${type}"]`);
+  if (!target) return;
+  const url = target.dataset.src;
+  if (!url || target.querySelector('iframe')) return;
+
+  target.textContent = '';
+  const iframe = document.createElement('iframe');
+  iframe.loading = 'lazy';
+  iframe.src = url;
+  iframe.title = type === 'street' ? 'Street View' : 'Map';
+  iframe.referrerPolicy = 'no-referrer-when-downgrade';
+  iframe.allowFullscreen = true;
+  iframe.setAttribute('aria-label', iframe.title);
+  target.append(iframe);
+}
+
+export function updateModalInfoDeck(cam) {
+  const container = ensureInfoDeck();
+  if (!container) return;
+
+  populateMetaCard(cam);
+  const embeds = cam?._geoJsonMetadata?.embeds || {};
+  resetEmbedCard('street', sanitizeValue(embeds.streetView));
+  resetEmbedCard('map', sanitizeValue(embeds.googleMaps));
+
+  // Start with first card (meta on desktop, mini-map on mobile)
+  setInfoCardState(0);
+}
+
+export function resetModalMiniMap() {
+  if (modalMiniMap) {
+    modalMiniMap.remove();
+    modalMiniMap = null;
+  }
+  if (modalMiniMapContainer) {
+    modalMiniMapContainer.remove();
+    modalMiniMapContainer = null;
+  }
+  modalMiniMapMarkers = [];
+}
+
+export function updateModalMiniMap(centerCam, prevCam, nextCam) {
+  // Desktop mini-map
+  if (window.innerWidth > 1024 && window.innerWidth <= 768) {
+    // Never true - keeps desktop logic separate
+    resetModalMiniMap();
+  } else {
+    const cams = [centerCam, prevCam, nextCam]
+      .filter(Boolean)
+      .map((cam, idx) => ({
+        cam,
+        lat: Number(cam?.Latitude),
+        lon: Number(cam?.Longitude),
+        isCenter: idx === 0
+      }))
+      .filter(({ lat, lon }) => Number.isFinite(lat) && Number.isFinite(lon));
+
+    if (!cams.length) {
+      resetModalMiniMap();
+    } else {
+      const map = ensureMiniMap();
+      if (map && modalMiniMapContainer) {
+        clearMiniMapMarkers();
+
+        cams.forEach(({ cam, lat, lon, isCenter }, idx) => {
+          let fillColor;
+          if (isCenter) {
+            fillColor = '#FFD700'; // Yellow - center/current
+          } else if (idx === 1) {
+            fillColor = '#00FF88'; // Green - left/behind/NEG (prevCam)
+          } else {
+            fillColor = '#FF4444'; // Red - right/ahead/POS (nextCam)
+          }
+          
+          const marker = L.circleMarker([lat, lon], {
+            radius: isCenter ? 8 : 6,
+            fillColor: fillColor,
+            color: '#ffffff',
+            weight: isCenter ? 2 : 1.5,
+            opacity: 1,
+            fillOpacity: 1,
+            className: isCenter ? 'mini-map-marker-center' : 'mini-map-marker'
+          }).addTo(map);
+          marker.bindTooltip(cam?.Location || 'Camera', { permanent: false, direction: 'top' });
+          modalMiniMapMarkers.push(marker);
+        });
+
+        recalcMiniMapView(cams);
+        lastMiniMapCams = cams;
+
+        // Ensure tiles fill the container after layout settles
+        requestAnimationFrame(() => {
+          if (!modalMiniMap) return;
+          modalMiniMap.invalidateSize();
+          recalcMiniMapView(lastMiniMapCams);
+        });
+        setTimeout(() => {
+          if (!modalMiniMap) return;
+          modalMiniMap.invalidateSize();
+          recalcMiniMapView(lastMiniMapCams);
+        });
+
+        modalMiniMapContainer.style.display = 'block';
+      }
+    }
+  }
+  
+  // Mobile vertical carousel - ignore neighbor fields, use list order
+  if (window.innerWidth <= 768) {
+    updateMobileCarousel(centerCam, null, null);
+  }
+}
+
+export function updateMobileMiniMap(centerCam, prevCam, nextCam) {
+  if (window.innerWidth > 768) return; // Mobile only
+  
+  const mapContainer = document.getElementById('mobileInfoMiniMap');
+  if (!mapContainer) return;
+  
+  // Remove existing map if any
+  if (mapContainer._leaflet_id) {
+    mapContainer.innerHTML = '';
+    delete mapContainer._leaflet_id;
+  }
+  
+  const cams = [centerCam, prevCam, nextCam]
+    .filter(Boolean)
+    .map((cam, idx) => ({
+      cam,
+      lat: Number(cam?.Latitude),
+      lon: Number(cam?.Longitude),
+      isCenter: idx === 0,
+      isNext: idx === 2, // Top/POS neighbor (red)
+      isPrev: idx === 1  // Bottom/NEG neighbor (green)
+    }))
+    .filter(({ lat, lon }) => Number.isFinite(lat) && Number.isFinite(lon));
+
+  if (!cams.length) return;
+  
+  // Wait for container to be visible
+  requestAnimationFrame(() => {
+    // Create map
+    const map = L.map(mapContainer, {
+      zoomControl: false,
+      attributionControl: false,
+      dragging: false,
+      touchZoom: false,
+      scrollWheelZoom: false,
+      doubleClickZoom: false,
+      boxZoom: false,
+      keyboard: false,
+      tap: false
+    });
+    
+    L.tileLayer('https://server.arcgisonline.com/ArcGIS/rest/services/World_Imagery/MapServer/tile/{z}/{y}/{x}', {
+      maxZoom: 19
+    }).addTo(map);
+    
+    // Add markers with traffic light colors
+    cams.forEach(({ cam, lat, lon, isCenter, isNext, isPrev }) => {
+      let fillColor = '#0ddf92'; // Default fallback
+      if (isCenter) fillColor = '#FFD700'; // Yellow - center/current
+      else if (isNext) fillColor = '#FF4444'; // Red - top/ahead/POS
+      else if (isPrev) fillColor = '#00FF88'; // Green - bottom/behind/NEG
+      
+      L.circleMarker([lat, lon], {
+        radius: isCenter ? 8 : 6,
+        fillColor: fillColor,
+        color: '#ffffff',
+        weight: isCenter ? 2 : 1.5,
+        opacity: 1,
+        fillOpacity: 1
+      }).addTo(map).bindTooltip(cam?.Location || 'Camera', { 
+        permanent: false, 
+        direction: 'top' 
+      });
+    });
+    
+    // Fit bounds
+    const bounds = L.latLngBounds(cams.map(({ lat, lon }) => [lat, lon]));
+    map.fitBounds(bounds, { padding: [30, 30] });
+    
+    // Force multiple resize attempts to ensure proper rendering
+    setTimeout(() => {
+      if (map) {
+        map.invalidateSize();
+        map.fitBounds(bounds, { padding: [30, 30] });
+      }
+    }, 100);
+    
+    setTimeout(() => {
+      if (map) {
+        map.invalidateSize();
+        map.fitBounds(bounds, { padding: [30, 30] });
+      }
+    }, 300);
+  });
 }
 
 export async function shareImageFile(url, info = "") {
